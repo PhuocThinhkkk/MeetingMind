@@ -1,11 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { 
   Mic, 
   Upload, 
@@ -16,48 +16,113 @@ import {
   MoreHorizontal,
   Play,
   Pause,
-  Download
+  Download,
+  User,
+  Settings,
+  LogOut
 } from 'lucide-react';
 import { Sidebar } from '@/components/dashboard/sidebar';
 import { AudioUpload } from '@/components/dashboard/audio-upload';
 import { TranscriptionView } from '@/components/dashboard/transcription-view';
+import { useAuth } from '@/hooks/use-auth';
+import { supabase } from '@/lib/supabase';
 
 interface AudioFile {
   id: string;
   name: string;
   duration: number;
-  status: 'pending' | 'processing' | 'done' | 'failed';
-  createdAt: string;
+  transcription_status: 'pending' | 'processing' | 'done' | 'failed';
+  created_at: string;
   progress?: number;
 }
 
 export default function DashboardPage() {
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([
-    {
-      id: '1',
-      name: 'Team Meeting - Q1 Planning',
-      duration: 3420,
-      status: 'done',
-      createdAt: '2024-01-15T10:30:00Z'
-    },
-    {
-      id: '2',
-      name: 'Client Call - Project Discussion',
-      duration: 1800,
-      status: 'processing',
-      createdAt: '2024-01-15T14:00:00Z',
-      progress: 65
-    },
-    {
-      id: '3',
-      name: 'Weekly Standup',
-      duration: 900,
-      status: 'pending',
-      createdAt: '2024-01-15T16:00:00Z'
-    }
-  ]);
-
+  const { user, loading: authLoading, signOut } = useAuth();
+  const router = useRouter();
+  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
   const [selectedFile, setSelectedFile] = useState<AudioFile | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!authLoading && !user) {
+      router.push('/auth/login');
+    }
+  }, [user, authLoading, router]);
+
+  useEffect(() => {
+    if (user) {
+      fetchAudioFiles();
+    }
+  }, [user]);
+
+  const fetchAudioFiles = async () => {
+    try {
+      const { data, error } = await supabase
+        .from('audio_files')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (error) {
+        console.error('Error fetching audio files:', error);
+      } else {
+        setAudioFiles(data || []);
+      }
+    } catch (error) {
+      console.error('Error fetching audio files:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFileUpload = async (file: File) => {
+    if (!user) return;
+
+    try {
+      // Upload file to Supabase Storage
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Date.now()}.${fileExt}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('audio-files')
+        .upload(filePath, file);
+
+      if (uploadError) {
+        console.error('Error uploading file:', uploadError);
+        return;
+      }
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('audio-files')
+        .getPublicUrl(filePath);
+
+      // Create database record
+      const { data, error } = await supabase
+        .from('audio_files')
+        .insert([
+          {
+            user_id: user.id,
+            name: file.name,
+            url: publicUrl,
+            duration: 0,
+            file_size: file.size,
+            mime_type: file.type,
+            transcription_status: 'pending'
+          }
+        ])
+        .select()
+        .single();
+
+      if (error) {
+        console.error('Error creating audio file record:', error);
+      } else {
+        setAudioFiles(prev => [data, ...prev]);
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+    }
+  };
 
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
@@ -67,13 +132,30 @@ export default function DashboardPage() {
 
   const getStatusColor = (status: string) => {
     switch (status) {
-      case 'done': return 'bg-green-100 text-green-800';
-      case 'processing': return 'bg-blue-100 text-blue-800';
-      case 'pending': return 'bg-yellow-100 text-yellow-800';
-      case 'failed': return 'bg-red-100 text-red-800';
-      default: return 'bg-gray-100 text-gray-800';
+      case 'done': return 'bg-green-100 text-green-800 border-green-200';
+      case 'processing': return 'bg-blue-100 text-blue-800 border-blue-200';
+      case 'pending': return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+      case 'failed': return 'bg-red-100 text-red-800 border-red-200';
+      default: return 'bg-gray-100 text-gray-800 border-gray-200';
     }
   };
+
+  const handleSignOut = async () => {
+    await signOut();
+    router.push('/auth/login');
+  };
+
+  if (authLoading || loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+      </div>
+    );
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -83,31 +165,38 @@ export default function DashboardPage() {
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="mb-8 animate-fade-in">
-              <h1 className="text-3xl font-bold text-gray-900 mb-2">Meeting Transcriptions</h1>
-              <p className="text-gray-600">Upload, transcribe, and analyze your meetings with AI</p>
+              <div className="flex items-center justify-between">
+                <div>
+                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Meeting Transcriptions</h1>
+                  <p className="text-gray-600">Upload, transcribe, and analyze your meetings with AI</p>
+                </div>
+                <div className="flex items-center space-x-4">
+                  <div className="flex items-center space-x-2">
+                    <div className="w-8 h-8 bg-blue-600 rounded-full flex items-center justify-center">
+                      <User className="w-4 h-4 text-white" />
+                    </div>
+                    <span className="text-sm font-medium text-gray-700">{user.email}</span>
+                  </div>
+                  <Button variant="ghost" size="sm" onClick={handleSignOut}>
+                    <LogOut className="w-4 h-4 mr-2" />
+                    Sign Out
+                  </Button>
+                </div>
+              </div>
             </div>
 
             {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <AudioUpload onUpload={(file) => {
-                const newFile: AudioFile = {
-                  id: Date.now().toString(),
-                  name: file.name,
-                  duration: 0,
-                  status: 'pending',
-                  createdAt: new Date().toISOString()
-                };
-                setAudioFiles(prev => [newFile, ...prev]);
-              }} />
+              <AudioUpload onUpload={handleFileUpload} />
               
-              <Card className="group hover:shadow-lg transition-all duration-300 border-dashed border-2 border-gray-300 hover:border-blue-400 cursor-pointer animate-slide-up">
+              <Card className="group hover:shadow-lg transition-all duration-300 border-dashed border-2 border-gray-300 hover:border-red-400 cursor-pointer animate-slide-up hover-lift">
                 <CardContent className="flex flex-col items-center justify-center p-8 text-center">
                   <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-red-200 transition-colors">
                     <Mic className="w-6 h-6 text-red-600" />
                   </div>
                   <h3 className="text-lg font-semibold text-gray-900 mb-2">Record Meeting</h3>
                   <p className="text-gray-600 text-sm mb-4">Start recording directly from your browser</p>
-                  <Button variant="outline" className="w-full">
+                  <Button variant="outline" className="w-full transition-all hover:scale-[1.02]">
                     <Mic className="w-4 h-4 mr-2" />
                     Start Recording
                   </Button>
@@ -116,7 +205,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Recent Files */}
-            <Card className="animate-slide-up">
+            <Card className="animate-slide-up hover-lift">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileAudio className="w-5 h-5 mr-2" />
@@ -127,47 +216,54 @@ export default function DashboardPage() {
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <div className="space-y-4">
-                  {audioFiles.map((file, index) => (
-                    <div 
-                      key={file.id}
-                      className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer animate-fade-in"
-                      style={{ animationDelay: `${index * 100}ms` }}
-                      onClick={() => setSelectedFile(file)}
-                    >
-                      <div className="flex items-center space-x-4">
-                        <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                          <FileAudio className="w-5 h-5 text-blue-600" />
-                        </div>
-                        <div>
-                          <h4 className="font-medium text-gray-900">{file.name}</h4>
-                          <div className="flex items-center space-x-2 text-sm text-gray-500">
-                            <Clock className="w-4 h-4" />
-                            <span>{formatDuration(file.duration)}</span>
-                            <span>•</span>
-                            <span>{new Date(file.createdAt).toLocaleDateString()}</span>
+                {audioFiles.length === 0 ? (
+                  <div className="text-center py-8">
+                    <FileAudio className="w-12 h-12 text-gray-400 mx-auto mb-4" />
+                    <p className="text-gray-500">No meetings yet. Upload your first audio file to get started!</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {audioFiles.map((file, index) => (
+                      <div 
+                        key={file.id}
+                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer animate-fade-in hover-lift"
+                        style={{ animationDelay: `${index * 100}ms` }}
+                        onClick={() => setSelectedFile(file)}
+                      >
+                        <div className="flex items-center space-x-4">
+                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <FileAudio className="w-5 h-5 text-blue-600" />
+                          </div>
+                          <div>
+                            <h4 className="font-medium text-gray-900">{file.name}</h4>
+                            <div className="flex items-center space-x-2 text-sm text-gray-500">
+                              <Clock className="w-4 h-4" />
+                              <span>{formatDuration(file.duration)}</span>
+                              <span>•</span>
+                              <span>{new Date(file.created_at).toLocaleDateString()}</span>
+                            </div>
                           </div>
                         </div>
-                      </div>
-                      
-                      <div className="flex items-center space-x-3">
-                        <Badge className={getStatusColor(file.status)}>
-                          {file.status}
-                        </Badge>
                         
-                        {file.status === 'processing' && file.progress && (
-                          <div className="w-24">
-                            <Progress value={file.progress} className="h-2" />
-                          </div>
-                        )}
-                        
-                        <Button variant="ghost" size="sm">
-                          <MoreHorizontal className="w-4 h-4" />
-                        </Button>
+                        <div className="flex items-center space-x-3">
+                          <Badge className={`${getStatusColor(file.transcription_status)} border`}>
+                            {file.transcription_status}
+                          </Badge>
+                          
+                          {file.transcription_status === 'processing' && file.progress && (
+                            <div className="w-24">
+                              <Progress value={file.progress} className="h-2" />
+                            </div>
+                          )}
+                          
+                          <Button variant="ghost" size="sm" className="hover:bg-gray-100">
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </div>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                )}
               </CardContent>
             </Card>
           </div>
@@ -177,6 +273,7 @@ export default function DashboardPage() {
         <Sidebar 
           selectedFile={selectedFile}
           onFileSelect={setSelectedFile}
+          user={user}
         />
       </div>
 

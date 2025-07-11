@@ -3,7 +3,7 @@
 import { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { Upload, FileAudio, X } from 'lucide-react';
+import { Upload, FileAudio, X, CheckCircle } from 'lucide-react';
 
 interface AudioUploadProps {
   onUpload: (file: File) => void;
@@ -12,6 +12,7 @@ interface AudioUploadProps {
 export function AudioUpload({ onUpload }: AudioUploadProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const handleDrag = useCallback((e: React.DragEvent) => {
     e.preventDefault();
@@ -45,15 +46,22 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
     }
   };
 
-  const handleUpload = () => {
+  const handleUpload = async () => {
     if (selectedFile) {
-      onUpload(selectedFile);
-      setSelectedFile(null);
+      setUploading(true);
+      try {
+        await onUpload(selectedFile);
+        setSelectedFile(null);
+      } catch (error) {
+        console.error('Upload failed:', error);
+      } finally {
+        setUploading(false);
+      }
     }
   };
 
   return (
-    <Card className={`group hover:shadow-lg transition-all duration-300 border-dashed border-2 animate-slide-up ${
+    <Card className={`group hover:shadow-lg transition-all duration-300 border-dashed border-2 animate-slide-up hover-lift ${
       dragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400'
     }`}>
       <CardContent className="p-8">
@@ -78,14 +86,28 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedFile(null)}
-                  className="text-gray-400 hover:text-red-600"
+                  className="text-gray-400 hover:text-red-600 transition-colors"
+                  disabled={uploading}
                 >
                   <X className="w-4 h-4" />
                 </Button>
               </div>
-              <Button onClick={handleUpload} className="w-full">
-                <Upload className="w-4 h-4 mr-2" />
-                Upload & Transcribe
+              <Button 
+                onClick={handleUpload} 
+                className="w-full transition-all hover:scale-[1.02] shadow-md hover:shadow-lg"
+                disabled={uploading}
+              >
+                {uploading ? (
+                  <>
+                    <div className="w-4 h-4 mr-2 animate-spin rounded-full border-2 border-white border-t-transparent" />
+                    Uploading...
+                  </>
+                ) : (
+                  <>
+                    <Upload className="w-4 h-4 mr-2" />
+                    Upload & Transcribe
+                  </>
+                )}
               </Button>
             </div>
           ) : (
@@ -105,7 +127,7 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
                 id="audio-upload"
               />
               <label htmlFor="audio-upload">
-                <Button variant="outline" className="w-full cursor-pointer" asChild>
+                <Button variant="outline" className="w-full cursor-pointer transition-all hover:scale-[1.02] hover:shadow-md" asChild>
                   <span>
                     <Upload className="w-4 h-4 mr-2" />
                     Choose File

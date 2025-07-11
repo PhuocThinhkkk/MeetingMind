@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Button } from '@/components/ui/button';
@@ -8,7 +8,8 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, ArrowRight } from 'lucide-react';
+import { Loader2, Mail, Lock, ArrowRight, Mic } from 'lucide-react';
+import { useAuth } from '@/hooks/use-auth';
 
 export default function LoginPage() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,13 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
   const router = useRouter();
+  const { signIn, user } = useAuth();
+
+  useEffect(() => {
+    if (user) {
+      router.push('/dashboard');
+    }
+  }, [user, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -23,12 +31,14 @@ export default function LoginPage() {
     setError('');
 
     try {
-      // Supabase auth will be implemented here
-      // For now, simulate login
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      router.push('/dashboard');
+      const { error } = await signIn(email, password);
+      if (error) {
+        setError(error.message);
+      } else {
+        router.push('/dashboard');
+      }
     } catch (err) {
-      setError('Invalid email or password');
+      setError('An unexpected error occurred');
     } finally {
       setLoading(false);
     }
@@ -38,14 +48,14 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8 animate-fade-in">
-          <div className="w-16 h-16 bg-blue-600 rounded-xl mx-auto mb-4 flex items-center justify-center shadow-lg">
-            <Mail className="w-8 h-8 text-white" />
+          <div className="w-16 h-16 bg-blue-600 rounded-xl mx-auto mb-4 flex items-center justify-center shadow-lg hover-lift">
+            <Mic className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
           <p className="text-gray-600">Sign in to your meeting transcription account</p>
         </div>
 
-        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm animate-slide-up">
+        <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm animate-slide-up hover-lift">
           <CardHeader className="space-y-1">
             <CardTitle className="text-2xl text-center">Sign in</CardTitle>
             <CardDescription className="text-center">
@@ -70,7 +80,7 @@ export default function LoginPage() {
                     placeholder="Enter your email"
                     value={email}
                     onChange={(e) => setEmail(e.target.value)}
-                    className="pl-10 transition-all focus:scale-[1.02]"
+                    className="pl-10 transition-all focus:scale-[1.02] hover:shadow-md"
                     required
                   />
                 </div>
@@ -86,7 +96,7 @@ export default function LoginPage() {
                     placeholder="Enter your password"
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
-                    className="pl-10 transition-all focus:scale-[1.02]"
+                    className="pl-10 transition-all focus:scale-[1.02] hover:shadow-md"
                     required
                   />
                 </div>
@@ -94,7 +104,7 @@ export default function LoginPage() {
 
               <Button 
                 type="submit" 
-                className="w-full bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-[1.02] shadow-lg"
+                className="w-full bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
                 disabled={loading}
               >
                 {loading ? (
