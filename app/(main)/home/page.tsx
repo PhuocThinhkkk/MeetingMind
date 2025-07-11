@@ -1,4 +1,4 @@
-import DashboardPage from "./dashboard-page";
+import HomePage from "./home-page";
 import { SidebarTrigger, SidebarInset } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 
@@ -15,7 +15,7 @@ export default function Page() {
           
         </header>
         <div className="flex flex-1 flex-col gap-4 p-4">
-            <DashboardPage/> 
+            <HomePage/> 
         </div>
       </SidebarInset>
  

@@ -36,7 +36,7 @@ interface AudioFile {
   progress?: number;
 }
 
-export default function DashboardPage() {
+export default function HomePage() {
   const { user, loading: authLoading, signOut } = useAuth();
   const router = useRouter();
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
