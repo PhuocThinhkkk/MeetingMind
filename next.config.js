@@ -17,6 +17,27 @@ const nextConfig = {
       },
     },
   },
+  webpack: (config) => {
+    // Add Tailwind CSS v4 support
+    config.module.rules.push({
+      test: /\.css$/,
+      use: [
+        'style-loader',
+        'css-loader',
+        {
+          loader: 'postcss-loader',
+          options: {
+            postcssOptions: {
+              plugins: [
+                '@tailwindcss/postcss',
+              ],
+            },
+          },
+        },
+      ],
+    });
+    return config;
+  },
 };
 
 module.exports = nextConfig;

@@ -1,6 +1,4 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
 
 :root {
   --foreground-rgb: 0, 0, 0;
@@ -16,69 +14,148 @@
   }
 }
 
-@layer base {
-  :root {
-    --background: 0 0% 100%;
-    --foreground: 0 0% 3.9%;
-    --card: 0 0% 100%;
-    --card-foreground: 0 0% 3.9%;
-    --popover: 0 0% 100%;
-    --popover-foreground: 0 0% 3.9%;
-    --primary: 0 0% 9%;
-    --primary-foreground: 0 0% 98%;
-    --secondary: 0 0% 96.1%;
-    --secondary-foreground: 0 0% 9%;
-    --muted: 0 0% 96.1%;
-    --muted-foreground: 0 0% 45.1%;
-    --accent: 0 0% 96.1%;
-    --accent-foreground: 0 0% 9%;
-    --destructive: 0 84.2% 60.2%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 89.8%;
-    --input: 0 0% 89.8%;
-    --ring: 0 0% 3.9%;
-    --chart-1: 12 76% 61%;
-    --chart-2: 173 58% 39%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
-    --radius: 0.5rem;
-  }
-  .dark {
-    --background: 0 0% 3.9%;
-    --foreground: 0 0% 98%;
-    --card: 0 0% 3.9%;
-    --card-foreground: 0 0% 98%;
-    --popover: 0 0% 3.9%;
-    --popover-foreground: 0 0% 98%;
-    --primary: 0 0% 98%;
-    --primary-foreground: 0 0% 9%;
-    --secondary: 0 0% 14.9%;
-    --secondary-foreground: 0 0% 98%;
-    --muted: 0 0% 14.9%;
-    --muted-foreground: 0 0% 63.9%;
-    --accent: 0 0% 14.9%;
-    --accent-foreground: 0 0% 98%;
-    --destructive: 0 62.8% 30.6%;
-    --destructive-foreground: 0 0% 98%;
-    --border: 0 0% 14.9%;
-    --input: 0 0% 14.9%;
-    --ring: 0 0% 83.1%;
-    --chart-1: 220 70% 50%;
-    --chart-2: 160 60% 45%;
-    --chart-3: 30 80% 55%;
-    --chart-4: 280 65% 60%;
-    --chart-5: 340 75% 55%;
-  }
+@theme {
+  --color-background: oklch(100% 0 0);
+  --color-foreground: oklch(3.9% 0 0);
+  --color-card: oklch(100% 0 0);
+  --color-card-foreground: oklch(3.9% 0 0);
+  --color-popover: oklch(100% 0 0);
+  --color-popover-foreground: oklch(3.9% 0 0);
+  --color-primary: oklch(9% 0 0);
+  --color-primary-foreground: oklch(98% 0 0);
+  --color-secondary: oklch(96.1% 0 0);
+  --color-secondary-foreground: oklch(9% 0 0);
+  --color-muted: oklch(96.1% 0 0);
+  --color-muted-foreground: oklch(45.1% 0 0);
+  --color-accent: oklch(96.1% 0 0);
+  --color-accent-foreground: oklch(9% 0 0);
+  --color-destructive: oklch(60.2% 0.84 29);
+  --color-destructive-foreground: oklch(98% 0 0);
+  --color-border: oklch(89.8% 0 0);
+  --color-input: oklch(89.8% 0 0);
+  --color-ring: oklch(3.9% 0 0);
+  --color-chart-1: oklch(61% 0.76 29);
+  --color-chart-2: oklch(39% 0.58 173);
+  --color-chart-3: oklch(24% 0.37 197);
+  --color-chart-4: oklch(66% 0.74 43);
+  --color-chart-5: oklch(67% 0.87 27);
+  --radius: 0.5rem;
+
+  /* Custom color palette */
+  --color-blue-50: oklch(97% 0.013 240);
+  --color-blue-100: oklch(93% 0.054 240);
+  --color-blue-200: oklch(86% 0.108 240);
+  --color-blue-300: oklch(78% 0.162 240);
+  --color-blue-400: oklch(70% 0.216 240);
+  --color-blue-500: oklch(62% 0.270 240);
+  --color-blue-600: oklch(54% 0.324 240);
+  --color-blue-700: oklch(46% 0.378 240);
+  --color-blue-800: oklch(38% 0.432 240);
+  --color-blue-900: oklch(30% 0.486 240);
+
+  --color-green-50: oklch(97% 0.013 120);
+  --color-green-100: oklch(93% 0.054 120);
+  --color-green-200: oklch(86% 0.108 120);
+  --color-green-300: oklch(78% 0.162 120);
+  --color-green-400: oklch(70% 0.216 120);
+  --color-green-500: oklch(62% 0.270 120);
+  --color-green-600: oklch(54% 0.324 120);
+  --color-green-700: oklch(46% 0.378 120);
+  --color-green-800: oklch(38% 0.432 120);
+  --color-green-900: oklch(30% 0.486 120);
+
+  --color-red-50: oklch(97% 0.013 0);
+  --color-red-100: oklch(93% 0.054 0);
+  --color-red-200: oklch(86% 0.108 0);
+  --color-red-300: oklch(78% 0.162 0);
+  --color-red-400: oklch(70% 0.216 0);
+  --color-red-500: oklch(62% 0.270 0);
+  --color-red-600: oklch(54% 0.324 0);
+  --color-red-700: oklch(46% 0.378 0);
+  --color-red-800: oklch(38% 0.432 0);
+  --color-red-900: oklch(30% 0.486 0);
+
+  --color-gray-50: oklch(98% 0 0);
+  --color-gray-100: oklch(96% 0 0);
+  --color-gray-200: oklch(90% 0 0);
+  --color-gray-300: oklch(83% 0 0);
+  --color-gray-400: oklch(68% 0 0);
+  --color-gray-500: oklch(53% 0 0);
+  --color-gray-600: oklch(45% 0 0);
+  --color-gray-700: oklch(38% 0 0);
+  --color-gray-800: oklch(25% 0 0);
+  --color-gray-900: oklch(13% 0 0);
+
+  --color-slate-50: oklch(98% 0.003 240);
+  --color-slate-100: oklch(96% 0.006 240);
+  --color-slate-200: oklch(90% 0.012 240);
+  --color-slate-300: oklch(83% 0.018 240);
+  --color-slate-400: oklch(68% 0.024 240);
+  --color-slate-500: oklch(53% 0.030 240);
+  --color-slate-600: oklch(45% 0.036 240);
+  --color-slate-700: oklch(38% 0.042 240);
+  --color-slate-800: oklch(25% 0.048 240);
+  --color-slate-900: oklch(13% 0.054 240);
+
+  --color-purple-50: oklch(97% 0.013 300);
+  --color-purple-100: oklch(93% 0.054 300);
+  --color-purple-200: oklch(86% 0.108 300);
+  --color-purple-300: oklch(78% 0.162 300);
+  --color-purple-400: oklch(70% 0.216 300);
+  --color-purple-500: oklch(62% 0.270 300);
+  --color-purple-600: oklch(54% 0.324 300);
+  --color-purple-700: oklch(46% 0.378 300);
+  --color-purple-800: oklch(38% 0.432 300);
+  --color-purple-900: oklch(30% 0.486 300);
+
+  --color-yellow-50: oklch(97% 0.013 60);
+  --color-yellow-100: oklch(93% 0.054 60);
+  --color-yellow-200: oklch(86% 0.108 60);
+  --color-yellow-300: oklch(78% 0.162 60);
+  --color-yellow-400: oklch(70% 0.216 60);
+  --color-yellow-500: oklch(62% 0.270 60);
+  --color-yellow-600: oklch(54% 0.324 60);
+  --color-yellow-700: oklch(46% 0.378 60);
+  --color-yellow-800: oklch(38% 0.432 60);
+  --color-yellow-900: oklch(30% 0.486 60);
+
+  --color-indigo-50: oklch(97% 0.013 270);
+  --color-indigo-100: oklch(93% 0.054 270);
+  --color-indigo-200: oklch(86% 0.108 270);
+  --color-indigo-300: oklch(78% 0.162 270);
+  --color-indigo-400: oklch(70% 0.216 270);
+  --color-indigo-500: oklch(62% 0.270 270);
+  --color-indigo-600: oklch(54% 0.324 270);
+  --color-indigo-700: oklch(46% 0.378 270);
+  --color-indigo-800: oklch(38% 0.432 270);
+  --color-indigo-900: oklch(30% 0.486 270);
 }
 
-@layer base {
-  * {
-    @apply border-border;
-  }
-  body {
-    @apply bg-background text-foreground;
-  }
+.dark {
+  --color-background: oklch(3.9% 0 0);
+  --color-foreground: oklch(98% 0 0);
+  --color-card: oklch(3.9% 0 0);
+  --color-card-foreground: oklch(98% 0 0);
+  --color-popover: oklch(3.9% 0 0);
+  --color-popover-foreground: oklch(98% 0 0);
+  --color-primary: oklch(98% 0 0);
+  --color-primary-foreground: oklch(9% 0 0);
+  --color-secondary: oklch(14.9% 0 0);
+  --color-secondary-foreground: oklch(98% 0 0);
+  --color-muted: oklch(14.9% 0 0);
+  --color-muted-foreground: oklch(63.9% 0 0);
+  --color-accent: oklch(14.9% 0 0);
+  --color-accent-foreground: oklch(98% 0 0);
+  --color-destructive: oklch(30.6% 0.628 29);
+  --color-destructive-foreground: oklch(98% 0 0);
+  --color-border: oklch(14.9% 0 0);
+  --color-input: oklch(14.9% 0 0);
+  --color-ring: oklch(83.1% 0 0);
+  --color-chart-1: oklch(50% 0.70 220);
+  --color-chart-2: oklch(45% 0.60 160);
+  --color-chart-3: oklch(55% 0.80 30);
+  --color-chart-4: oklch(60% 0.65 280);
+  --color-chart-5: oklch(55% 0.75 340);
 }
 
 /* Custom animations */
@@ -140,10 +217,10 @@
 
 @keyframes pulse-glow {
   0%, 100% {
-    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+    box-shadow: 0 0 5px rgb(59 130 246 / 0.5);
   }
   50% {
-    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8);
+    box-shadow: 0 0 20px rgb(59 130 246 / 0.8);
   }
 }
 
@@ -178,7 +255,7 @@
 
 .hover-lift:hover {
   transform: translateY(-2px);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px rgb(0 0 0 / 0.15);
 }
 
 /* Smooth transitions */
@@ -192,15 +269,15 @@
 }
 
 .custom-scrollbar::-webkit-scrollbar-track {
-  background: #f1f5f9;
+  background: theme(colors.slate.100);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb {
-  background: #cbd5e1;
+  background: theme(colors.slate.300);
   border-radius: 3px;
 }
 
 .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8;
+  background: theme(colors.slate.400);
 }
