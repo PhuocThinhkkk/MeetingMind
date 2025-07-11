@@ -27,9 +27,27 @@ interface SidebarProps {
   user: any;
 }
 
+interface Stats {
+  totalMeetings: number;
+  totalHours: number;
+  totalSummaries: number;
+}
+
+interface Activity {
+  type: string;
+  title: string;
+  time: string;
+}
+
+interface Event {
+  title: string;
+  time: string;
+  location: string;
+}
+
 export function Sidebar({ selectedFile, onFileSelect, user }: SidebarProps) {
   const [activeTab, setActiveTab] = useState('overview');
-  const [stats, setStats] = useState({
+  const [stats, setStats] = useState<Stats>({
     totalMeetings: 0,
     totalHours: 0,
     totalSummaries: 0
@@ -67,14 +85,14 @@ export function Sidebar({ selectedFile, onFileSelect, user }: SidebarProps) {
     }
   };
 
-  const recentActivity = [
+  const recentActivity: Activity[] = [
     { type: 'transcription', title: 'Team Meeting transcribed', time: '2 minutes ago' },
     { type: 'summary', title: 'AI summary generated', time: '5 minutes ago' },
     { type: 'event', title: 'Calendar event created', time: '1 hour ago' },
     { type: 'qa', title: 'Question answered', time: '2 hours ago' }
   ];
 
-  const upcomingEvents = [
+  const upcomingEvents: Event[] = [
     { title: 'Project Review', time: 'Today, 3:00 PM', location: 'Conference Room A' },
     { title: 'Client Presentation', time: 'Tomorrow, 10:00 AM', location: 'Zoom' },
     { title: 'Team Standup', time: 'Friday, 9:00 AM', location: 'Office' }
