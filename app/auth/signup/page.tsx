@@ -205,7 +205,7 @@ function VerificationMessage({ email }: { email: string }) {
               </div>
               <h2 className="text-2xl font-bold text-gray-900 mb-2">Check your email</h2>
               <p className="text-gray-600 mb-6">
-                We've sent a verification link to <strong>{email}</strong>
+                We have sent a verification link to <strong>{email}</strong>
               </p>
               <div className="space-y-4">
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">

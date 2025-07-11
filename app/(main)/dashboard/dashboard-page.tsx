@@ -21,7 +21,7 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
-import { Sidebar } from '@/components/dashboard/sidebar';
+
 import { AudioUpload } from '@/components/dashboard/audio-upload';
 import { TranscriptionView } from '@/components/dashboard/transcription-view';
 import { useAuth } from '@/hooks/use-auth';
@@ -78,7 +78,6 @@ export default function DashboardPage() {
     if (!user) return;
 
     try {
-      // Upload file to Supabase Storage
       const fileExt = file.name.split('.').pop();
       const fileName = `${Date.now()}.${fileExt}`;
       const filePath = `${user.id}/${fileName}`;
@@ -92,12 +91,10 @@ export default function DashboardPage() {
         return;
       }
 
-      // Get public URL
       const { data: { publicUrl } } = supabase.storage
         .from('audio-files')
         .getPublicUrl(filePath);
 
-      // Create database record
       const { data, error } = await supabase
         .from('audio_files')
         .insert([
@@ -269,12 +266,7 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        {/* Right Sidebar */}
-        <Sidebar 
-          selectedFile={selectedFile}
-          onFileSelect={setSelectedFile}
-          user={user}
-        />
+        
       </div>
 
       {/* Transcription Modal/View */}
