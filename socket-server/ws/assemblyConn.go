@@ -5,15 +5,19 @@ import (
 	"encoding/json"
 	"io"
 	"github.com/gorilla/websocket"
+	"log"
 	"fmt"
 )
-var TimeConsume = 300 // 5 mins
+var TimeConsume = 60 // 1 min
 
 func ConnectToAssemblyAI(apiKey string) (*websocket.Conn, *http.Response, error) {
 	
-	fmt.Println("apik : ", apiKey)
 	token, err := getStreamingToken(apiKey, TimeConsume)
-	wsURL := "wss://api.assemblyai.com/v3/realtime/ws?sample_rate=16000&token=" + token
+	if err != nil {
+		log.Fatal("err when getStreaming token: ", err)
+	}
+
+	wsURL := "wss://streaming.assemblyai.com/v3/ws?sample_rate=16000&token=" + token
 	conn, resp, err := websocket.DefaultDialer.Dial(wsURL, nil)
 
 	if resp.StatusCode != 101 { 
@@ -59,5 +63,6 @@ func getStreamingToken(apiKey string, expiredTime int) (string, error) {
         return "", fmt.Errorf("failed to parse JSON response: %w\nResponse body: %s", err, string(body))
     }
 
+	fmt.Println(result)
     return result.Token, nil
 }
