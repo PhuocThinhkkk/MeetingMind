@@ -19,10 +19,14 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
     defer conn.Close()
 
 	assemblyAIKey := os.Getenv("ASSEMBLYAI_API_KEY")
-	assemblyConn, _, err := ConnectToAssemblyAI(assemblyAIKey)
+	if assemblyAIKey == "" {
+		log.Fatal("must have assembly api key")
+	}
+	assemblyConn, res, err := ConnectToAssemblyAI(assemblyAIKey)
 	if err != nil {
 		log.Fatal("WebSocket dial error:", err)
 	}
+	fmt.Print("res ", res)
 	defer assemblyConn.Close()
 
 	client := &Client{

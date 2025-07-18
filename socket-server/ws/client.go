@@ -1,6 +1,7 @@
 package ws
 
 import (
+	"log"
     "github.com/gorilla/websocket"
 	"fmt"
 )
@@ -49,7 +50,9 @@ func (c *Client) writeText() {
 	for{
         msgType, msg, err := c.AssemblyConn.ReadMessage()
         if err != nil {
-			continue
+			log.Println("AssemblyAI dropped connection immediately:", err)
+			c.AssemblyConn.Close()
+			break
         }
 		if msgType != websocket.TextMessage {
 			fmt.Println("from assembly, this is not a text message")
