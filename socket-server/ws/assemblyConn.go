@@ -3,6 +3,7 @@ package ws
 import (
 	"net/http"
 	"encoding/json"
+	"time"
 	"io"
 	"github.com/gorilla/websocket"
 	"log"
@@ -10,7 +11,7 @@ import (
 )
 var TimeConsume = 60 // 1 min
 
-func ConnectToAssemblyAI(apiKey string) (*websocket.Conn, *http.Response, error) {
+func ConnectToAssemblyAI( apiKey string) (*websocket.Conn, *http.Response, error) {
 	
 	token, err := getStreamingToken(apiKey, TimeConsume)
 	if err != nil {
@@ -63,6 +64,31 @@ func getStreamingToken(apiKey string, expiredTime int) (string, error) {
         return "", fmt.Errorf("failed to parse JSON response: %w\nResponse body: %s", err, string(body))
     }
 
-	fmt.Println(result)
     return result.Token, nil
 }
+
+
+func SendStartMessage(c *Client) error {
+	begin := map[string]interface{}{
+		"type":       "Begin",
+	//	"id":         sessionID,
+		"expires_at": time.Now().Add(time.Minute * 5).Unix(),
+	}
+	msg, err := json.Marshal(begin)
+	if err != nil { 
+		return err
+	}
+	err = c.AssemblyConn.WriteMessage(websocket.TextMessage, msg)
+	if err != nil {
+		return err
+	}
+
+	_, message, err := c.AssemblyConn.ReadMessage()
+	log.Println("Server response:", string(message))
+	if err != nil { 
+		return err
+	}
+	
+	return nil
+}
+

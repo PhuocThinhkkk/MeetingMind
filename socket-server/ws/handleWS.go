@@ -26,13 +26,20 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 		log.Fatal("WebSocket dial error:", err)
 	}
-	fmt.Print("res ", res)
+	fmt.Print("res ", res, ": end res :")
 	defer assemblyConn.Close()
 
 	client := &Client{
 		Conn : conn,
 		Text: make(chan []byte),
 		AssemblyConn : assemblyConn,
+	}
+
+	if err := SendStartMessage(client); err != nil {
+		log.Println("Failed to send start message:", err)
+		client.AssemblyConn.Close()
+		client.Conn.Close()
+		return
 	}
 
 	RegisterClient(client)
