@@ -33,14 +33,9 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
 		Conn : conn,
 		Text: make(chan []byte),
 		AssemblyConn : assemblyConn,
+		Done:    make(chan struct{}),
 	}
 
-	if err := SendStartMessage(client); err != nil {
-		log.Println("Failed to send start message:", err)
-		client.AssemblyConn.Close()
-		client.Conn.Close()
-		return
-	}
 
 	RegisterClient(client)
 }

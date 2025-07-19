@@ -2,6 +2,8 @@ package ws
 
 import (
 	"log"
+	"time"
+	"encoding/json"
     "github.com/gorilla/websocket"
 	"fmt"
 )
@@ -10,14 +12,16 @@ type Client struct {
 	Conn *websocket.Conn
 	Text  chan []byte
 	AssemblyConn  *websocket.Conn
+	Done   chan struct{}
 }
 
 
 
 func RegisterClient(client *Client) {
 
-    go client.readAudio()
     go client.writeText()
+	time.Sleep(200 * time.Millisecond)
+    go client.readAudio()
 
 }
 
@@ -48,26 +52,54 @@ func (c *Client) readAudio() {
 
 func (c *Client) writeText() {
 	for{
-        msgType, msg, err := c.AssemblyConn.ReadMessage()
-        if err != nil {
-			log.Println("AssemblyAI dropped connection immediately:", err)
-			c.AssemblyConn.Close()
-			break
-        }
-		if msgType != websocket.TextMessage {
-			fmt.Println("from assembly, this is not a text message")
-			continue
+		select {
+		case <- c.Done:
+			return
+		default:
+
+			msgType, msg, err := c.AssemblyConn.ReadMessage()
+			if err != nil {
+				log.Println("AssemblyAI dropped connection immediately:", err)
+				c.AssemblyConn.Close()
+				break
+			}
+			if msgType != websocket.TextMessage {
+				fmt.Println("from assembly, this is not a text message")
+				continue
+			}
+
+			var parsed map[string]interface{}
+			_ = json.Unmarshal(msg, &parsed)
+
+			if parsed["type"] == "Begin" {
+
+				log.Println("Got Begin:", string(msg))
+
+			}else if parsed["type"] == "Turn" {
+
+				if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+					fmt.Println("err write message :", err)
+					break
+				}
+				log.Println("Got Turn. Forwarding to client...")
+
+			}else if parsed["type"] == "Termination" {
+
+				log.Println("session end.")
+				break
+
+			} else {
+
+				log.Println("Unknown message type:", parsed["type"])
+
+			}
 		}
-        if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-			fmt.Println("err write message :", err)
-            break
-        }
     }
 }
 
 
 func UnregisterClient(c *Client) {
+	close(c.Done)
     c.Conn.Close()
     close(c.Text)
-	c.AssemblyConn.Close()
 }

@@ -3,7 +3,6 @@ package ws
 import (
 	"net/http"
 	"encoding/json"
-	"time"
 	"io"
 	"github.com/gorilla/websocket"
 	"log"
@@ -67,28 +66,4 @@ func getStreamingToken(apiKey string, expiredTime int) (string, error) {
     return result.Token, nil
 }
 
-
-func SendStartMessage(c *Client) error {
-	begin := map[string]interface{}{
-		"type":       "Begin",
-	//	"id":         sessionID,
-		"expires_at": time.Now().Add(time.Minute * 5).Unix(),
-	}
-	msg, err := json.Marshal(begin)
-	if err != nil { 
-		return err
-	}
-	err = c.AssemblyConn.WriteMessage(websocket.TextMessage, msg)
-	if err != nil {
-		return err
-	}
-
-	_, message, err := c.AssemblyConn.ReadMessage()
-	log.Println("Server response:", string(message))
-	if err != nil { 
-		return err
-	}
-	
-	return nil
-}
 
