@@ -2,7 +2,6 @@ package ws
 
 import (
 	"log"
-	"time"
 	"encoding/json"
     "github.com/gorilla/websocket"
 	"fmt"
@@ -15,12 +14,19 @@ type Client struct {
 	Done   chan struct{}
 }
 
+func NewClient (Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
+	return &Client {
+		Conn: Conn,
+		Text: make(chan []byte),
+		AssemblyConn: AssemblyConn,
+		Done: make(chan struct{}),
+	}
+}
 
 
 func RegisterClient(client *Client) {
 
     go client.writeText()
-	time.Sleep(200 * time.Millisecond)
     go client.readAudio()
 
 }
@@ -33,17 +39,17 @@ func (c *Client) readAudio() {
     for {
         msgType, audio, err := c.Conn.ReadMessage()
         if err != nil {
-			fmt.Println("err read message :", err)
-            break
+			log.Println("err read message :", err)
+			return
         }
 		if msgType != websocket.BinaryMessage {
-			fmt.Println("this is not a binary file")
+			log.Println("this is not a binary file")
 			continue
 		}
 
 		err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, audio)
 		if err != nil {
-			fmt.Println("err when sending audio to assembly")
+			log.Println("err when sending audio to assembly", err)
 			continue
 		}
 
@@ -54,6 +60,7 @@ func (c *Client) writeText() {
 	for{
 		select {
 		case <- c.Done:
+			c.AssemblyConn.Close()
 			return
 		default:
 
@@ -61,7 +68,7 @@ func (c *Client) writeText() {
 			if err != nil {
 				log.Println("AssemblyAI dropped connection immediately:", err)
 				c.AssemblyConn.Close()
-				break
+				return
 			}
 			if msgType != websocket.TextMessage {
 				fmt.Println("from assembly, this is not a text message")
@@ -79,15 +86,14 @@ func (c *Client) writeText() {
 
 				if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 					fmt.Println("err write message :", err)
-					break
+					return
 				}
-				log.Println("Got Turn. Forwarding to client...")
+				log.Println("Got Turn. Forwarding to client: ", string(msg))
 
 			}else if parsed["type"] == "Termination" {
 
 				log.Println("session end.")
-				break
-
+				return
 			} else {
 
 				log.Println("Unknown message type:", parsed["type"])
