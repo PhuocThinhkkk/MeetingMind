@@ -4,7 +4,7 @@ import { useState, useRef, useCallback, useEffect } from 'react';
 import { TranscriptionWord, RealtimeTranscriptChunk, AudioChunk } from '@/types/transcription';
 
 const SAMPLE_RATE = 16000;
-const CHUNK_MS = 50;
+const CHUNK_MS = 128;
 const CHUNK_SIZE = SAMPLE_RATE * 2 * CHUNK_MS / 1000; // 1600 bytes
 
 interface UseRealtimeTranscriptionProps {

@@ -5,113 +5,110 @@ import (
 	"errors"
 	"fmt"
 	"log"
+
 	"github.com/gorilla/websocket"
 )
 
 type Client struct {
-	Conn *websocket.Conn
-	AssemblyConn  *websocket.Conn
-	Done   chan struct{}
-	Transcript *TranscriptState
+	Conn         *websocket.Conn
+	AssemblyConn *websocket.Conn
+	Done         chan struct{}
+	Transcript   *TranscriptState
 }
 
 type TranscriptState struct {
-	
 	WordsTranscript []string
-	CurrentSentence    []string 
-	PartialWord   []string 
-	CurrentTurnID int   
-	EndOfTurn   bool
-
+	CurrentSentence []string
+	PartialWord     []string
+	CurrentTurnID   int
+	EndOfTurn       bool
 }
 
-func (c *Client) addWordsTranscript(t string) *Client{
+func (c *Client) addWordsTranscript(t string) *Client {
 	c.Transcript.WordsTranscript = append(c.Transcript.WordsTranscript, t)
 	return c
 }
 
-func (c *Client) setCurrentSentence(t string) (*Client){
+func (c *Client) setCurrentSentence(t string) *Client {
 	h := make([]string, 0)
 	h = append(h, t)
-	c.Transcript.CurrentSentence = h 
+	c.Transcript.CurrentSentence = h
 	return c
 }
 
-func (c *Client) setPartialWord(t string) *Client{
+func (c *Client) setPartialWord(t string) *Client {
 	h := make([]string, 0)
 	h = append(h, t)
 	c.Transcript.PartialWord = h
 	return c
 }
 
-func (c *Client) setIsEndOfTurn(t bool) *Client{
+func (c *Client) setIsEndOfTurn(t bool) *Client {
 	c.Transcript.EndOfTurn = t
 	return c
 }
 
-
 type AssemblyResponseWord struct {
-    Start       int     `json:"start"`
-    End         int     `json:"end"`
-    Text        string  `json:"text"`
-    Confidence  float64 `json:"confidence"`
-    WordIsFinal bool    `json:"word_is_final"`
+	Start       int     `json:"start"`
+	End         int     `json:"end"`
+	Text        string  `json:"text"`
+	Confidence  float64 `json:"confidence"`
+	WordIsFinal bool    `json:"word_is_final"`
 }
 
 type AssemblyRessponseTurn struct {
-    TurnOrder          int     `json:"turn_order"`
-    Transcript         string  `json:"transcript"`
-    EndOfTurn          bool    `json:"end_of_turn"`
-    EndOfTurnConfidence float64 `json:"end_of_turn_confidence"`
-    Words              []AssemblyResponseWord  `json:"words"`
-    Type               string  `json:"type"`
+	TurnOrder           int                    `json:"turn_order"`
+	Transcript          string                 `json:"transcript"`
+	EndOfTurn           bool                   `json:"end_of_turn"`
+	EndOfTurnConfidence float64                `json:"end_of_turn_confidence"`
+	Words               []AssemblyResponseWord `json:"words"`
+	Type                string                 `json:"type"`
 }
 
 type ClientWriter struct {
-	IsEndOfTurn bool  `json:"isEndOfTurn"`
-	Words   []string   `json:"words"`
+	IsEndOfTurn bool     `json:"isEndOfTurn"`
+	Words       []string `json:"words"`
 }
 
-func NewClient (Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
-	return &Client {
-		Conn: Conn,
+func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
+	return &Client{
+		Conn:         Conn,
 		AssemblyConn: AssemblyConn,
-		Done: make(chan struct{}),
-		Transcript: NewTranscriptState(),	
+		Done:         make(chan struct{}),
+		Transcript:   NewTranscriptState(),
 	}
 }
 
 func NewTranscriptState() *TranscriptState {
-	return &TranscriptState {
-		CurrentSentence : make([]string, 0),
-		PartialWord: make([]string, 0),
-		CurrentTurnID: -1,
+	return &TranscriptState{
+		CurrentSentence: make([]string, 0),
+		PartialWord:     make([]string, 0),
+		CurrentTurnID:   -1,
 	}
 }
 
-
-func NewClientWrtter(isFinal bool, words []string ) *ClientWriter {
+func NewClientWrtter(isFinal bool, words []string) *ClientWriter {
 	return &ClientWriter{
 		IsEndOfTurn: isFinal,
-		Words: words,
+		Words:       words,
 	}
 }
 
 func RegisterClient(client *Client) {
 
-    go client.writeText()
-    go client.readAudio()
+	go client.writeText()
+	go client.readAudio()
 
 }
 
 func (c *Client) readAudio() {
-    defer func() {
-        UnregisterClient(c)
-    }()
+	defer func() {
+		UnregisterClient(c)
+	}()
 
 	for {
 		select {
-		case <- c.Done:
+		case <-c.Done:
 			c.Conn.Close()
 			return
 		default:
@@ -133,16 +130,16 @@ func (c *Client) readAudio() {
 			}
 		}
 
-    }
+	}
 }
 
 func (c *Client) writeText() {
-    defer func() {
-        UnregisterClient(c)
-    }()
-	for{
+	defer func() {
+		UnregisterClient(c)
+	}()
+	for {
 		select {
-		case <- c.Done:
+		case <-c.Done:
 			c.AssemblyConn.Close()
 			return
 		default:
@@ -192,9 +189,8 @@ func (c *Client) writeText() {
 
 			}
 		}
-    }
+	}
 }
-
 
 func UnregisterClient(c *Client) {
 	close(c.Done)
@@ -212,7 +208,7 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 	if turn.EndOfTurn {
 		c.addWordsTranscript(turn.Transcript).setIsEndOfTurn(true)
 	}
-		
+
 	c.setCurrentSentence(turn.Transcript)
 
 	for _, word := range turn.Words {
@@ -227,6 +223,3 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 func (c *Client) save() {
 	// handle save all words to db
 }
-
-
- 
