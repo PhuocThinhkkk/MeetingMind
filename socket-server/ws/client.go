@@ -109,27 +109,37 @@ func (c *Client) readAudio() {
         UnregisterClient(c)
     }()
 
-    for {
-        msgType, audio, err := c.Conn.ReadMessage()
-        if err != nil {
-			log.Println("err read message :", err)
+	for {
+		select {
+		case <- c.Done:
+			c.Conn.Close()
 			return
-        }
-		if msgType != websocket.BinaryMessage {
-			log.Println("this is not a binary file")
-			continue
-		}
+		default:
+			msgType, audio, err := c.Conn.ReadMessage()
+			if err != nil {
+				log.Println("err read message :", err)
+				c.Conn.Close()
+				return
+			}
+			if msgType != websocket.BinaryMessage {
+				log.Println("this is not a binary file")
+				continue
+			}
 
-		err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, audio)
-		if err != nil {
-			log.Println("err when sending audio to assembly", err)
-			continue
+			err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, audio)
+			if err != nil {
+				log.Println("err when sending audio to assembly", err)
+				continue
+			}
 		}
 
     }
 }
 
 func (c *Client) writeText() {
+    defer func() {
+        UnregisterClient(c)
+    }()
 	for{
 		select {
 		case <- c.Done:
@@ -149,13 +159,22 @@ func (c *Client) writeText() {
 			}
 
 			var parsed map[string]interface{}
-			_ = json.Unmarshal(msg, &parsed)
+			err = json.Unmarshal(msg, &parsed)
+			if err != nil {
+				log.Println("cant parse json: ", err)
+				continue
+			}
 
 			if parsed["type"] == "Begin" {
 
 				log.Println("Got Begin:", string(msg))
+			}
+			if parsed["type"] == "Termination" {
 
-			}else if parsed["type"] == "Turn" {
+				log.Println("session end.")
+				return
+			}
+			if parsed["type"] == "Turn" {
 
 				if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 					fmt.Println("err write message :", err)
@@ -169,16 +188,7 @@ func (c *Client) writeText() {
 					continue
 				}
 				log.Println("Got Turn: ", string(res))
-
 				c.Conn.WriteMessage(websocket.TextMessage, res)
-
-			}else if parsed["type"] == "Termination" {
-
-				log.Println("session end.")
-				return
-			} else {
-
-				log.Println("Unknown message type:", parsed["type"])
 
 			}
 		}
@@ -188,7 +198,6 @@ func (c *Client) writeText() {
 
 func UnregisterClient(c *Client) {
 	close(c.Done)
-    c.Conn.Close()
 }
 
 func (c *Client) updateStateTranscript(jsonData []byte) error {
