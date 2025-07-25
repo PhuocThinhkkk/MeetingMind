@@ -23,17 +23,11 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
 	}
 	assemblyConn, res, err := ConnectToAssemblyAI(assemblyAIKey)
 	if err != nil {
+		log.Println("AssemblyRes : ", res)
 		log.Fatal("WebSocket dial error:", err)
 	}
-	fmt.Print("res ", res, ": end res :")
 
-	client := &Client{
-		Conn : conn,
-		Text: make(chan []byte),
-		AssemblyConn : assemblyConn,
-		Done:    make(chan struct{}),
-	}
-
+	client := NewClient(conn, assemblyConn) 
 
 	RegisterClient(client)
 }

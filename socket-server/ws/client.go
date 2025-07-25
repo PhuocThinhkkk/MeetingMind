@@ -5,8 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log"
-	"slices"
-	"strings"
 	"github.com/gorilla/websocket"
 )
 
@@ -23,24 +21,34 @@ type TranscriptState struct {
 	CurrentSentence    []string 
 	PartialWord   []string 
 	CurrentTurnID int   
+	EndOfTurn   bool
 
 }
 
-func (c *Client) addWordsTranscript(t string){
+func (c *Client) addWordsTranscript(t string) *Client{
 	c.Transcript.WordsTranscript = append(c.Transcript.WordsTranscript, t)
+	return c
 }
 
-func (c *Client) setCurrentSentence(t string){
+func (c *Client) setCurrentSentence(t string) (*Client){
 	h := make([]string, 0)
 	h = append(h, t)
 	c.Transcript.CurrentSentence = h 
+	return c
 }
 
-func (c *Client) setPartialWord(t string){
+func (c *Client) setPartialWord(t string) *Client{
 	h := make([]string, 0)
 	h = append(h, t)
 	c.Transcript.PartialWord = h
+	return c
 }
+
+func (c *Client) setIsEndOfTurn(t bool) *Client{
+	c.Transcript.EndOfTurn = t
+	return c
+}
+
 
 type AssemblyResponseWord struct {
     Start       int     `json:"start"`
@@ -59,6 +67,10 @@ type AssemblyRessponseTurn struct {
     Type               string  `json:"type"`
 }
 
+type ClientWriter struct {
+	IsEndOfTurn bool  `json:"isEndOfTurn"`
+	Words   []string   `json:"words"`
+}
 
 func NewClient (Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
 	return &Client {
@@ -77,6 +89,13 @@ func NewTranscriptState() *TranscriptState {
 	}
 }
 
+
+func NewClientWrtter(isFinal bool, words []string ) *ClientWriter {
+	return &ClientWriter{
+		IsEndOfTurn: isFinal,
+		Words: words,
+	}
+}
 
 func RegisterClient(client *Client) {
 
@@ -142,7 +161,16 @@ func (c *Client) writeText() {
 					fmt.Println("err write message :", err)
 					return
 				}
-				log.Println("Got Turn. Forwarding to client: ", string(msg))
+				c.updateStateTranscript(msg)
+				cw := NewClientWrtter(c.Transcript.EndOfTurn, c.Transcript.CurrentSentence)
+				res, err := json.Marshal(cw)
+				if err != nil {
+					log.Println("err when encode json: ", err)
+					continue
+				}
+				log.Println("Got Turn: ", string(res))
+
+				c.Conn.WriteMessage(websocket.TextMessage, res)
 
 			}else if parsed["type"] == "Termination" {
 
@@ -173,14 +201,14 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 	}
 
 	if turn.EndOfTurn {
-		c.addWordsTranscript(turn.Transcript)
+		c.addWordsTranscript(turn.Transcript).setIsEndOfTurn(true)
 	}
 		
 	c.setCurrentSentence(turn.Transcript)
 
 	for _, word := range turn.Words {
 		if !word.WordIsFinal {
-			c.setPartialWord(word.Text)
+			c.setPartialWord(word.Text).setIsEndOfTurn(false)
 		}
 	}
 	return nil
