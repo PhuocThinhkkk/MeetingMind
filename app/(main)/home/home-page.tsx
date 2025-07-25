@@ -23,9 +23,11 @@ import {
 } from 'lucide-react';
 
 import { AudioUpload } from '@/components/dashboard/audio-upload';
-import { TranscriptionView } from '@/components/dashboard/transcription-view';
+import { RealtimeRecorder } from '@/components/dashboard/realtime-recorder';
+import { SharedTranscriptionView } from '@/components/dashboard/shared-transcription-view';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/lib/supabase';
+import { TranscriptionData } from '@/types/transcription';
 
 interface AudioFile {
   id: string;
@@ -40,7 +42,7 @@ export default function HomePage() {
   const { user, loading: authLoading, signOut } = useAuth();
   const router = useRouter();
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
-  const [selectedFile, setSelectedFile] = useState<AudioFile | null>(null);
+  const [selectedTranscription, setSelectedTranscription] = useState<TranscriptionData | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -121,6 +123,23 @@ export default function HomePage() {
     }
   };
 
+  const handleRealtimeTranscriptionComplete = (data: TranscriptionData) => {
+    setSelectedTranscription(data);
+  };
+
+  const handleFileTranscriptionView = (file: AudioFile) => {
+    const transcriptionData: TranscriptionData = {
+      id: file.id,
+      name: file.name,
+      type: 'file',
+      status: file.transcription_status as any,
+      duration: file.duration,
+      created_at: file.created_at,
+      file_url: (file as any).url
+    };
+    setSelectedTranscription(transcriptionData);
+  };
+
   const formatDuration = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);
     const remainingSeconds = seconds % 60;
@@ -185,20 +204,7 @@ export default function HomePage() {
             {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <AudioUpload onUpload={handleFileUpload} />
-              
-              <Card className="group hover:shadow-lg transition-all duration-300 border-dashed border-2 border-gray-300 hover:border-red-400 cursor-pointer animate-slide-up hover-lift">
-                <CardContent className="flex flex-col items-center justify-center p-8 text-center">
-                  <div className="w-12 h-12 bg-red-100 rounded-lg flex items-center justify-center mb-4 group-hover:bg-red-200 transition-colors">
-                    <Mic className="w-6 h-6 text-red-600" />
-                  </div>
-                  <h3 className="text-lg font-semibold text-gray-900 mb-2">Record Meeting</h3>
-                  <p className="text-gray-600 text-sm mb-4">Start recording directly from your browser</p>
-                  <Button variant="outline" className="w-full transition-all hover:scale-[1.02]">
-                    <Mic className="w-4 h-4 mr-2" />
-                    Start Recording
-                  </Button>
-                </CardContent>
-              </Card>
+              <RealtimeRecorder onTranscriptionComplete={handleRealtimeTranscriptionComplete} />
             </div>
 
             {/* Recent Files */}
@@ -225,7 +231,7 @@ export default function HomePage() {
                         key={file.id}
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer animate-fade-in hover-lift"
                         style={{ animationDelay: `${index * 100}ms` }}
-                        onClick={() => setSelectedFile(file)}
+                        onClick={() => handleFileTranscriptionView(file)}
                       >
                         <div className="flex items-center space-x-4">
                           <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
@@ -269,11 +275,11 @@ export default function HomePage() {
         
       </div>
 
-      {/* Transcription Modal/View */}
-      {selectedFile && (
-        <TranscriptionView 
-          file={selectedFile}
-          onClose={() => setSelectedFile(null)}
+      {/* Shared Transcription Modal/View */}
+      {selectedTranscription && (
+        <SharedTranscriptionView 
+          data={selectedTranscription}
+          onClose={() => setSelectedTranscription(null)}
         />
       )}
     </div>
