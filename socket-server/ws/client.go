@@ -193,7 +193,10 @@ func (c *Client) writeText() {
 }
 
 func UnregisterClient(c *Client) {
-	close(c.Done)
+	_, ok := <- c.Done
+	if ok {	
+		close(c.Done)
+	} 
 }
 
 func (c *Client) updateStateTranscript(jsonData []byte) error {

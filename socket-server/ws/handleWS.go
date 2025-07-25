@@ -7,8 +7,12 @@ import (
     "github.com/gorilla/websocket"
 	"os"
 )
-var upgrader = websocket.Upgrader{}
-
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool {
+		origin := r.Header.Get("Origin")
+		return origin == "http://localhost:3000"
+	},	
+}
 func HandleWS(w http.ResponseWriter, r *http.Request) {
     conn, err := upgrader.Upgrade(w, r, nil)
     if err != nil {

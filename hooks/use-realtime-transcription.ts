@@ -36,10 +36,13 @@ export function useRealtimeTranscription({
 
   const connectWebSocket = useCallback(() => {
     const wsUrl = process.env.NEXT_PUBLIC_WS_SERVER_URL || 'ws://localhost:8080';
-    
     try {
       wsRef.current = new WebSocket(`${wsUrl}/ws`);
       
+      if (!wsRef?.current) {
+        console.log("no ws current yet.")
+        return
+      }
       wsRef.current.onopen = () => {
         console.log('WebSocket connected');
         updateStatus('recording');
@@ -82,8 +85,8 @@ export function useRealtimeTranscription({
         onError?.('WebSocket connection failed');
       };
       
-      wsRef.current.onclose = () => {
-        console.log('WebSocket disconnected');
+      wsRef.current.onclose = (e) => {
+        console.log('WebSocket disconnected', e.reason, e.code);
         if (status === 'recording') {
           updateStatus('idle');
         }
@@ -135,12 +138,11 @@ export function useRealtimeTranscription({
           wsRef.current.send(int16Array.buffer);
         }
       };
-      
+      connectWebSocket();
+
       source.connect(processorRef.current);
       processorRef.current.connect(audioContextRef.current.destination);
       
-      // Connect WebSocket
-      connectWebSocket();
       setIsRecording(true);
       
     } catch (error) {
