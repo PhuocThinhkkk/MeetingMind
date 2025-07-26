@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/websocket"
 )
+var MaxErr = 10
 
 type Client struct {
 	Conn         *websocket.Conn
@@ -102,6 +103,7 @@ func RegisterClient(client *Client) {
 }
 
 func (c *Client) readAudio() {
+	errCount := 0
 	defer func() {
 		UnregisterClient(c)
 	}()
@@ -112,6 +114,10 @@ func (c *Client) readAudio() {
 			c.Conn.Close()
 			return
 		default:
+			if errCount >= MaxErr {
+				log.Println("max err hit in read audio")
+				return
+			}
 			msgType, audio, err := c.Conn.ReadMessage()
 			if err != nil {
 				log.Println("err read message :", err)
@@ -120,12 +126,14 @@ func (c *Client) readAudio() {
 			}
 			if msgType != websocket.BinaryMessage {
 				log.Println("this is not a binary file")
+				errCount++
 				continue
 			}
 
 			err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, audio)
 			if err != nil {
 				log.Println("err when sending audio to assembly", err)
+				errCount++
 				continue
 			}
 		}
@@ -134,6 +142,7 @@ func (c *Client) readAudio() {
 }
 
 func (c *Client) writeText() {
+	errCount := 0
 	defer func() {
 		UnregisterClient(c)
 	}()
@@ -144,6 +153,11 @@ func (c *Client) writeText() {
 			return
 		default:
 
+			if errCount >= MaxErr {
+				log.Println("max err hit in write message")
+				return
+			}
+
 			msgType, msg, err := c.AssemblyConn.ReadMessage()
 			if err != nil {
 				log.Println("AssemblyAI dropped connection immediately:", err)
@@ -152,6 +166,7 @@ func (c *Client) writeText() {
 			}
 			if msgType != websocket.TextMessage {
 				fmt.Println("from assembly, this is not a text message")
+				errCount++
 				continue
 			}
 
@@ -159,6 +174,7 @@ func (c *Client) writeText() {
 			err = json.Unmarshal(msg, &parsed)
 			if err != nil {
 				log.Println("cant parse json: ", err)
+				errCount++
 				continue
 			}
 
@@ -175,6 +191,7 @@ func (c *Client) writeText() {
 
 				if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
 					fmt.Println("err write message :", err)
+					errCount++
 					return
 				}
 				c.updateStateTranscript(msg)
@@ -182,6 +199,7 @@ func (c *Client) writeText() {
 				res, err := json.Marshal(cw)
 				if err != nil {
 					log.Println("err when encode json: ", err)
+					errCount++
 					continue
 				}
 				log.Println("Got Turn: ", string(res))
