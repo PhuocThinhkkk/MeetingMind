@@ -25,7 +25,7 @@ export function useRealtimeTranscription({
   const wsRef = useRef<WebSocket | null>(null);
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
-  const processorRef = useRef<ScriptProcessorNode | null>(null);
+  const processorRef = useRef< AudioWorkletNode| null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<AudioChunk[]>([]);
 
@@ -119,29 +119,19 @@ export function useRealtimeTranscription({
       const source = audioContextRef.current.createMediaStreamSource(stream);
       
       // Create processor for chunking audio
-      processorRef.current = audioContextRef.current.createScriptProcessor(CHUNK_SIZE / 2, 1, 1);
-      
-      processorRef.current.onaudioprocess = (event) => {
-        if (!wsRef.current || wsRef.current.readyState !== WebSocket.OPEN) return;
-        
-        const inputBuffer = event.inputBuffer;
-        const inputData = inputBuffer.getChannelData(0);
-        
-        // Convert float32 to int16
-        const int16Array = new Int16Array(inputData.length);
-        for (let i = 0; i < inputData.length; i++) {
-          int16Array[i] = Math.max(-32768, Math.min(32767, inputData[i] * 32768));
-        }
-        
-        // Send audio chunk via WebSocket
-        if (int16Array.length === CHUNK_SIZE / 2) {
-          wsRef.current.send(int16Array.buffer);
+      await audioContextRef.current.audioWorklet.addModule('/audio-processor.js');
+
+      const workletNode = new AudioWorkletNode(audioContextRef.current, 'pcm-processor');
+      workletNode.port.onmessage = (event) => {
+        const audioBuffer = event.data as ArrayBuffer;
+        if (wsRef.current?.readyState === WebSocket.OPEN) {
+          wsRef.current.send(audioBuffer);
         }
       };
 
-      source.connect(processorRef.current);
-      processorRef.current.connect(audioContextRef.current.destination);
-      
+      source.connect(workletNode);
+      workletNode.connect(audioContextRef.current.destination);
+      processorRef.current = workletNode;
       setIsRecording(true);
       
     } catch (error) {
