@@ -145,6 +145,11 @@ export function useRealtimeTranscription({
     setIsRecording(false);
     updateStatus('processing');
     
+    // Flush any remaining samples in the processor
+    if (processorRef.current instanceof AudioWorkletNode) {
+      processorRef.current.port.postMessage({ type: 'flush' });
+    }
+
     // Clean up audio resources
     if (processorRef.current) {
       processorRef.current.disconnect();
@@ -161,13 +166,11 @@ export function useRealtimeTranscription({
       streamRef.current = null;
     }
     
-    // Close WebSocket
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
     }
     
-    // Finalize transcript
     setTimeout(() => {
       setTranscriptWords(prev => prev.map(word => ({ ...word, isStable: true })));
       updateStatus('idle');
