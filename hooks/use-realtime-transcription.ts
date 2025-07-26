@@ -5,7 +5,7 @@ import { TranscriptionWord, RealtimeTranscriptChunk, AudioChunk } from '@/types/
 
 const SAMPLE_RATE = 16000;
 const CHUNK_MS = 128;
-const CHUNK_SIZE = SAMPLE_RATE * 2 * CHUNK_MS / 1000; // 1600 bytes
+const CHUNK_SIZE = SAMPLE_RATE * 2 * CHUNK_MS / 1000; 
 
 interface UseRealtimeTranscriptionProps {
   onTranscriptUpdate?: (words: TranscriptionWord[]) => void;
@@ -56,20 +56,20 @@ export function useRealtimeTranscription({
             text: word,
             timestamp: Date.now() + index * 100, // Approximate timing
             isStable: data.isEndOfTurn,
-            confidence: data.isEndOfTurn ? 0.9 : 0.7
+            confidence: data.isEndOfTurn ? 0.9 : 0.7  // will change later
           }));
           
           setTranscriptWords(prev => {
-            // If it's end of turn, make all words stable
             if (data.isEndOfTurn) {
               const stableWords = [...prev.slice(0, -newWords.length), ...newWords];
-              onTranscriptUpdate?.(stableWords);
+              if (onTranscriptUpdate) onTranscriptUpdate(stableWords)
+              else console.error("didnt pass onTransciptUpdate into hook")
               return stableWords;
             } else {
-              // Replace unstable words with new ones
               const stableCount = prev.filter(w => w.isStable).length;
               const updatedWords = [...prev.slice(0, stableCount), ...newWords];
-              onTranscriptUpdate?.(updatedWords);
+              if (onTranscriptUpdate) onTranscriptUpdate(updatedWords)
+              else console.error("didnt pass onTransciptUpdate into hook")
               return updatedWords;
             }
           });
@@ -101,8 +101,8 @@ export function useRealtimeTranscription({
   const startRecording = useCallback(async () => {
     try {
       updateStatus('connecting');
+      connectWebSocket();
       
-      // Get user media
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
           sampleRate: SAMPLE_RATE,
@@ -138,7 +138,6 @@ export function useRealtimeTranscription({
           wsRef.current.send(int16Array.buffer);
         }
       };
-      connectWebSocket();
 
       source.connect(processorRef.current);
       processorRef.current.connect(audioContextRef.current.destination);

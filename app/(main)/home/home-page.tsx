@@ -275,7 +275,6 @@ export default function HomePage() {
         
       </div>
 
-      {/* Shared Transcription Modal/View */}
       {selectedTranscription && (
         <SharedTranscriptionView 
           data={selectedTranscription}
