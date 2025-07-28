@@ -34,6 +34,15 @@ export function useRealtimeTranscription({
     onStatusChange?.(newStatus);
   }, [onStatusChange]);
 
+  function waitFor( timeout = 5000): Promise<void> {
+  return new Promise((resolve, reject) => {
+    setTimeout(() => {
+    console.log("Waited 2 seconds!");
+  }, 2000);
+  })
+}
+
+
   const connectWebSocket = useCallback(() => {
     const wsUrl = process.env.NEXT_PUBLIC_WS_SERVER_URL || 'ws://localhost:8080';
     try {
@@ -100,32 +109,53 @@ export function useRealtimeTranscription({
 
   const startRecording = useCallback(async () => {
     try {
-      updateStatus('connecting');
+      updateStatus("connecting");
       connectWebSocket();
-      
+
       const stream = await navigator.mediaDevices.getUserMedia({
         audio: {
-          sampleRate: SAMPLE_RATE,
-          channelCount: 1,
-          echoCancellation: true,
-          noiseSuppression: true
-        }
+          echoCancellation: { ideal: true },
+          noiseSuppression: { ideal: true },
+        },
       });
-      
-      streamRef.current = stream;
-      
-      // Create audio context for processing
-      audioContextRef.current = new AudioContext({ sampleRate: SAMPLE_RATE });
-      const source = audioContextRef.current.createMediaStreamSource(stream);
-      
-      // Create processor for chunking audio
-      await audioContextRef.current.audioWorklet.addModule('/audio-processor.js');
 
-      const workletNode = new AudioWorkletNode(audioContextRef.current, 'pcm-processor');
+      streamRef.current = stream;
+
+      // Create audio context for processing
+      audioContextRef.current = new AudioContext();
+      const source = audioContextRef.current.createMediaStreamSource(stream);
+
+      // Create processor for chunking audio
+      await audioContextRef.current.audioWorklet.addModule(
+        "/audio-processor.js"
+      );
+
+      const workletNode = new AudioWorkletNode(
+        audioContextRef.current,
+        "pcm-processor"
+      );
+
       workletNode.port.onmessage = (event) => {
         const audioBuffer = event.data as ArrayBuffer;
-        if (wsRef.current?.readyState === WebSocket.OPEN) {
-          wsRef.current.send(audioBuffer);
+        const ws = wsRef.current;
+
+        if (!ws) {
+          console.warn("WebSocket not initialized yet");
+          return;
+        }
+
+        if (ws.readyState === WebSocket.OPEN) {
+          ws.send(audioBuffer);
+        }
+
+        else if (ws.readyState === WebSocket.CONNECTING) {
+          const handleOpen = () => {
+            ws.send(audioBuffer);
+            ws.removeEventListener("open", handleOpen);
+          };
+          ws.addEventListener("open", handleOpen);
+        } else {
+          console.error("WebSocket is closed or closing—cannot send audio");
         }
       };
 
@@ -133,21 +163,20 @@ export function useRealtimeTranscription({
       workletNode.connect(audioContextRef.current.destination);
       processorRef.current = workletNode;
       setIsRecording(true);
-      
     } catch (error) {
-      console.error('Failed to start recording:', error);
-      updateStatus('error');
-      onError?.('Failed to access microphone');
+      console.error("Failed to start recording:", error);
+      updateStatus("error");
+      onError?.("Failed to access microphone");
     }
   }, [connectWebSocket, updateStatus, onError]);
 
   const stopRecording = useCallback(() => {
     setIsRecording(false);
-    updateStatus('processing');
-    
+    updateStatus("processing");
+
     // Flush any remaining samples in the processor
     if (processorRef.current instanceof AudioWorkletNode) {
-      processorRef.current.port.postMessage({ type: 'flush' });
+      processorRef.current.port.postMessage({ type: "flush" });
     }
 
     // Clean up audio resources
@@ -155,25 +184,27 @@ export function useRealtimeTranscription({
       processorRef.current.disconnect();
       processorRef.current = null;
     }
-    
+
     if (audioContextRef.current) {
       audioContextRef.current.close();
       audioContextRef.current = null;
     }
-    
+
     if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
     }
-    
+
     if (wsRef.current) {
       wsRef.current.close();
       wsRef.current = null;
     }
-    
+
     setTimeout(() => {
-      setTranscriptWords(prev => prev.map(word => ({ ...word, isStable: true })));
-      updateStatus('idle');
+      setTranscriptWords((prev) =>
+        prev.map((word) => ({ ...word, isStable: true }))
+      );
+      updateStatus("idle");
     }, 1000);
   }, [updateStatus]);
 

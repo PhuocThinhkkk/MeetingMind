@@ -129,7 +129,7 @@ func (c *Client) readAudio() {
 				errCount++
 				continue
 			}
-
+			log.Println("read audio from client")
 			err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, audio)
 			if err != nil {
 				log.Println("err when sending audio to assembly", err)
