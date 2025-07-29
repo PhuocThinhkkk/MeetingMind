@@ -15,6 +15,7 @@ type Client struct {
 	AssemblyConn *websocket.Conn
 	Done         chan struct{}
 	Transcript   *TranscriptState
+	CurrrentChunk []byte
 }
 
 type TranscriptState struct {
@@ -108,33 +109,47 @@ func (c *Client) readAudio() {
 		UnregisterClient(c)
 	}()
 
+	if c.CurrrentChunk == nil {
+		c.CurrrentChunk = []byte{}
+	}
+
+
 	for {
 		select {
 		case <-c.Done:
 			c.Conn.Close()
 			return
 		default:
+
 			if errCount >= MaxErr {
 				log.Println("max err hit in read audio")
 				return
 			}
+
 			msgType, audio, err := c.Conn.ReadMessage()
 			if err != nil {
 				log.Println("err read message :", err)
 				c.Conn.Close()
 				return
 			}
+
 			if msgType != websocket.BinaryMessage {
 				log.Println("this is not a binary file")
 				errCount++
 				continue
 			}
-			log.Println("read audio from client")
-			err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, audio)
-			if err != nil {
-				log.Println("err when sending audio to assembly", err)
-				errCount++
-				continue
+
+			c.CurrrentChunk = append(c.CurrrentChunk, audio...)
+			for len(c.CurrrentChunk) >= 1600 {
+				chunkSent := c.CurrrentChunk[:1600]
+				log.Println("chunksent " , len(chunkSent))
+				err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, chunkSent)
+				if err != nil {
+					log.Println("err when sending audio to assembly", err)
+					errCount++
+					continue
+				}
+				c.CurrrentChunk = c.CurrrentChunk[1600:]
 			}
 		}
 
@@ -179,11 +194,10 @@ func (c *Client) writeText() {
 			}
 
 			if parsed["type"] == "Begin" {
-
+				c.Conn.WriteMessage(websocket.TextMessage, []byte(`{"type" : "ready"}`))
 				log.Println("Got Begin:", string(msg))
 			}
 			if parsed["type"] == "Termination" {
-
 				log.Println("session end.")
 				return
 			}

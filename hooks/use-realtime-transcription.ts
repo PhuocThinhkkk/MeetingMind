@@ -1,7 +1,9 @@
 'use client';
 
 import { useState, useRef, useCallback, useEffect } from 'react';
-import { TranscriptionWord, RealtimeTranscriptChunk, AudioChunk } from '@/types/transcription';
+import { TranscriptionWord, RealtimeTranscriptChunk, AudioChunk, BeginMsg } from '@/types/transcription';
+import { create, ConverterType } from '@alexanderolsen/libsamplerate-js';
+import { convertFloat32ToInt16 } from '@/lib/utils';
 
 const SAMPLE_RATE = 16000;
 const CHUNK_MS = 128;
@@ -28,6 +30,8 @@ export function useRealtimeTranscription({
   const processorRef = useRef< AudioWorkletNode| null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const chunksRef = useRef<AudioChunk[]>([]);
+  const isAssemblyReady = useRef(false)
+  let resampledBuffer: Float32Array[] = [];
 
   const updateStatus = useCallback((newStatus: typeof status) => {
     setStatus(newStatus);
@@ -44,66 +48,80 @@ export function useRealtimeTranscription({
 
 
   const connectWebSocket = useCallback(() => {
-    const wsUrl = process.env.NEXT_PUBLIC_WS_SERVER_URL || 'ws://localhost:8080';
+    const wsUrl =
+      process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost:8080";
     try {
       wsRef.current = new WebSocket(`${wsUrl}/ws`);
-      
+
       if (!wsRef?.current) {
-        console.log("no ws current yet.")
-        return
+        console.log("no ws current yet.");
+        return;
       }
       wsRef.current.onopen = () => {
-        console.log('WebSocket connected');
-        updateStatus('recording');
+        console.log("WebSocket connected");
+        updateStatus("recording");
       };
-      
+
       wsRef.current.onmessage = (event) => {
         try {
-          const data: RealtimeTranscriptChunk = JSON.parse(event.data);
-          
-          const newWords: TranscriptionWord[] = data.words.map((word, index) => ({
-            text: word,
-            timestamp: Date.now() + index * 100, // Approximate timing
-            isStable: data.isEndOfTurn,
-            confidence: data.isEndOfTurn ? 0.9 : 0.7  // will change later
-          }));
-          
-          setTranscriptWords(prev => {
-            if (data.isEndOfTurn) {
-              const stableWords = [...prev.slice(0, -newWords.length), ...newWords];
-              if (onTranscriptUpdate) onTranscriptUpdate(stableWords)
-              else console.error("didnt pass onTransciptUpdate into hook")
-              return stableWords;
-            } else {
-              const stableCount = prev.filter(w => w.isStable).length;
-              const updatedWords = [...prev.slice(0, stableCount), ...newWords];
-              if (onTranscriptUpdate) onTranscriptUpdate(updatedWords)
-              else console.error("didnt pass onTransciptUpdate into hook")
-              return updatedWords;
-            }
-          });
+          const res = JSON.parse(event.data);
+          if (res.type === "ready") {
+            console.log("Assembly is ready!")
+            isAssemblyReady.current = true;
+          } else {
+            const data: RealtimeTranscriptChunk = res;
+            const newWords: TranscriptionWord[] = data.words.map(
+              (word, index) => ({
+                text: word,
+                timestamp: Date.now() + index * 100, // Approximate timing
+                isStable: data.isEndOfTurn,
+                confidence: data.isEndOfTurn ? 0.9 : 0.7, // will change later
+              })
+            );
+
+            setTranscriptWords((prev) => {
+              if (data.isEndOfTurn) {
+                const stableWords = [
+                  ...prev.slice(0, -newWords.length),
+                  ...newWords,
+                ];
+                if (onTranscriptUpdate) onTranscriptUpdate(stableWords);
+                else console.error("didnt pass onTransciptUpdate into hook");
+                return stableWords;
+              } else {
+                const stableCount = prev.filter((w) => w.isStable).length;
+                const updatedWords = [
+                  ...prev.slice(0, stableCount),
+                  ...newWords,
+                ];
+                if (onTranscriptUpdate) onTranscriptUpdate(updatedWords);
+                else console.error("didnt pass onTransciptUpdate into hook");
+                return updatedWords;
+              }
+            });
+          }
         } catch (error) {
-          console.error('Error parsing WebSocket message:', error);
-          onError?.('Failed to parse transcription data');
+          console.error("Error parsing WebSocket message:", error);
+          onError?.("Failed to parse transcription data");
         }
       };
-      
+
       wsRef.current.onerror = (error) => {
-        console.error('WebSocket error:', error);
-        updateStatus('error');
-        onError?.('WebSocket connection failed');
+        console.error("WebSocket error:", error);
+        updateStatus("error");
+        onError?.("WebSocket connection failed");
       };
-      
+
       wsRef.current.onclose = (e) => {
-        console.log('WebSocket disconnected', e.reason, e.code);
-        if (status === 'recording') {
-          updateStatus('idle');
+        console.log("WebSocket disconnected", e.reason, e.code);
+        if (status === "recording") {
+          updateStatus("idle");
         }
       };
     } catch (error) {
-      console.error('Failed to connect WebSocket:', error);
-      updateStatus('error');
-      onError?.('Failed to connect to transcription service');
+      console.error("Failed to connect WebSocket:", error);
+      updateStatus("error");
+      onError?.("Failed to connect to transcription service");
     }
   }, [status, updateStatus, onError, onTranscriptUpdate]);
 
@@ -135,8 +153,21 @@ export function useRealtimeTranscription({
         "pcm-processor"
       );
 
+      const nChannels = 1; // mono audio
+      const inputSampleRate = 48000; // your AudioContext rate
+      const outputSampleRate = 16000; // AssemblyAI expects 16kHz
+
+      // Create the resampler instance (async)
+      const resampler = await create(
+        nChannels,
+        inputSampleRate,
+        outputSampleRate,
+        {
+          converterType: ConverterType.SRC_SINC_BEST_QUALITY, // high quality resampling
+        }
+      );
+
       workletNode.port.onmessage = (event) => {
-        const audioBuffer = event.data as ArrayBuffer;
         const ws = wsRef.current;
 
         if (!ws) {
@@ -144,16 +175,18 @@ export function useRealtimeTranscription({
           return;
         }
 
-        if (ws.readyState === WebSocket.OPEN) {
-          ws.send(audioBuffer);
-        }
+        const float32Chunk = event.data as Float32Array; // Float32Array from AudioWorklet
 
-        else if (ws.readyState === WebSocket.CONNECTING) {
-          const handleOpen = () => {
-            ws.send(audioBuffer);
-            ws.removeEventListener("open", handleOpen);
-          };
-          ws.addEventListener("open", handleOpen);
+        // Resample (returns Float32Array at 16kHz)
+        const resampledFloat32 = resampler.simple(float32Chunk);
+
+        // Convert Float32 to Int16 PCM
+        const int16 = convertFloat32ToInt16(resampledFloat32);
+
+        if (ws.readyState === WebSocket.OPEN && isAssemblyReady.current) {
+          ws.send(int16.buffer);
+        } else if (ws.CONNECTING === WebSocket.CONNECTING) {
+          console.log("wait for connect ws")
         } else {
           console.error("WebSocket is closed or closing—cannot send audio");
         }

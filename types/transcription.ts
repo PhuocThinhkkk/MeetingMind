@@ -33,6 +33,10 @@ export interface RealtimeTranscriptChunk {
   words: string[];
 }
 
+export interface BeginMsg {
+  type : "ready"
+}
+
 export interface AudioChunk {
   data: ArrayBuffer;
   timestamp: number;
