@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"time"
 	"errors"
 	"fmt"
 	"log"
@@ -16,6 +17,7 @@ type Client struct {
 	Done         chan struct{}
 	Transcript   *TranscriptState
 	CurrrentChunk []byte
+	Time   int64
 }
 
 type TranscriptState struct {
@@ -138,19 +140,18 @@ func (c *Client) readAudio() {
 				errCount++
 				continue
 			}
-
-			c.CurrrentChunk = append(c.CurrrentChunk, audio...)
-			for len(c.CurrrentChunk) >= 1600 {
-				chunkSent := c.CurrrentChunk[:1600]
-				log.Println("chunksent " , len(chunkSent))
-				err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, chunkSent)
-				if err != nil {
-					log.Println("err when sending audio to assembly", err)
-					errCount++
-					continue
-				}
-				c.CurrrentChunk = c.CurrrentChunk[1600:]
+			start := c.Time 
+			log.Println("chunksent " , len(audio))
+			
+			err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, audio)
+			if err != nil {
+				log.Println("err when sending audio to assembly", err)
+				errCount++
+				continue
 			}
+			end := time.Now().UnixMilli()
+			c.Time = end
+			log.Printf("Elapsed time: %d ms", end-start)
 		}
 
 	}

@@ -15,3 +15,14 @@ export function convertFloat32ToInt16(buffer : Float32Array) {
   }
   return int16Buffer;
 }
+
+
+
+export function waitFor(timeout = 5000): Promise<void> {
+    return new Promise((resolve, reject) => {
+      setTimeout(() => {
+        const seconds = timeout / 1000
+        console.log("Wait for ", seconds," seconds!");
+      }, timeout);
+    });
+  }
