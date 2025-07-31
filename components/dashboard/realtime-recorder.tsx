@@ -104,6 +104,7 @@ export function RealtimeRecorder({ onTranscriptionComplete }: RealtimeRecorderPr
     const seconds = elapsed % 60;
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
+  console.log(currentTranscript)
 
   return (
     <Card className="group hover:shadow-lg transition-all duration-300 border-dashed border-2 border-gray-300 hover:border-red-400 animate-slide-up hover-lift">

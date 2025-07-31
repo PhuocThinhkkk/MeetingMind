@@ -2,7 +2,6 @@ package ws
 
 import (
 	"encoding/json"
-	"time"
 	"errors"
 	"fmt"
 	"log"
@@ -16,39 +15,19 @@ type Client struct {
 	AssemblyConn *websocket.Conn
 	Done         chan struct{}
 	Transcript   *TranscriptState
-	CurrrentChunk []byte
 	Time   int64
 }
 
 type TranscriptState struct {
-	WordsTranscript []string
+	WordsTranscript string
 	CurrentSentence []string
-	PartialWord     []string
+	NewWords        []AssemblyResponseWord
 	CurrentTurnID   int
 	EndOfTurn       bool
 }
 
 func (c *Client) addWordsTranscript(t string) *Client {
-	c.Transcript.WordsTranscript = append(c.Transcript.WordsTranscript, t)
-	return c
-}
-
-func (c *Client) setCurrentSentence(t string) *Client {
-	h := make([]string, 0)
-	h = append(h, t)
-	c.Transcript.CurrentSentence = h
-	return c
-}
-
-func (c *Client) setPartialWord(t string) *Client {
-	h := make([]string, 0)
-	h = append(h, t)
-	c.Transcript.PartialWord = h
-	return c
-}
-
-func (c *Client) setIsEndOfTurn(t bool) *Client {
-	c.Transcript.EndOfTurn = t
+	c.Transcript.WordsTranscript = c.Transcript.WordsTranscript + " " + t
 	return c
 }
 
@@ -71,7 +50,7 @@ type AssemblyRessponseTurn struct {
 
 type ClientWriter struct {
 	IsEndOfTurn bool     `json:"isEndOfTurn"`
-	Words       []string `json:"words"`
+	Words       []AssemblyResponseWord `json:"words"`
 }
 
 func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
@@ -85,13 +64,15 @@ func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
 
 func NewTranscriptState() *TranscriptState {
 	return &TranscriptState{
-		CurrentSentence: make([]string, 0),
-		PartialWord:     make([]string, 0),
+		WordsTranscript: "",
+		CurrentSentence: make([]string, 0, 10),
 		CurrentTurnID:   -1,
+		NewWords: make([]AssemblyResponseWord, 0, 10),
+		EndOfTurn: false,
 	}
 }
 
-func NewClientWrtter(isFinal bool, words []string) *ClientWriter {
+func NewClientWrtter(isFinal bool, words []AssemblyResponseWord) *ClientWriter {
 	return &ClientWriter{
 		IsEndOfTurn: isFinal,
 		Words:       words,
@@ -110,10 +91,6 @@ func (c *Client) readAudio() {
 	defer func() {
 		UnregisterClient(c)
 	}()
-
-	if c.CurrrentChunk == nil {
-		c.CurrrentChunk = []byte{}
-	}
 
 
 	for {
@@ -140,8 +117,6 @@ func (c *Client) readAudio() {
 				errCount++
 				continue
 			}
-			start := c.Time 
-			log.Println("chunksent " , len(audio))
 			
 			err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, audio)
 			if err != nil {
@@ -149,9 +124,6 @@ func (c *Client) readAudio() {
 				errCount++
 				continue
 			}
-			end := time.Now().UnixMilli()
-			c.Time = end
-			log.Printf("Elapsed time: %d ms", end-start)
 		}
 
 	}
@@ -204,21 +176,26 @@ func (c *Client) writeText() {
 			}
 			if parsed["type"] == "Turn" {
 
-				if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
-					fmt.Println("err write message :", err)
-					errCount++
+				err = c.updateStateTranscript(msg)
+				if err != nil {
+					log.Println("err when update transcript: ", err)
 					return
 				}
-				c.updateStateTranscript(msg)
-				cw := NewClientWrtter(c.Transcript.EndOfTurn, c.Transcript.CurrentSentence)
+				cw := NewClientWrtter(c.Transcript.EndOfTurn, c.Transcript.NewWords)
 				res, err := json.Marshal(cw)
 				if err != nil {
 					log.Println("err when encode json: ", err)
 					errCount++
 					continue
 				}
+
 				log.Println("Got Turn: ", string(res))
-				c.Conn.WriteMessage(websocket.TextMessage, res)
+
+				if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+					fmt.Println("err write message :", err)
+					errCount++
+					return
+				}
 
 			}
 		}
@@ -241,17 +218,40 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 		return joinErr
 	}
 
-	if turn.EndOfTurn {
-		c.addWordsTranscript(turn.Transcript).setIsEndOfTurn(true)
-	}
 
-	c.setCurrentSentence(turn.Transcript)
+	c.Transcript.NewWords = make([]AssemblyResponseWord, 0, 10)
+	for index, assemblyWord := range turn.Words {
 
-	for _, word := range turn.Words {
-		if !word.WordIsFinal {
-			c.setPartialWord(word.Text).setIsEndOfTurn(false)
+		if index >= len(c.Transcript.CurrentSentence) {
+			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
+
+			if !assemblyWord.WordIsFinal {
+				continue
+			}
+
+			c.Transcript.CurrentSentence = append(c.Transcript.CurrentSentence, assemblyWord.Text)
+			continue
 		}
+
+		if assemblyWord.Text != c.Transcript.CurrentSentence[index]{
+			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
+
+			if !assemblyWord.WordIsFinal {
+				continue
+			}
+
+			c.Transcript.CurrentSentence[index] = assemblyWord.Text
+		}
+		
 	}
+	
+	c.Transcript.EndOfTurn = turn.EndOfTurn
+
+	if turn.EndOfTurn {
+		c.addWordsTranscript(turn.Transcript)
+		c.Transcript.CurrentSentence = make([]string, 0, 10)
+	}
+
 	return nil
 
 }
