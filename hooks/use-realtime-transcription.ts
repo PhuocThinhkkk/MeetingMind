@@ -35,7 +35,6 @@ export function useRealtimeTranscription({
 
   const wsRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<AudioChunk[]>([]);
   const isAssemblyReady = useRef(false);
   const recorderRef = useRef<unknown>(null)
 
@@ -72,15 +71,17 @@ export function useRealtimeTranscription({
             const data: RealtimeTranscriptChunk = res;
             const newWords: TranscriptionWord[] = data.words.map(
               (word, index) => ({
-                text: word,
-                timestamp: Date.now() + index * 100, // Approximate timing
-                isStable: data.isEndOfTurn,
-                confidence: data.isEndOfTurn ? 0.9 : 0.7, // will change later
+                text: word.text,
+                word_is_final: word.word_is_final,
+                start: word.start,
+                end: word.end,
+                confidence: word.confidence
               })
             );
 
             setTranscriptWords((prev) => {
               if (data.isEndOfTurn) {
+
                 const stableWords = [
                   ...prev.slice(0, -newWords.length),
                   ...newWords,
@@ -88,8 +89,9 @@ export function useRealtimeTranscription({
                 if (onTranscriptUpdate) onTranscriptUpdate(stableWords);
                 else console.error("didnt pass onTransciptUpdate into hook");
                 return stableWords;
+
               } else {
-                const stableCount = prev.filter((w) => w.isStable).length;
+                const stableCount = prev.filter((w) => w.word_is_final).length;
                 const updatedWords = [
                   ...prev.slice(0, stableCount),
                   ...newWords,

@@ -22,15 +22,15 @@ export interface TranscriptionData {
 
 export interface TranscriptionWord {
   text: string;
-  timestamp?: number;
-  confidence?: number;
-  speaker?: string;
-  isStable: boolean;
+  confidence: number;
+  start: number;
+  end: number;
+  word_is_final: boolean;
 }
 
 export interface RealtimeTranscriptChunk {
   isEndOfTurn: boolean;
-  words: string[];
+  words: TranscriptionWord[];
 }
 
 export interface BeginMsg {

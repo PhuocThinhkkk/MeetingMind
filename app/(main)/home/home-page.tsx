@@ -21,13 +21,26 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
+import dynamic from "next/dynamic";
 
 import { AudioUpload } from '@/components/dashboard/audio-upload';
-import { RealtimeRecorder } from '@/components/dashboard/realtime-recorder';
-import { SharedTranscriptionView } from '@/components/dashboard/shared-transcription-view';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/lib/supabase';
 import { TranscriptionData } from '@/types/transcription';
+
+interface RealtimeRecorderProps {
+  onTranscriptionComplete: (data: TranscriptionData) => void;
+}
+const RealtimeRecorder = dynamic<RealtimeRecorderProps>(
+  () =>
+    import('@/components/dashboard/realtime-recorder').then((mod) => ({
+      default: mod.RealtimeRecorder
+    })),
+  {
+    ssr: false,
+    loading: () => <p>Loading recorder…</p>
+  }
+);
 
 interface AudioFile {
   id: string;
@@ -183,7 +196,7 @@ export default function HomePage() {
             <div className="mb-8 animate-fade-in">
               <div className="flex items-center justify-between">
                 <div>
-                  <h1 className="text-3xl font-bold text-gray-900 mb-2">Meeting Transcriptions</h1>
+                  <h1 className="text-2xl font-bold text-gray-900 mb-2">Meeting Transcriptions</h1>
                   <p className="text-gray-600">Upload, transcribe, and analyze your meetings with AI</p>
                 </div>
                 <div className="flex items-center space-x-4">
@@ -201,13 +214,11 @@ export default function HomePage() {
               </div>
             </div>
 
-            {/* Quick Actions */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
               <AudioUpload onUpload={handleFileUpload} />
               <RealtimeRecorder onTranscriptionComplete={handleRealtimeTranscriptionComplete} />
             </div>
 
-            {/* Recent Files */}
             <Card className="animate-slide-up hover-lift">
               <CardHeader>
                 <CardTitle className="flex items-center">
@@ -275,12 +286,7 @@ export default function HomePage() {
         
       </div>
 
-      {selectedTranscription && (
-        <SharedTranscriptionView 
-          data={selectedTranscription}
-          onClose={() => setSelectedTranscription(null)}
-        />
-      )}
+     
     </div>
   );
 }
