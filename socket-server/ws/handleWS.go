@@ -7,7 +7,7 @@ import (
     "github.com/gorilla/websocket"
 	"os"
 )
-var testing = false
+var testing = true
 
 var upgrader = websocket.Upgrader{
 

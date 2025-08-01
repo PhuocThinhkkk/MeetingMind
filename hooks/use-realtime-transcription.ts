@@ -35,7 +35,10 @@ export function useRealtimeTranscription({
   const wsRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const isAssemblyReady = useRef(false);
-  const recorderRef = useRef<unknown>(null)
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const workletNodeRef = useRef<AudioWorkletNode | null>(null);
+  const audioBufferRef = useRef<Uint8Array[]>([]);
+  let totalByteLength = 0;
 
   const updateStatus = useCallback(
     (newStatus: typeof status) => {
@@ -130,38 +133,52 @@ export function useRealtimeTranscription({
     clearTranscript();
     updateStatus("connecting");
     connectWebSocket();
-    if (typeof window == "undefined" || !navigator.mediaDevices) {
-      return;
-    }
-    const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true,
-    });
+
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     streamRef.current = stream;
-    const { default: RecordRTC, StereoAudioRecorder } = await import('recordrtc');
+    
+    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const audioContext = new AudioContextClass();
+    audioContextRef.current = audioContext;
 
+    await audioContext.audioWorklet.addModule("/worklet-processor.js");
 
-    recorderRef.current = new RecordRTC(stream, {
-      type: "audio",
-      mimeType: "audio/webm;codecs=pcm_s16le",
-      recorderType: StereoAudioRecorder,
-      desiredSampRate: SAMPLE_RATE,
-      numberOfAudioChannels: 1,
-      timeSlice: 50,
-      bufferSize: 4096,
-      ondataavailable: async (blob: unknown) => {
-        if (
-          wsRef.current?.readyState === WebSocket.OPEN &&
-          isAssemblyReady.current
-        ) {
-          // @ts-ignore
-          const buffer = await blob.arrayBuffer();
-          wsRef.current.send(buffer);
-          console.log("sent chunk size", buffer.byteLength);
+    const source = audioContext.createMediaStreamSource(stream);
+    const workletNode = new AudioWorkletNode(audioContext, "pcm-processor");
+
+    
+    workletNode.port.onmessage = (event) => {
+      if (
+        event.data instanceof ArrayBuffer &&
+        wsRef.current?.readyState === WebSocket.OPEN &&
+        isAssemblyReady.current
+      ) {
+        const chunk = new Uint8Array(event.data);
+        audioBufferRef.current.push(chunk);
+        totalByteLength += chunk.byteLength;
+
+        if (totalByteLength >= 1800) {
+          const merged = new Uint8Array(totalByteLength);
+          let offset = 0;
+          for (const part of audioBufferRef.current) {
+            merged.set(part, offset);
+            offset += part.length;
+          }
+
+          // Send to Assembly
+          wsRef.current.send(merged.buffer);
+          console.log("Sent merged chunk:", merged.byteLength);
+
+          // Reset buffer
+          audioBufferRef.current = [];
+          totalByteLength = 0;
         }
-      },
-    });
-    // @ts-ignore
-    recorderRef.current.startRecording();
+      }
+    };
+
+    source.connect(workletNode).connect(audioContext.destination);
+    workletNodeRef.current = workletNode;
+
     setIsRecording(true);
   }, [connectWebSocket, updateStatus, onError]);
 
@@ -182,7 +199,13 @@ export function useRealtimeTranscription({
       wsRef.current = null;
     }
 
-    recorderRef.current = null
+    if (audioContextRef.current) {
+      audioContextRef.current.close();
+      audioContextRef.current = null;
+    }
+
+    workletNodeRef.current = null
+
 
     setTimeout(() => {
       setTranscriptWords((prev) =>
