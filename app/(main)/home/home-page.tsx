@@ -21,26 +21,13 @@ import {
   Settings,
   LogOut
 } from 'lucide-react';
-import dynamic from "next/dynamic";
-
+import { RealtimeRecorder } from '@/components/dashboard/realtime-recorder';
 import { AudioUpload } from '@/components/dashboard/audio-upload';
 import { useAuth } from '@/hooks/use-auth';
 import { supabase } from '@/lib/supabase';
 import { TranscriptionData } from '@/types/transcription';
 
-interface RealtimeRecorderProps {
-  onTranscriptionComplete: (data: TranscriptionData) => void;
-}
-const RealtimeRecorder = dynamic<RealtimeRecorderProps>(
-  () =>
-    import('@/components/dashboard/realtime-recorder').then((mod) => ({
-      default: mod.RealtimeRecorder
-    })),
-  {
-    ssr: false,
-    loading: () => <p>Loading recorder…</p>
-  }
-);
+
 
 interface AudioFile {
   id: string;

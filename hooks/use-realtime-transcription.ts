@@ -6,7 +6,6 @@ import {
   RealtimeTranscriptChunk,
   AudioChunk,
 } from "@/types/transcription";
-import RecordRTC, { StereoAudioRecorder } from 'recordrtc';
 
 const SAMPLE_RATE = 16000;
 const CHUNK_MS = 128;
@@ -128,13 +127,18 @@ export function useRealtimeTranscription({
   }, [status, updateStatus, onError, onTranscriptUpdate]);
 
   const startRecording = useCallback(async () => {
+    clearTranscript();
     updateStatus("connecting");
     connectWebSocket();
-
+    if (typeof window == "undefined" || !navigator.mediaDevices) {
+      return;
+    }
     const stream = await navigator.mediaDevices.getUserMedia({
-      audio: true
+      audio: true,
     });
     streamRef.current = stream;
+    const { default: RecordRTC, StereoAudioRecorder } = await import('recordrtc');
+
 
     recorderRef.current = new RecordRTC(stream, {
       type: "audio",
@@ -144,26 +148,27 @@ export function useRealtimeTranscription({
       numberOfAudioChannels: 1,
       timeSlice: 50,
       bufferSize: 4096,
-      ondataavailable: async (blob : unknown) => {
+      ondataavailable: async (blob: unknown) => {
         if (
           wsRef.current?.readyState === WebSocket.OPEN &&
           isAssemblyReady.current
         ) {
-          // @ts-ignore 
-          const buffer = await blob.arrayBuffer()  
+          // @ts-ignore
+          const buffer = await blob.arrayBuffer();
           wsRef.current.send(buffer);
           console.log("sent chunk size", buffer.byteLength);
         }
       },
     });
-    // @ts-ignore 
-    recorderRef.current.startRecording();   
+    // @ts-ignore
+    recorderRef.current.startRecording();
     setIsRecording(true);
   }, [connectWebSocket, updateStatus, onError]);
 
   const stopRecording = useCallback(() => {
     setIsRecording(false);
     updateStatus("processing");
+    console.log("stop recording")
 
     isAssemblyReady.current = false;
 
@@ -194,6 +199,7 @@ export function useRealtimeTranscription({
   useEffect(() => {
     return () => {
       if (isRecording) {
+        console.log("curpit")
         stopRecording();
       }
     };

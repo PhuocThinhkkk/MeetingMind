@@ -16,45 +16,28 @@ import {
 import { useRealtimeTranscription } from '@/hooks/use-realtime-transcription';
 import { TranscriptionData, TranscriptionWord } from '@/types/transcription';
 import RealTimeTranscriptionPage from './realtime-view-transcription';
+import { useRecorder } from '@/components/context/realtime-recorder-context';
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (data: TranscriptionData) => void;
 }
 
 export function RealtimeRecorder({ onTranscriptionComplete }: RealtimeRecorderProps) {
-  const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
-  const [currentTranscript, setCurrentTranscript] = useState<TranscriptionWord[]>([]);
   const [showTranscription, setShowTranscription] = useState(false)
-
   const {
-    isRecording,
-    status,
     transcriptWords,
     startRecording,
     stopRecording,
-    clearTranscript
-  } = useRealtimeTranscription({
+    sessionStartTime,
+    setSessionStartTime,
+    currentTranscript,
+    isRecording,
+  } = useRecorder()
 
-    onTranscriptUpdate: (words) => {
-      setCurrentTranscript(words);
-    },
-
-    onError: (error) => {
-      console.error('Transcription error:', error);
-    },
-
-    onStatusChange: (newStatus) => {
-      if (newStatus === 'recording' && !sessionStartTime) {
-        setSessionStartTime(new Date());
-      }
-    }
-
-  });
 
   const handleStartRecording = async () => {
-    clearTranscript();
-    setCurrentTranscript([]);
     await startRecording();
+    setShowTranscription(true)
   };
 
   const handleStopRecording = () => {
