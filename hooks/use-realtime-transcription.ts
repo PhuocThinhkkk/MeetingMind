@@ -12,7 +12,6 @@ const CHUNK_MS = 128;
 const CHUNK_SIZE = (SAMPLE_RATE * 2 * CHUNK_MS) / 1000;
 
 interface UseRealtimeTranscriptionProps {
-  onTranscriptUpdate?: (words: TranscriptionWord[]) => void;
   onError?: (error: string) => void;
   onStatusChange?: (
     status: "idle" | "connecting" | "recording" | "processing" | "error"
@@ -20,7 +19,6 @@ interface UseRealtimeTranscriptionProps {
 }
 
 export function useRealtimeTranscription({
-  onTranscriptUpdate,
   onError,
   onStatusChange,
 }: UseRealtimeTranscriptionProps = {}) {
@@ -42,6 +40,7 @@ export function useRealtimeTranscription({
 
   const updateStatus = useCallback(
     (newStatus: typeof status) => {
+      console.log("status change!", newStatus);
       setStatus(newStatus);
       onStatusChange?.(newStatus);
     },
@@ -87,8 +86,6 @@ export function useRealtimeTranscription({
                   ...prev.slice(0, -newWords.length),
                   ...newWords,
                 ];
-                if (onTranscriptUpdate) onTranscriptUpdate(stableWords);
-                else console.error("didnt pass onTransciptUpdate into hook");
                 return stableWords;
               } else {
                 const stableCount = prev.filter((w) => w.word_is_final).length;
@@ -96,8 +93,6 @@ export function useRealtimeTranscription({
                   ...prev.slice(0, stableCount),
                   ...newWords,
                 ];
-                if (onTranscriptUpdate) onTranscriptUpdate(updatedWords);
-                else console.error("didnt pass onTransciptUpdate into hook");
                 return updatedWords;
               }
             });
@@ -125,7 +120,7 @@ export function useRealtimeTranscription({
       updateStatus("error");
       onError?.("Failed to connect to transcription service");
     }
-  }, [status, updateStatus, onError, onTranscriptUpdate]);
+  }, [status, updateStatus, onError]);
 
   const startRecording = useCallback(async () => {
     clearTranscript();
@@ -181,6 +176,7 @@ export function useRealtimeTranscription({
   }, [connectWebSocket, updateStatus, onError]);
 
   const stopRecording = useCallback(() => {
+    console.trace("🔥 stopRecording() called");
     setIsRecording(false);
     updateStatus("processing");
     console.log("stop recording");
@@ -223,7 +219,7 @@ export function useRealtimeTranscription({
         stopRecording();
       }
     };
-  }, [isRecording, stopRecording]);
+  }, []);
 
   return {
     isRecording,

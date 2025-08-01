@@ -30,8 +30,8 @@ export function RealtimeRecorder({ onTranscriptionComplete }: RealtimeRecorderPr
     stopRecording,
     sessionStartTime,
     setSessionStartTime,
-    currentTranscript,
     isRecording,
+    status
   } = useRecorder()
 
 
@@ -43,7 +43,7 @@ export function RealtimeRecorder({ onTranscriptionComplete }: RealtimeRecorderPr
   const handleStopRecording = () => {
     stopRecording();
 
-    if (sessionStartTime && currentTranscript.length > 0) {
+    if (sessionStartTime && transcriptWords.length > 0) {
       const duration = Math.floor((Date.now() - sessionStartTime.getTime()) / 1000);
       const transcriptionData: TranscriptionData = {
         id: `realtime-${Date.now()}`,
@@ -53,8 +53,8 @@ export function RealtimeRecorder({ onTranscriptionComplete }: RealtimeRecorderPr
         duration,
         created_at: sessionStartTime.toISOString(),
         transcript: {
-          text: currentTranscript.map(w => w.text).join(' '),
-          words: currentTranscript,
+          text: transcriptWords.map(w => w.text).join(' '),
+          words: transcriptWords,
           speakers_detected: 1,
           confidence_score: 0.85
         }

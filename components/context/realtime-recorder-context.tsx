@@ -13,10 +13,8 @@ type RecorderContextType = {
   stopRecording: () => void;
   clearTranscript: () => void;
   audioBlob: Blob | null;
-  currentTranscript: TranscriptionWord[];
   status: string;
   transcriptWords: TranscriptionWord[];
-  setCurrentTranscript: React.Dispatch<React.SetStateAction<TranscriptionWord[]>>;
   sessionStartTime: Date | null;
   setSessionStartTime: React.Dispatch<React.SetStateAction<Date | null>>;
 };
@@ -26,7 +24,6 @@ const RecorderContext = createContext<RecorderContextType | undefined>(undefined
 export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
-  const [currentTranscript, setCurrentTranscript] = useState<TranscriptionWord[]>([]);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
 
   const {
@@ -37,10 +34,6 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     stopRecording,
     clearTranscript
   } = useRealtimeTranscription({
-
-    onTranscriptUpdate: (words : TranscriptionWord[]) => {
-      setCurrentTranscript(words);
-    },
 
     onError: (error : string) => {
       console.error('Transcription error:', error);
@@ -61,7 +54,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         stopRecording();
       }
     };
-  }, [isRecording, stopRecording]);
+  }, []);
 
   return (
     <RecorderContext.Provider
@@ -70,11 +63,9 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         startRecording,
         stopRecording,
         audioBlob,
-        currentTranscript,
         status,
         clearTranscript,
         transcriptWords,
-        setCurrentTranscript,
         sessionStartTime,
         setSessionStartTime
       }}
