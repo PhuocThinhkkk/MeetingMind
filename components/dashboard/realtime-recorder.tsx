@@ -93,7 +93,6 @@ export function RealtimeRecorder({ onTranscriptionComplete }: RealtimeRecorderPr
     const seconds = elapsed % 60;
     return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   };
-  console.log(currentTranscript)
 
   return (
     <>

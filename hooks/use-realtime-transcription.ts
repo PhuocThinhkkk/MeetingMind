@@ -77,13 +77,12 @@ export function useRealtimeTranscription({
                 word_is_final: word.word_is_final,
                 start: word.start,
                 end: word.end,
-                confidence: word.confidence
+                confidence: word.confidence,
               })
             );
 
             setTranscriptWords((prev) => {
               if (data.isEndOfTurn) {
-
                 const stableWords = [
                   ...prev.slice(0, -newWords.length),
                   ...newWords,
@@ -91,7 +90,6 @@ export function useRealtimeTranscription({
                 if (onTranscriptUpdate) onTranscriptUpdate(stableWords);
                 else console.error("didnt pass onTransciptUpdate into hook");
                 return stableWords;
-
               } else {
                 const stableCount = prev.filter((w) => w.word_is_final).length;
                 const updatedWords = [
@@ -136,7 +134,7 @@ export function useRealtimeTranscription({
 
     const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
     streamRef.current = stream;
-    
+
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     const audioContext = new AudioContextClass();
     audioContextRef.current = audioContext;
@@ -146,14 +144,16 @@ export function useRealtimeTranscription({
     const source = audioContext.createMediaStreamSource(stream);
     const workletNode = new AudioWorkletNode(audioContext, "pcm-processor");
 
-    
-    workletNode.port.onmessage = (event) => {
+    workletNode.port.onmessage = async (event) => {
       if (
-        event.data instanceof ArrayBuffer &&
+        event.data &&
         wsRef.current?.readyState === WebSocket.OPEN &&
         isAssemblyReady.current
       ) {
-        const chunk = new Uint8Array(event.data);
+        const resampled = await resampleTo16kHz(event.data); 
+        const pcmData = float32ToInt16(resampled);
+
+        const chunk = new Uint8Array(pcmData.buffer);
         audioBufferRef.current.push(chunk);
         totalByteLength += chunk.byteLength;
 
@@ -165,11 +165,9 @@ export function useRealtimeTranscription({
             offset += part.length;
           }
 
-          // Send to Assembly
           wsRef.current.send(merged.buffer);
           console.log("Sent merged chunk:", merged.byteLength);
 
-          // Reset buffer
           audioBufferRef.current = [];
           totalByteLength = 0;
         }
@@ -185,7 +183,7 @@ export function useRealtimeTranscription({
   const stopRecording = useCallback(() => {
     setIsRecording(false);
     updateStatus("processing");
-    console.log("stop recording")
+    console.log("stop recording");
 
     isAssemblyReady.current = false;
 
@@ -204,8 +202,7 @@ export function useRealtimeTranscription({
       audioContextRef.current = null;
     }
 
-    workletNodeRef.current = null
-
+    workletNodeRef.current = null;
 
     setTimeout(() => {
       setTranscriptWords((prev) =>
@@ -222,7 +219,7 @@ export function useRealtimeTranscription({
   useEffect(() => {
     return () => {
       if (isRecording) {
-        console.log("curpit")
+        console.log("curpit");
         stopRecording();
       }
     };
@@ -236,4 +233,41 @@ export function useRealtimeTranscription({
     stopRecording,
     clearTranscript,
   };
+}
+
+// @ts-ignore
+async function resampleTo16kHz(float32) {
+  const originalSampleRate = 48000;
+  const targetSampleRate = 16000;
+  const audioBuffer = new AudioBuffer({
+    length: float32.length,
+    numberOfChannels: 1,
+    sampleRate: originalSampleRate,
+  });
+
+  audioBuffer.copyToChannel(float32, 0, 0);
+
+  const offlineContext = new OfflineAudioContext({
+    numberOfChannels: 1,
+    length: Math.round(float32.length * targetSampleRate / originalSampleRate),
+    sampleRate: targetSampleRate,
+  });
+
+  const source = offlineContext.createBufferSource();
+  source.buffer = audioBuffer;
+  source.connect(offlineContext.destination);
+  source.start();
+
+  const rendered = await offlineContext.startRendering();
+  return rendered.getChannelData(0); 
+}
+
+// @ts-ignore
+function float32ToInt16(float32) {
+  const int16 = new Int16Array(float32.length);
+  for (let i = 0; i < float32.length; i++) {
+    const s = Math.max(-1, Math.min(1, float32[i]));
+    int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+  }
+  return int16;
 }
