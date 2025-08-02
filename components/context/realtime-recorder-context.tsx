@@ -24,6 +24,7 @@ const RecorderContext = createContext<RecorderContextType | undefined>(undefined
 export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
 
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
+  // TODO: store audio later
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
 
   const {

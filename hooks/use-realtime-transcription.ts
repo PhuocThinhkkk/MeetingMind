@@ -70,6 +70,7 @@ export function useRealtimeTranscription({
             isAssemblyReady.current = true;
           } else {
             const data: RealtimeTranscriptChunk = res;
+            console.log(data)
             const newWords: TranscriptionWord[] = data.words.map(
               (word, index) => ({
                 text: word.text,
@@ -145,7 +146,7 @@ export function useRealtimeTranscription({
         wsRef.current?.readyState === WebSocket.OPEN &&
         isAssemblyReady.current
       ) {
-        const resampled = await resampleTo16kHz(event.data); 
+        const resampled = await resampleTo16kHz(event.data);
         const pcmData = float32ToInt16(resampled);
 
         const chunk = new Uint8Array(pcmData.buffer);
@@ -156,12 +157,15 @@ export function useRealtimeTranscription({
           const merged = new Uint8Array(totalByteLength);
           let offset = 0;
           for (const part of audioBufferRef.current) {
-            merged.set(part, offset);
-            offset += part.length;
+            if (offset + part.length <= merged.length) {
+              merged.set(part, offset);
+              offset += part.length;
+            } else {
+              console.warn("Audio chunk too large, skipping overflow data");
+            }
           }
 
           wsRef.current.send(merged.buffer);
-          console.log("Sent merged chunk:", merged.byteLength);
 
           audioBufferRef.current = [];
           totalByteLength = 0;
@@ -198,11 +202,14 @@ export function useRealtimeTranscription({
       audioContextRef.current = null;
     }
 
+    audioBufferRef.current = [];
+    totalByteLength = 0;
+
     workletNodeRef.current = null;
 
     setTimeout(() => {
       setTranscriptWords((prev) =>
-        prev.map((word) => ({ ...word, isStable: true }))
+        prev.map((word) => ({ ...word, word_is_final: true }))
       );
       updateStatus("idle");
     }, 1000);

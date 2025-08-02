@@ -8,6 +8,7 @@ import (
 
 	"github.com/gorilla/websocket"
 )
+
 var MaxErr = 10
 
 type Client struct {
@@ -15,7 +16,7 @@ type Client struct {
 	AssemblyConn *websocket.Conn
 	Done         chan struct{}
 	Transcript   *TranscriptState
-	Time   int64
+	Time         int64
 }
 
 type TranscriptState struct {
@@ -49,7 +50,7 @@ type AssemblyRessponseTurn struct {
 }
 
 type ClientWriter struct {
-	IsEndOfTurn bool     `json:"isEndOfTurn"`
+	IsEndOfTurn bool                   `json:"isEndOfTurn"`
 	Words       []AssemblyResponseWord `json:"words"`
 }
 
@@ -67,8 +68,8 @@ func NewTranscriptState() *TranscriptState {
 		WordsTranscript: "",
 		CurrentSentence: make([]string, 0, 10),
 		CurrentTurnID:   -1,
-		NewWords: make([]AssemblyResponseWord, 0, 10),
-		EndOfTurn: false,
+		NewWords:        make([]AssemblyResponseWord, 0, 10),
+		EndOfTurn:       false,
 	}
 }
 
@@ -91,7 +92,6 @@ func (c *Client) readAudio() {
 	defer func() {
 		UnregisterClient(c)
 	}()
-
 
 	for {
 		select {
@@ -117,7 +117,7 @@ func (c *Client) readAudio() {
 				errCount++
 				continue
 			}
-			
+
 			err = c.AssemblyConn.WriteMessage(websocket.BinaryMessage, audio)
 			if err != nil {
 				log.Println("err when sending audio to assembly", err)
@@ -191,7 +191,7 @@ func (c *Client) writeText() {
 
 				log.Println("Got Turn: ", string(res))
 
-				if err := c.Conn.WriteMessage(websocket.TextMessage, msg); err != nil {
+				if err := c.Conn.WriteMessage(websocket.TextMessage, res); err != nil {
 					fmt.Println("err write message :", err)
 					errCount++
 					return
@@ -203,10 +203,10 @@ func (c *Client) writeText() {
 }
 
 func UnregisterClient(c *Client) {
-	_, ok := <- c.Done
-	if ok {	
+	_, ok := <-c.Done
+	if ok {
 		close(c.Done)
-	} 
+	}
 }
 
 func (c *Client) updateStateTranscript(jsonData []byte) error {
@@ -217,7 +217,6 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 		joinErr := errors.Join(err1, err)
 		return joinErr
 	}
-
 
 	c.Transcript.NewWords = make([]AssemblyResponseWord, 0, 10)
 	for index, assemblyWord := range turn.Words {
@@ -233,7 +232,7 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 			continue
 		}
 
-		if assemblyWord.Text != c.Transcript.CurrentSentence[index]{
+		if assemblyWord.Text != c.Transcript.CurrentSentence[index] {
 			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
 
 			if !assemblyWord.WordIsFinal {
@@ -242,9 +241,9 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 
 			c.Transcript.CurrentSentence[index] = assemblyWord.Text
 		}
-		
+
 	}
-	
+
 	c.Transcript.EndOfTurn = turn.EndOfTurn
 
 	if turn.EndOfTurn {

@@ -64,14 +64,16 @@ export default function RealTimeTranscriptionPage({
     setSelectedWordIndex(null)
   }
 
+  // TODO: handle this later
   const getConfidenceColor = (confidence: number) => {
+    return "text-black"
     if (confidence >= 0.8) return "text-green-600"
     if (confidence >= 0.6) return "text-yellow-600"
     return "text-red-600"
   }
 
   const getWordClassName = (index: number, word: TranscriptionWord) => {
-    let className = `inline-block px-3 py-2 m-1 rounded-lg cursor-pointer transition-all duration-200 text-lg ${getConfidenceColor(word.confidence)}`
+    let className = `inline-block px-0 py-1 m-1 rounded-lg cursor-pointer transition-all duration-200 text-sm ${getConfidenceColor(word.confidence)}`
 
     if (highlightedWords.has(index)) {
       className += " bg-yellow-200 border-2 border-yellow-400 shadow-sm"
