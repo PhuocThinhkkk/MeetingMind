@@ -1,22 +1,27 @@
 package main
 
 import (
-    "fmt"
-    "net/http"
-    "log"
+	"fmt"
+	"log"
 	"meetingmind-socket/ws"
+	"net/http"
+	"os"
+
 	"github.com/joho/godotenv"
-) 
+)
 
 func main() {
 
-	err := godotenv.Load()
-	if err != nil {
-		log.Fatal("env var didnt load successfully")
+	port := os.Getenv("PORT")
+	if port == "" {
+		err := godotenv.Load()
+		if err != nil {
+			log.Fatal("env var didnt load successfully")
+		}
+		port = os.Getenv("PORT")
 	}
 
-    http.HandleFunc("/ws", ws.HandleWS)
-    fmt.Println("WebSocket server started on :8080")
-    log.Fatal(http.ListenAndServe(":8080", nil))
+	http.HandleFunc("/ws", ws.HandleWS)
+	fmt.Println("WebSocket server started on :", port)
+	log.Fatal(http.ListenAndServe(":"+port, nil))
 }
-

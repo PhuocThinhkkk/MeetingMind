@@ -1,12 +1,14 @@
 package ws
 
 import (
+	"fmt"
 	"log"
 	"net/http"
-	"fmt"
-    "github.com/gorilla/websocket"
 	"os"
+
+	"github.com/gorilla/websocket"
 )
+
 var testing = true
 
 var upgrader = websocket.Upgrader{
@@ -15,16 +17,18 @@ var upgrader = websocket.Upgrader{
 		if testing {
 			return true
 		}
+		frontendUrl := os.Getenv("FRONTEND_URL")
 		origin := r.Header.Get("Origin")
-		return origin == "http://localhost:3000"
-	},	
+		return origin == frontendUrl
+	},
 }
+
 func HandleWS(w http.ResponseWriter, r *http.Request) {
-    conn, err := upgrader.Upgrade(w, r, nil)
-    if err != nil {
-        log.Println("Upgrade error:", err)
-        return
-    }
+	conn, err := upgrader.Upgrade(w, r, nil)
+	if err != nil {
+		log.Println("Upgrade error:", err)
+		return
+	}
 	fmt.Println("new user connect to server")
 
 	assemblyAIKey := os.Getenv("ASSEMBLYAI_API_KEY")
@@ -37,8 +41,7 @@ func HandleWS(w http.ResponseWriter, r *http.Request) {
 		log.Fatal("WebSocket dial error:", err)
 	}
 
-	client := NewClient(conn, assemblyConn) 
+	client := NewClient(conn, assemblyConn)
 
 	RegisterClient(client)
 }
-

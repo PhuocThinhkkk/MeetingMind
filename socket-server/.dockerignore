@@ -1,0 +1,9 @@
+# frontend testing folder
+client/
+
+*.log
+*.env
+node_modules/
+.git/
+dist/
+
