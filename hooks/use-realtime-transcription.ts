@@ -81,21 +81,14 @@ export function useRealtimeTranscription({
               })
             );
 
+            // TODO: handle end of turn later
             setTranscriptWords((prev) => {
-              if (data.isEndOfTurn) {
-                const stableWords = [
-                  ...prev.slice(0, -newWords.length),
-                  ...newWords,
-                ];
-                return stableWords;
-              } else {
                 const stableCount = prev.filter((w) => w.word_is_final).length;
                 const updatedWords = [
-                  ...prev.slice(0, stableCount),
-                  ...newWords,
+                    ...prev.slice(0, stableCount),
+                    ...newWords,
                 ];
                 return updatedWords;
-              }
             });
           }
         } catch (error) {
