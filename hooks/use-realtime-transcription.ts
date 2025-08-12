@@ -121,16 +121,26 @@ export function useRealtimeTranscription({
     updateStatus("connecting");
     connectWebSocket();
 
-    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    streamRef.current = stream;
-
     const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
     const audioContext = new AudioContextClass();
     audioContextRef.current = audioContext;
 
+    const systemStream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true});
+    const micStream = await navigator.mediaDevices.getUserMedia({audio: true})
+    const destination = audioContext.createMediaStreamDestination();
+
+    const systemSource = audioContext.createMediaStreamSource(systemStream);
+    const micSource = audioContext.createMediaStreamSource(micStream);
+
+    systemSource.connect(destination);
+    micSource.connect(destination);
+
+    const mixedStream = destination.stream
+    streamRef.current = mixedStream;
+
     await audioContext.audioWorklet.addModule("/worklet-processor.js");
 
-    const source = audioContext.createMediaStreamSource(stream);
+    const source = audioContext.createMediaStreamSource(mixedStream);
     const workletNode = new AudioWorkletNode(audioContext, "pcm-processor");
 
     workletNode.port.onmessage = async (event) => {
