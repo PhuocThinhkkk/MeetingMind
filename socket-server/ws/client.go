@@ -95,6 +95,9 @@ func RegisterClient(client *Client) {
 
 	go client.readClientAudio()
 	go client.readMsgTranscript()
+
+	go client.readTranslate()
+
 	go client.sendMsgTranscript()
 	go client.sendMsgTranslate()
 
@@ -160,6 +163,7 @@ func (c *Client) readMsgTranscript() {
 			}
 
 			msgType, msg, err := c.AssemblyConn.ReadMessage()
+			log.Println(string(msg))
 			if err != nil {
 				log.Println("AssemblyAI dropped connection immediately:", err)
 				c.AssemblyConn.Close()
@@ -198,8 +202,37 @@ func (c *Client) readMsgTranscript() {
 				}
 				cw := NewClientWrtter(c.Transcript.EndOfTurn, c.Transcript.NewWords)
 				c.TranscriptWord <- *cw
+				log.Println("sending to chan")
 
 
+			}
+		}
+	}
+}
+
+
+func (c *Client) readTranslate() {
+	defer func() {
+		UnregisterClient(c)
+	}()
+	for {
+		select {
+		case <-c.Done:
+			c.AssemblyConn.Close()
+			return
+		default:
+			for msg := range c.Transcript.WordsTranscript {
+				byteMsg, err := json.Marshal( msg )
+				if err != nil {
+					log.Println("err when encoding transcript word msg: ", err )
+					continue
+				}
+				_ = byteMsg
+				res := TranslateWordsRes {
+					Type : "translate",
+					Words : "simulate translation",
+				}
+				c.TranslateWord <- res
 			}
 		}
 	}
@@ -264,7 +297,7 @@ func UnregisterClient(c *Client) {
 }
 
 func (c *Client) updateStateTranscript(jsonData []byte) error {
-	log.Println("update ", string(jsonData))
+	log.Println("update")
 	var turn AssemblyRessponseTurn
 	err := json.Unmarshal(jsonData, &turn)
 	if err != nil {
@@ -282,17 +315,13 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 		}
 
 		if index >= len(c.Transcript.CurrentSentence) {
-			log.Println("hi mom")
 			c.Transcript.CurrentSentence = append(c.Transcript.CurrentSentence, assemblyWord.Text)
-			log.Println("ladfkj")
 			continue
 		}
 
 		if assemblyWord.Text != c.Transcript.CurrentSentence[index] {
 
-			log.Println("got em")
 			c.Transcript.CurrentSentence[index] = assemblyWord.Text
-			log.Println("ladfj")
 
 		}
 
