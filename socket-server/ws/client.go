@@ -5,22 +5,25 @@ import (
 	"errors"
 	"fmt"
 	"log"
+	"sync"
 
 	"github.com/gorilla/websocket"
 )
 
 var MaxErr = 10
+var mutex  sync.Mutex
 
 type Client struct {
 	Conn         *websocket.Conn
 	AssemblyConn *websocket.Conn
 	Done         chan struct{}
 	Transcript   *TranscriptState
-	Time         int64
+	TranscriptWord   chan(ClientWriter)
+	TranslateWord    chan(TranslateWordsRes)
 }
 
 type TranscriptState struct {
-	WordsTranscript string
+	WordsTranscript chan(string)
 	CurrentSentence []string
 	NewWords        []AssemblyResponseWord
 	CurrentTurnID   int
@@ -28,9 +31,15 @@ type TranscriptState struct {
 }
 
 func (c *Client) addWordsTranscript(t string) *Client {
-	c.Transcript.WordsTranscript = c.Transcript.WordsTranscript + " " + t
+	c.Transcript.WordsTranscript <- t
 	return c
 }
+
+type TranslateWordsRes struct {
+	Type    string
+	Words   string
+}
+
 
 type AssemblyResponseWord struct {
 	Start       int     `json:"start"`
@@ -60,12 +69,14 @@ func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
 		AssemblyConn: AssemblyConn,
 		Done:         make(chan struct{}),
 		Transcript:   NewTranscriptState(),
+		TranscriptWord:  make(chan ClientWriter),
+		TranslateWord: make(chan TranslateWordsRes),
 	}
 }
 
 func NewTranscriptState() *TranscriptState {
 	return &TranscriptState{
-		WordsTranscript: "",
+		WordsTranscript: make(chan string),
 		CurrentSentence: make([]string, 0, 10),
 		CurrentTurnID:   -1,
 		NewWords:        make([]AssemblyResponseWord, 0, 10),
@@ -82,12 +93,14 @@ func NewClientWrtter(isFinal bool, words []AssemblyResponseWord) *ClientWriter {
 
 func RegisterClient(client *Client) {
 
-	go client.writeText()
-	go client.readAudio()
+	go client.readClientAudio()
+	go client.readMsgTranscript()
+	go client.sendMsgTranscript()
+	go client.sendMsgTranslate()
 
 }
 
-func (c *Client) readAudio() {
+func (c *Client) readClientAudio() {
 	errCount := 0
 	defer func() {
 		UnregisterClient(c)
@@ -129,7 +142,7 @@ func (c *Client) readAudio() {
 	}
 }
 
-func (c *Client) writeText() {
+func (c *Client) readMsgTranscript() {
 	errCount := 0
 	defer func() {
 		UnregisterClient(c)
@@ -167,8 +180,10 @@ func (c *Client) writeText() {
 			}
 
 			if parsed["type"] == "Begin" {
+				mutex.Lock()
 				c.Conn.WriteMessage(websocket.TextMessage, []byte(`{"type" : "ready"}`))
 				log.Println("Got Begin:", string(msg))
+				mutex.Unlock()
 			}
 			if parsed["type"] == "Termination" {
 				log.Println("session end.")
@@ -182,21 +197,60 @@ func (c *Client) writeText() {
 					return
 				}
 				cw := NewClientWrtter(c.Transcript.EndOfTurn, c.Transcript.NewWords)
-				res, err := json.Marshal(cw)
+				c.TranscriptWord <- *cw
+
+
+			}
+		}
+	}
+}
+
+
+func (c *Client) sendMsgTranscript() {
+	defer func() {
+		UnregisterClient(c)
+	}()
+	for {
+		select {
+		case <-c.Done:
+			c.AssemblyConn.Close()
+			return
+		default:
+			for msg := range c.TranscriptWord {
+				byteMsg, err := json.Marshal( msg )
 				if err != nil {
-					log.Println("err when encode json: ", err)
-					errCount++
+					log.Println("err when encoding transcript word msg: ", err )
 					continue
 				}
+				mutex.Lock()
+				log.Println("Transcript : ", string(byteMsg))
+				c.Conn.WriteMessage(websocket.TextMessage, byteMsg)
+				mutex.Unlock()
+			}
+		}
+	}
+}
 
-				log.Println("Got Turn: ", string(res))
-
-				if err := c.Conn.WriteMessage(websocket.TextMessage, res); err != nil {
-					fmt.Println("err write message :", err)
-					errCount++
-					return
+func (c *Client) sendMsgTranslate() {
+	defer func() {
+		UnregisterClient(c)
+	}()
+	for {
+		select {
+		case <-c.Done:
+			c.AssemblyConn.Close()
+			return
+		default:
+			for msg := range c.TranslateWord {
+				byteMsg, err := json.Marshal( msg )
+				if err != nil {
+					log.Println("err when encoding translate word msg: ", err )
+					continue
 				}
-
+				mutex.Lock()
+				log.Println("Translate : ", string(byteMsg))
+				c.Conn.WriteMessage(websocket.TextMessage, byteMsg)
+				mutex.Unlock()
 			}
 		}
 	}
@@ -210,6 +264,7 @@ func UnregisterClient(c *Client) {
 }
 
 func (c *Client) updateStateTranscript(jsonData []byte) error {
+	log.Println("update ", string(jsonData))
 	var turn AssemblyRessponseTurn
 	err := json.Unmarshal(jsonData, &turn)
 	if err != nil {
@@ -221,25 +276,24 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 	c.Transcript.NewWords = make([]AssemblyResponseWord, 0, 10)
 	for index, assemblyWord := range turn.Words {
 
+		c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
+		if !assemblyWord.WordIsFinal {
+			continue
+		}
+
 		if index >= len(c.Transcript.CurrentSentence) {
-			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
-
-			if !assemblyWord.WordIsFinal {
-				continue
-			}
-
+			log.Println("hi mom")
 			c.Transcript.CurrentSentence = append(c.Transcript.CurrentSentence, assemblyWord.Text)
+			log.Println("ladfkj")
 			continue
 		}
 
 		if assemblyWord.Text != c.Transcript.CurrentSentence[index] {
-			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
 
-			if !assemblyWord.WordIsFinal {
-				continue
-			}
-
+			log.Println("got em")
 			c.Transcript.CurrentSentence[index] = assemblyWord.Text
+			log.Println("ladfj")
+
 		}
 
 	}
@@ -253,8 +307,4 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 
 	return nil
 
-}
-
-func (c *Client) save() {
-	// handle save all words to db
 }
