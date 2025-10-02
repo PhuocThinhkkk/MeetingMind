@@ -13,7 +13,6 @@ import {
   Wifi,
   WifiOff
 } from 'lucide-react';
-import { useRealtimeTranscription } from '@/hooks/use-realtime-transcription';
 import { TranscriptionData, TranscriptionWord } from '@/types/transcription';
 import RealTimeTranscriptionPage from './realtime-view-transcription';
 import { useRecorder } from '@/components/context/realtime-recorder-context';

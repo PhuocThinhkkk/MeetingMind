@@ -14,7 +14,7 @@ const CHUNK_SIZE = (SAMPLE_RATE * 2 * CHUNK_MS) / 1000;
 interface UseRealtimeTranscriptionProps {
   onError?: (error: string) => void;
   onStatusChange?: (
-    status: "idle" | "connecting" | "recording" | "processing" | "error"
+    status: "idle" | "connecting" | "recording" | "processing" | "error",
   ) => void;
 }
 
@@ -27,7 +27,7 @@ export function useRealtimeTranscription({
     "idle" | "connecting" | "recording" | "processing" | "error"
   >("idle");
   const [transcriptWords, setTranscriptWords] = useState<TranscriptionWord[]>(
-    []
+    [],
   );
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -44,7 +44,7 @@ export function useRealtimeTranscription({
       setStatus(newStatus);
       onStatusChange?.(newStatus);
     },
-    [onStatusChange]
+    [onStatusChange],
   );
 
   const connectWebSocket = useCallback(() => {
@@ -70,7 +70,7 @@ export function useRealtimeTranscription({
             isAssemblyReady.current = true;
           } else {
             const data: RealtimeTranscriptChunk = res;
-            console.log(data)
+            console.log(data);
             const newWords: TranscriptionWord[] = data.words.map(
               (word, index) => ({
                 text: word.text,
@@ -78,17 +78,14 @@ export function useRealtimeTranscription({
                 start: word.start,
                 end: word.end,
                 confidence: word.confidence,
-              })
+              }),
             );
 
             // TODO: handle end of turn later
             setTranscriptWords((prev) => {
-                const stableCount = prev.filter((w) => w.word_is_final).length;
-                const updatedWords = [
-                    ...prev.slice(0, stableCount),
-                    ...newWords,
-                ];
-                return updatedWords;
+              const stableCount = prev.filter((w) => w.word_is_final).length;
+              const updatedWords = [...prev.slice(0, stableCount), ...newWords];
+              return updatedWords;
             });
           }
         } catch (error) {
@@ -121,21 +118,48 @@ export function useRealtimeTranscription({
     updateStatus("connecting");
     connectWebSocket();
 
-    const AudioContextClass = window.AudioContext || (window as any).webkitAudioContext;
+    const AudioContextClass =
+      window.AudioContext || (window as any).webkitAudioContext;
     const audioContext = new AudioContextClass();
     audioContextRef.current = audioContext;
 
-    const systemStream = await navigator.mediaDevices.getDisplayMedia({ audio: true, video: true});
-    const micStream = await navigator.mediaDevices.getUserMedia({audio: true})
+    let systemStream: MediaStream | null = null;
+    let micStream: MediaStream | null = null;
+
+    try {
+      systemStream = await navigator.mediaDevices.getDisplayMedia({
+        video: true,
+        audio: true,
+      });
+    } catch (err) {
+      console.error("System audio permission denied:", err);
+    }
+
+    try {
+      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    } catch (err) {
+      console.error("Microphone permission denied:", err);
+    }
+
+    if (!systemStream && !micStream) {
+      onError?.("Please allow at least microphone or system audio.");
+      return;
+    }
     const destination = audioContext.createMediaStreamDestination();
 
-    const systemSource = audioContext.createMediaStreamSource(systemStream);
-    const micSource = audioContext.createMediaStreamSource(micStream);
+    let systemSource: MediaStreamAudioSourceNode;
+    if (systemStream) {
+      systemSource = audioContext.createMediaStreamSource(systemStream);
+      systemSource.connect(destination);
+    }
 
-    systemSource.connect(destination);
-    micSource.connect(destination);
+    let micSource: MediaStreamAudioSourceNode;
+    if (micStream) {
+      micSource = audioContext.createMediaStreamSource(micStream);
+      micSource.connect(destination);
+    }
 
-    const mixedStream = destination.stream
+    const mixedStream = destination.stream;
     streamRef.current = mixedStream;
 
     await audioContext.audioWorklet.addModule("/worklet-processor.js");
@@ -169,7 +193,7 @@ export function useRealtimeTranscription({
           }
 
           wsRef.current.send(merged.buffer);
-
+          console.log("Sent audio chunk of size:", merged.byteLength);
           audioBufferRef.current = [];
           totalByteLength = 0;
         }
@@ -212,7 +236,7 @@ export function useRealtimeTranscription({
 
     setTimeout(() => {
       setTranscriptWords((prev) =>
-        prev.map((word) => ({ ...word, word_is_final: true }))
+        prev.map((word) => ({ ...word, word_is_final: true })),
       );
       updateStatus("idle");
     }, 1000);
@@ -255,7 +279,9 @@ async function resampleTo16kHz(float32) {
 
   const offlineContext = new OfflineAudioContext({
     numberOfChannels: 1,
-    length: Math.round(float32.length * targetSampleRate / originalSampleRate),
+    length: Math.round(
+      (float32.length * targetSampleRate) / originalSampleRate,
+    ),
     sampleRate: targetSampleRate,
   });
 
@@ -265,7 +291,7 @@ async function resampleTo16kHz(float32) {
   source.start();
 
   const rendered = await offlineContext.startRendering();
-  return rendered.getChannelData(0); 
+  return rendered.getChannelData(0);
 }
 
 // @ts-ignore
@@ -273,7 +299,7 @@ function float32ToInt16(float32) {
   const int16 = new Int16Array(float32.length);
   for (let i = 0; i < float32.length; i++) {
     const s = Math.max(-1, Math.min(1, float32[i]));
-    int16[i] = s < 0 ? s * 0x8000 : s * 0x7FFF;
+    int16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
   }
   return int16;
 }

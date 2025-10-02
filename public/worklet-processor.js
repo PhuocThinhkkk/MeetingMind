@@ -5,7 +5,7 @@ class PCMProcessor extends AudioWorkletProcessor {
 
         const channelCount = input.length;
         if (channelCount > 1 ) {
-            console.log(channelCount)
+            console.log("channelCount: ", channelCount)
         }
 
         let mixed;
