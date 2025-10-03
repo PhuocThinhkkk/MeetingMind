@@ -24,7 +24,7 @@ func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		fmt.Fprint(w, "server is good")
 	})
-	http.HandleFunc("/ws", ws.HandleWS)
+	http.HandleFunc("/ws", ws.RunServer)
 
 	fmt.Println("WebSocket server started on :", port)
 	Is_Prod := os.Getenv("IS_PROD")
