@@ -25,6 +25,7 @@ type Client struct {
 	AssemblyConn   *websocket.Conn
 	Done           chan struct{}
 	Transcript     *TranscriptState
+	CurrentTranscriptWord chan (*TranscriptWriter)
 	TranscriptWord chan (*TranscriptWriter)
 	TranslateWord  chan (*TranslateWriter)
 }
@@ -76,6 +77,7 @@ func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
 		AssemblyConn:   AssemblyConn,
 		Done:           make(chan struct{}),
 		Transcript:     NewTranscriptState(),
+		CurrentTranscriptWord: make(chan (*TranscriptWriter), 1),
 		TranscriptWord: make(chan *TranscriptWriter),
 		TranslateWord:  make(chan *TranslateWriter),
 	}
@@ -178,7 +180,6 @@ func (c *Client) readMsgTranscript() {
 			}
 
 			msgType, msg, err := c.AssemblyConn.ReadMessage()
-			log.Println(string(msg))
 			if err != nil {
 				log.Println("AssemblyAI dropped connection immediately:", err)
 				c.AssemblyConn.Close()
@@ -217,7 +218,7 @@ func (c *Client) readMsgTranscript() {
 				}
 				cw := NewTranscriptWriter(c.Transcript.EndOfTurn, c.Transcript.NewWords)
 				c.TranscriptWord <- cw
-				log.Println("sending to chan")
+				c.CurrentTranscriptWord <- cw
 
 			}
 		}
@@ -237,7 +238,7 @@ func (c *Client) readTranslate() {
 			s := "Hello, this is a test translation. I will handle this later. "
 			arr := strings.Split(s, " ")
 			i := 0
-			for msg := range c.Transcript.WordsTranscript {
+			for msg := range c.CurrentTranscriptWord{
 				byteMsg, err := json.Marshal(msg)
 				if err != nil {
 					log.Println("err when encoding transcript word msg: ", err)
@@ -252,6 +253,7 @@ func (c *Client) readTranslate() {
 				if i >= len(arr) {
 					i = 0
 				}	
+				log.Println("sending translate to chan")
 				c.TranslateWord <- res
 			}
 		}
@@ -275,7 +277,6 @@ func (c *Client) sendMsgTranscript() {
 					continue
 				}
 				mutex.Lock()
-				log.Println("Transcript : ", string(byteMsg))
 				c.Conn.WriteMessage(websocket.TextMessage, byteMsg)
 				mutex.Unlock()
 			}
@@ -316,7 +317,6 @@ func UnregisterClient(c *Client) {
 }
 
 func (c *Client) updateStateTranscript(jsonData []byte) error {
-	log.Println("update")
 	var turn AssemblyRessponseTurn
 	err := json.Unmarshal(jsonData, &turn)
 	if err != nil {
