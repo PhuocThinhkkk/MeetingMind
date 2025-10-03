@@ -1,16 +1,17 @@
-import { 
-    useState,
-    useRef, 
-    useCallback, 
-    useEffect ,
-    createContext,
-    useContext 
+import {
+  useState,
+  useRef,
+  useCallback,
+  useEffect,
+  createContext,
+  useContext,
 } from "react";
-  
+
 import {
   TranscriptionWord,
   RealtimeTranscriptChunk,
   AudioChunk,
+  RealtimeTranslateResponse,
 } from "@/types/transcription";
 
 type RecorderContextType = {
@@ -21,17 +22,21 @@ type RecorderContextType = {
   audioBlob: Blob | null;
   status: string;
   transcriptWords: TranscriptionWord[];
+  translateWords: string[];
   sessionStartTime: Date | null;
   setSessionStartTime: React.Dispatch<React.SetStateAction<Date | null>>;
 };
 
-const RecorderContext = createContext<RecorderContextType | undefined>(undefined);
+const RecorderContext = createContext<RecorderContextType | undefined>(
+  undefined,
+);
 
-export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-
+export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
+  children,
+}) => {
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
   // TODO: store audio later
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null)
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const {
     isRecording,
@@ -40,21 +45,18 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     translateWords,
     startRecording,
     stopRecording,
-    clearTranscript
+    clearTranscript,
   } = useRealtimeTranscription({
-
-    onError: (error : string) => {
-      console.error('Transcription error:', error);
+    onError: (error: string) => {
+      console.error("Transcription error:", error);
     },
 
-    onStatusChange: (newStatus : string) => {
-      if (newStatus === 'recording' && !sessionStartTime) {
+    onStatusChange: (newStatus: string) => {
+      if (newStatus === "recording" && !sessionStartTime) {
         setSessionStartTime(new Date());
       }
-    }
-
+    },
   });
-
 
   useEffect(() => {
     return () => {
@@ -76,7 +78,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
         transcriptWords,
         translateWords,
         sessionStartTime,
-        setSessionStartTime
+        setSessionStartTime,
       }}
     >
       {children}
@@ -87,18 +89,16 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({ chil
 export const useRecorder = (): RecorderContextType => {
   const context = useContext(RecorderContext);
   if (!context) {
-    throw new Error('useRecorder must be used within a RecorderProvider');
+    throw new Error("useRecorder must be used within a RecorderProvider");
   }
   return context;
 };
-
-
 
 const SAMPLE_RATE = 16000;
 const CHUNK_MS = 128;
 const CHUNK_SIZE = (SAMPLE_RATE * 2 * CHUNK_MS) / 1000;
 
-type ResponseType = "ready" | "transcript" | "translate"
+type ResponseType = "ready" | "transcript" | "translate";
 const READY_RESPONSE: ResponseType = "ready";
 const TRANSCRIPT_RESPONSE: ResponseType = "transcript";
 const TRANSLATE_RESPONSE: ResponseType = "translate";
@@ -114,7 +114,6 @@ export function useRealtimeTranscription({
   onError,
   onStatusChange,
 }: UseRealtimeTranscriptionProps = {}) {
-
   const [isRecording, setIsRecording] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "connecting" | "recording" | "processing" | "error"
@@ -159,16 +158,14 @@ export function useRealtimeTranscription({
       wsRef.current.onmessage = (event) => {
         try {
           const res = JSON.parse(event.data);
-
           if (res.type === READY_RESPONSE) {
             console.log("Assembly is ready!");
             isAssemblyReady.current = true;
-
-          }else if (res.type === TRANSCRIPT_RESPONSE) {
+          } else if (res.type === TRANSCRIPT_RESPONSE) {
             const data: RealtimeTranscriptChunk = res;
             if (data.words.length === 0) {
-                console.warn("No words in transcription response");
-                return;
+              console.warn("No words in transcription response");
+              return;
             }
             const newWords: TranscriptionWord[] = data.words.map(
               (word, index) => ({
@@ -186,22 +183,21 @@ export function useRealtimeTranscription({
               const updatedWords = [...prev.slice(0, stableCount), ...newWords];
               return updatedWords;
             });
-
           } else if (res.type === TRANSLATE_RESPONSE) {
-            const data: RealtimeTranscriptChunk = res;
-            if (data.words.length === 0){
-                console.warn("No words in translation response");
-                return;
+              console.log("Received translation response:", res);
+            const data: RealtimeTranslateResponse = res;
+            if (data.words === "") {
+              console.warn("No words in translation response");
+              return;
             }
-            const newWord : string = data.words
-            setTranslateWords((prev) => ([...prev, newWord]));
-
+            const newWord = data.words;
+            setTranslateWords((prev) => [...prev, newWord]);
           } else {
-              console.error("Unknown response :", res);
+            console.error("Unknown response :", res);
           }
         } catch (error) {
           console.error("Error parsing WebSocket message:", error);
-          onError?.("Failed to parse transcription data");
+          onError?.("Failed to parse real time data");
         }
       };
 

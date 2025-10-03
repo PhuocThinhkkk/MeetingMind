@@ -2,10 +2,10 @@ package ws
 
 import (
 	"encoding/json"
-	"strings"
 	"errors"
 	"fmt"
 	"log"
+	"strings"
 	"sync"
 
 	"github.com/gorilla/websocket"
@@ -15,19 +15,20 @@ var MaxErr = 10
 var mutex sync.Mutex
 
 type RESPONSE_TYPE string
+
 const (
 	TRANSCRIPT_RESPONSE RESPONSE_TYPE = "transcript"
 	TRANSLATE_RESPONSE  RESPONSE_TYPE = "translate"
 )
 
 type Client struct {
-	Conn           *websocket.Conn
-	AssemblyConn   *websocket.Conn
-	Done           chan struct{}
-	Transcript     *TranscriptState
+	Conn                  *websocket.Conn
+	AssemblyConn          *websocket.Conn
+	Done                  chan struct{}
+	Transcript            *TranscriptState
 	CurrentTranscriptWord chan (*TranscriptWriter)
-	TranscriptWord chan (*TranscriptWriter)
-	TranslateWord  chan (*TranslateWriter)
+	TranscriptWord        chan (*TranscriptWriter)
+	TranslateWord         chan (*TranslateWriter)
 }
 
 type TranscriptState struct {
@@ -36,7 +37,7 @@ type TranscriptState struct {
 	NewWords        []AssemblyResponseWord
 	CurrentTurnID   int
 	EndOfTurn       bool
-} 
+}
 
 func (c *Client) addWordsTranscript(t string) *Client {
 	c.Transcript.WordsTranscript <- t
@@ -45,7 +46,7 @@ func (c *Client) addWordsTranscript(t string) *Client {
 
 type TranslateWriter struct {
 	Type  RESPONSE_TYPE `json:"type"`
-	Words string
+	Words string        `json:"words"`
 }
 
 type AssemblyResponseWord struct {
@@ -73,13 +74,13 @@ type TranscriptWriter struct {
 
 func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
 	return &Client{
-		Conn:           Conn,
-		AssemblyConn:   AssemblyConn,
-		Done:           make(chan struct{}),
-		Transcript:     NewTranscriptState(),
+		Conn:                  Conn,
+		AssemblyConn:          AssemblyConn,
+		Done:                  make(chan struct{}),
+		Transcript:            NewTranscriptState(),
 		CurrentTranscriptWord: make(chan (*TranscriptWriter), 1),
-		TranscriptWord: make(chan *TranscriptWriter),
-		TranslateWord:  make(chan *TranslateWriter),
+		TranscriptWord:        make(chan *TranscriptWriter),
+		TranslateWord:         make(chan *TranslateWriter),
 	}
 }
 
@@ -95,7 +96,7 @@ func NewTranscriptState() *TranscriptState {
 
 func NewTranscriptWriter(isFinal bool, words []AssemblyResponseWord) *TranscriptWriter {
 	return &TranscriptWriter{
-		Type: 	  TRANSCRIPT_RESPONSE,
+		Type:        TRANSCRIPT_RESPONSE,
 		IsEndOfTurn: isFinal,
 		Words:       words,
 	}
@@ -238,7 +239,7 @@ func (c *Client) readTranslate() {
 			s := "Hello, this is a test translation. I will handle this later. "
 			arr := strings.Split(s, " ")
 			i := 0
-			for msg := range c.CurrentTranscriptWord{
+			for msg := range c.CurrentTranscriptWord {
 				byteMsg, err := json.Marshal(msg)
 				if err != nil {
 					log.Println("err when encoding transcript word msg: ", err)
@@ -247,12 +248,11 @@ func (c *Client) readTranslate() {
 				_ = byteMsg
 				// TODO: call translation api here
 				// For now just do a dummy translation
-
-				res := NewTranslateWriter(arr[i])
-				i++
 				if i >= len(arr) {
 					i = 0
-				}	
+				}
+				res := NewTranslateWriter(arr[i])
+				i++
 				log.Println("sending translate to chan")
 				c.TranslateWord <- res
 			}

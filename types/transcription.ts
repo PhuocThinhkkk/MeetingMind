@@ -42,4 +42,7 @@ export interface AudioChunk {
   timestamp: number;
 }
 
-    
+export interface RealtimeTranslateResponse {
+    type: "translate";
+    words: string;
+}
