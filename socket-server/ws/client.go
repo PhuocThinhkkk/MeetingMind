@@ -7,26 +7,24 @@ import (
 )
 
 type Client struct {
-	Conn                  *websocket.Conn
-	AssemblyConn          *websocket.Conn
-	Done                  chan struct{}
-	Transcript            *TranscriptState
-	CurrentTranscriptWord chan (*TranscriptWriter)
-	TranscriptWord        chan (*TranscriptWriter)
-	TranslateWord         chan (*TranslateWriter)
-	Mu                    sync.Mutex
+	Conn           *websocket.Conn
+	AssemblyConn   *websocket.Conn
+	Done           chan struct{}
+	Transcript     *TranscriptState
+	TranscriptWord chan (*TranscriptWriter)
+	TranslateWord  chan (*TranslateWriter)
+	Mu             sync.Mutex
 }
 
 func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
 	return &Client{
-		Conn:                  Conn,
-		AssemblyConn:          AssemblyConn,
-		Done:                  make(chan struct{}),
-		Transcript:            NewTranscriptState(),
-		CurrentTranscriptWord: make(chan (*TranscriptWriter), 1),
-		TranscriptWord:        make(chan *TranscriptWriter),
-		TranslateWord:         make(chan *TranslateWriter),
-		Mu:                    sync.Mutex{},
+		Conn:           Conn,
+		AssemblyConn:   AssemblyConn,
+		Done:           make(chan struct{}),
+		Transcript:     NewTranscriptState(),
+		TranscriptWord: make(chan *TranscriptWriter),
+		TranslateWord:  make(chan *TranslateWriter),
+		Mu:             sync.Mutex{},
 	}
 }
 

@@ -105,9 +105,6 @@ func (c *Client) processMsgTranscript() {
 					log.Println("err when update transcript: ", err)
 					return
 				}
-				cw := NewTranscriptWriter(c.Transcript.EndOfTurn, c.Transcript.NewWords)
-				c.TranscriptWord <- cw
-				c.CurrentTranscriptWord <- cw
 
 			}
 		}
@@ -127,7 +124,7 @@ func (c *Client) readTranslate() {
 			s := "Hello, this is a test translation. I will handle this later. "
 			arr := strings.Split(s, " ")
 			i := 0
-			for msg := range c.CurrentTranscriptWord {
+			for msg := range c.Transcript.CurrentWordsTranscript {
 				byteMsg, err := json.Marshal(msg)
 				if err != nil {
 					log.Println("err when encoding transcript word msg: ", err)

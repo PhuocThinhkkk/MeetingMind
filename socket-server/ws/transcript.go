@@ -12,7 +12,7 @@ type TranscriptWriter struct {
 }
 
 type TranscriptState struct {
-	WordsTranscript chan (string)
+	CurrentWordsTranscript chan (string)
 	CurrentSentence []string
 	NewWords        []AssemblyResponseWord
 	CurrentTurnID   int
@@ -36,10 +36,10 @@ func NewTranscriptWriter(isFinal bool, words []AssemblyResponseWord) *Transcript
 	}
 }
 
-
 // Process the json data making the state short to send to client.
 // These words are store in the client state Transcript.
 // The client will receive only the new words or the updated words.
+// Also translate service will use this state to translate only the new words.
 func (c *Client) updateStateTranscript(jsonData []byte) error {
 	var turn AssemblyRessponseTurn
 	err := json.Unmarshal(jsonData, &turn)
@@ -71,10 +71,18 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 	}
 
 	c.Transcript.EndOfTurn = turn.EndOfTurn
-
 	if turn.EndOfTurn {
 		c.Transcript.CurrentSentence = make([]string, 0, 10)
 	}
+
+	clientTranscriptWriter := NewTranscriptWriter(c.Transcript.EndOfTurn, c.Transcript.NewWords)
+	c.TranscriptWord <- clientTranscriptWriter 
+
+	str := ""
+	for _, w := range c.Transcript.NewWords {
+		str += w.Text + " "
+	}
+	c.Transcript.CurrentWordsTranscript <- str
 
 	return nil
 
