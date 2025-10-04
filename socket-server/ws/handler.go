@@ -9,7 +9,7 @@ import (
 )
 
 
-func (c *Client) readClientAudio() {
+func (c *Client) processClientAudio() {
 	errCount := 0
 	defer func() {
 		UnregisterClient(c)
@@ -51,7 +51,7 @@ func (c *Client) readClientAudio() {
 	}
 }
 
-func (c *Client) readMsgTranscript() {
+func (c *Client) processMsgTranscript() {
 	errCount := 0
 	defer func() {
 		UnregisterClient(c)

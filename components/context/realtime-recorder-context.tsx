@@ -184,7 +184,7 @@ export function useRealtimeTranscription({
               return updatedWords;
             });
           } else if (res.type === TRANSLATE_RESPONSE) {
-              console.log("Received translation response:", res);
+            console.log("Received translation response:", res);
             const data: RealtimeTranslateResponse = res;
             if (data.words === "") {
               console.warn("No words in translation response");
@@ -297,6 +297,10 @@ export function useRealtimeTranscription({
             } else {
               console.warn("Audio chunk too large, skipping overflow data");
             }
+          }
+          if (!wsRef.current) {
+            console.log("ws have been closed already");
+            return;
           }
 
           wsRef.current.send(merged.buffer);

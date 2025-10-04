@@ -32,8 +32,8 @@ func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
 
 func RegisterClient(client *Client) {
 
-	go client.readClientAudio()
-	go client.readMsgTranscript()
+	go client.processClientAudio()
+	go client.processMsgTranscript()
 
 	go client.readTranslate()
 

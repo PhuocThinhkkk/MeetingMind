@@ -1,4 +1,5 @@
 package ws
+
 import (
 	"encoding/json"
 	"errors"
@@ -20,7 +21,6 @@ type TranscriptState struct {
 
 func NewTranscriptState() *TranscriptState {
 	return &TranscriptState{
-		WordsTranscript: make(chan string),
 		CurrentSentence: make([]string, 0, 10),
 		CurrentTurnID:   -1,
 		NewWords:        make([]AssemblyResponseWord, 0, 10),
@@ -36,11 +36,10 @@ func NewTranscriptWriter(isFinal bool, words []AssemblyResponseWord) *Transcript
 	}
 }
 
-func (c *Client) addWordsTranscript(t string) *Client {
-	c.Transcript.WordsTranscript <- t
-	return c
-}
 
+// Process the json data making the state short to send to client.
+// These words are store in the client state Transcript.
+// The client will receive only the new words or the updated words.
 func (c *Client) updateStateTranscript(jsonData []byte) error {
 	var turn AssemblyRessponseTurn
 	err := json.Unmarshal(jsonData, &turn)
@@ -53,20 +52,20 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 	c.Transcript.NewWords = make([]AssemblyResponseWord, 0, 10)
 	for index, assemblyWord := range turn.Words {
 
-		c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
 		if !assemblyWord.WordIsFinal {
+			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
 			continue
 		}
 
 		if index >= len(c.Transcript.CurrentSentence) {
 			c.Transcript.CurrentSentence = append(c.Transcript.CurrentSentence, assemblyWord.Text)
+			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
 			continue
 		}
 
 		if assemblyWord.Text != c.Transcript.CurrentSentence[index] {
-
 			c.Transcript.CurrentSentence[index] = assemblyWord.Text
-
+			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
 		}
 
 	}
@@ -74,7 +73,6 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 	c.Transcript.EndOfTurn = turn.EndOfTurn
 
 	if turn.EndOfTurn {
-		c.addWordsTranscript(turn.Transcript)
 		c.Transcript.CurrentSentence = make([]string, 0, 10)
 	}
 
