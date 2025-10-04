@@ -41,3 +41,8 @@ export interface AudioChunk {
   data: ArrayBuffer;
   timestamp: number;
 }
+
+export interface RealtimeTranslateResponse {
+    type: "translate";
+    words: string;
+}

@@ -9,7 +9,7 @@ Go backend comunicate with Assembly for real time transcript.
 ### Create a .env file :
 
 <pre lang="md"><code>
-PORT=8080
+PORT=9090
 FRONTEND_URL=http://localhost:3000
 ASSEMBLYAI_API_KEY=your_api_assembly_key
 </code></pre>
@@ -24,5 +24,5 @@ docker build -t transcript-socket-server .
 run in socket-server/ to use .env file
 
 ````bash
-docker run --env-file .env -p 8080:8080 transcript-socket-server
+docker run --env-file .env -p 9090:9090 transcript-socket-server
 ````

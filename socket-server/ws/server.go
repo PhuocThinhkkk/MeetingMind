@@ -23,7 +23,7 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
-func HandleWS(w http.ResponseWriter, r *http.Request) {
+func RunServer(w http.ResponseWriter, r *http.Request) {
 	log.Println("Incoming request:", r.Method, r.URL.Path)
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
