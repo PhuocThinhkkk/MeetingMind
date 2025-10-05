@@ -5,64 +5,13 @@ import { TranscriptDetails } from "@/components/transcript-details"
 import { useRouter } from "next/navigation"
 import { FileAudio, Clock, HardDrive } from "lucide-react"
 import { StatusBadge } from "@/components/status-badge"
-
-type Transcript = {
-  id: string
-  audio_id: string
-  text: string
-  language: string
-  confidence_score: number
-  speakers_detected: number
-  created_at: string
-}
-
-type AudioFile = {
-  id: string
-  user_id: string
-  name: string
-  url: string
-  duration: number
-  file_size: number
-  mime_type: string
-  transcription_status: string
-  created_at: string
-  updated_at: string
-  transcript: Transcript | null
-}
+import { AudioFile } from "@/types/transcription"
+import {  formatDate, formatDuration, formatFileSize} from "@/lib/utils"
 
 type TranscriptModalProps = {
   audio: AudioFile
 }
 
-function formatDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = seconds % 60
-
-  if (hours > 0) {
-    return `${hours}h ${minutes}m ${secs}s`
-  }
-  return `${minutes}m ${secs}s`
-}
-
-function formatFileSize(bytes: number): string {
-  const mb = bytes / (1024 * 1024)
-  if (mb >= 1000) {
-    return `${(mb / 1024).toFixed(2)} GB`
-  }
-  return `${mb.toFixed(2)} MB`
-}
-
-function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
 
 export function TranscriptModal({ audio }: TranscriptModalProps) {
   const router = useRouter()

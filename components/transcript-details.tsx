@@ -1,30 +1,13 @@
 import { Badge } from "@/components/ui/badge"
 import { Users, Languages, Target, Calendar } from "lucide-react"
+import { Transcript } from "@/types/transcription"
+import { formatDate, } from "@/lib/utils"
 
-type Transcript = {
-  id: string
-  audio_id: string
-  text: string
-  language: string
-  confidence_score: number
-  speakers_detected: number
-  created_at: string
-}
 
 type TranscriptDetailsProps = {
   transcript: Transcript
 }
 
-function formatDate(dateString: string): string {
-  const date = new Date(dateString)
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  })
-}
 
 export function TranscriptDetails({ transcript }: TranscriptDetailsProps) {
   const confidencePercentage = (transcript.confidence_score * 100).toFixed(1)

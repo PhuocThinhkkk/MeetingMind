@@ -106,7 +106,7 @@ export default async function TranscriptHistoryPage({
   const { id } = await searchParams;
   const audioHistory = await getAudioHistory();
   const selectedAudio = id
-    ? audioHistory.find((audio) => audio.id === searchParams.id)
+    ? audioHistory.find((audio) => audio.id === id)
     : null;
 
   return (
