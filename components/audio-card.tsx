@@ -1,0 +1,144 @@
+"use client"
+
+import { Card, CardContent, CardHeader } from "@/components/ui/card"
+import { StatusBadge } from "@/components/status-badge"
+import { TranscriptDetails } from "@/components/transcript-details"
+import { FileAudio, Clock, HardDrive } from "lucide-react"
+
+type Transcript = {
+  id: string
+  audio_id: string
+  text: string
+  language: string
+  confidence_score: number
+  speakers_detected: number
+  created_at: string
+}
+
+type AudioFile = {
+  id: string
+  user_id: string
+  name: string
+  url: string
+  duration: number
+  file_size: number
+  mime_type: string
+  transcription_status: string
+  created_at: string
+  updated_at: string
+  transcript: Transcript | null
+}
+
+type AudioCardProps = {
+  audio: AudioFile
+  isExpanded: boolean
+  onToggle: () => void
+}
+
+function formatDuration(seconds: number): string {
+  const hours = Math.floor(seconds / 3600)
+  const minutes = Math.floor((seconds % 3600) / 60)
+  const secs = seconds % 60
+
+  if (hours > 0) {
+    return `${hours}h ${minutes}m ${secs}s`
+  }
+  return `${minutes}m ${secs}s`
+}
+
+function formatFileSize(bytes: number): string {
+  const mb = bytes / (1024 * 1024)
+  if (mb >= 1000) {
+    return `${(mb / 1024).toFixed(2)} GB`
+  }
+  return `${mb.toFixed(2)} MB`
+}
+
+function formatDate(dateString: string): string {
+  const date = new Date(dateString)
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  })
+}
+
+export function AudioCard({ audio, isExpanded, onToggle }: AudioCardProps) {
+  return (
+    <Card className="overflow-hidden transition-all hover:shadow-md cursor-pointer" onClick={onToggle}>
+      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] min-h-[200px]">
+        {/* Left side - Audio info (compact) */}
+        <div className="border-r">
+          <CardHeader className="pb-3">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex items-start gap-2 flex-1 min-w-0">
+                <div className="p-2 bg-primary/10 rounded-lg shrink-0">
+                  <FileAudio className="w-4 h-4 text-primary" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-semibold text-base text-foreground truncate">{audio.name}</h3>
+                  <p className="text-xs text-muted-foreground mt-1">{formatDate(audio.created_at)}</p>
+                </div>
+              </div>
+              <StatusBadge status={audio.transcription_status} />
+            </div>
+          </CardHeader>
+
+          <CardContent className="space-y-3">
+            <div className="space-y-2">
+              <div className="flex items-center gap-2 text-sm">
+                <Clock className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-muted-foreground text-xs">Duration:</span>
+                <span className="font-medium text-foreground text-xs">{formatDuration(audio.duration)}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <HardDrive className="w-3.5 h-3.5 text-muted-foreground" />
+                <span className="text-muted-foreground text-xs">Size:</span>
+                <span className="font-medium text-foreground text-xs">{formatFileSize(audio.file_size)}</span>
+              </div>
+              <div className="flex items-center gap-2 text-sm">
+                <span className="text-muted-foreground text-xs">Type:</span>
+                <span className="font-medium text-foreground font-mono text-xs">{audio.mime_type}</span>
+              </div>
+            </div>
+
+            {audio.transcription_status === "processing" && (
+              <div className="border-t pt-3 mt-3">
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse" />
+                  <span>Transcribing...</span>
+                </div>
+              </div>
+            )}
+
+            {audio.transcription_status === "failed" && (
+              <div className="border-t pt-3 mt-3">
+                <div className="bg-destructive/10 border border-destructive/20 rounded-lg p-2">
+                  <p className="text-xs text-destructive">Transcription failed.</p>
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </div>
+
+        {/* Right side - Transcript details */}
+        <div className="bg-muted/20">
+          {audio.transcript && isExpanded ? (
+            <div className="p-6">
+              <TranscriptDetails transcript={audio.transcript} />
+            </div>
+          ) : (
+            <div className="flex items-center justify-center h-full p-6">
+              <p className="text-sm text-muted-foreground text-center">
+                {audio.transcript ? "Click to view transcript details" : "No transcript available"}
+              </p>
+            </div>
+          )}
+        </div>
+      </div>
+    </Card>
+  )
+}
+
