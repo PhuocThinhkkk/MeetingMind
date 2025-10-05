@@ -68,7 +68,7 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
   const router = useRouter()
 
   const handleClose = () => {
-    router.push("/transcript-history")
+    router.push("/history")
   }
 
   return (

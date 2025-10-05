@@ -1,27 +1,35 @@
-"use client"
+"use client";
 
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"
-import { Search, Calendar, Filter, ChevronDown, Plus } from "lucide-react"
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { Search, Calendar, Filter, ChevronDown, Plus } from "lucide-react";
 
 export function HistoryToolbar() {
   return (
     <div className="mb-6 space-y-4">
-      {/* Search bar */}
       <div className="flex items-center gap-3">
-        <div className="relative flex-1 max-w-md">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input placeholder="Search" className="pl-9 h-10 bg-background" />
+          <Input
+            placeholder="Search"
+            className="pl-9 h-10 bg-background w-full"
+          />
         </div>
-        <Button size="lg" className="h-10">
+
+        <Button size="lg" className="h-10 flex-shrink-0">
           <Plus className="w-4 h-4 mr-2" />
           New flow
         </Button>
       </div>
 
       {/* Filter toolbar */}
-      <div className="flex items-center gap-3">
+      <div className="flex items-center justify-end gap-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="outline" size="sm" className="h-9 bg-transparent">
@@ -53,6 +61,5 @@ export function HistoryToolbar() {
         </Button>
       </div>
     </div>
-  )
+  );
 }
-

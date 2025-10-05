@@ -2,9 +2,7 @@ import { AudioHistoryList } from "@/components/audio-history-list";
 import { HistoryToolbar } from "@/components/history-toolbar";
 import { TranscriptModal } from "@/components/transcript-modal";
 
-// Mock data simulating database fetch
 async function getAudioHistory() {
-  // Simulating async fetch
   await new Promise((resolve) => setTimeout(resolve, 100));
 
   return [
@@ -112,10 +110,10 @@ export default async function TranscriptHistoryPage({
     : null;
 
   return (
-    <main className="min-h-screen bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
-        <div className="mb-6">
-          <h1 className="text-2xl font-semibold text-foreground">Dashboard</h1>
+    <main className="min-h-screen w-full bg-background">
+      <div className="container mx-aut px-4 py-6 max-w-6xl">
+        <div className="mb-6 border-b pb-3">
+          <h1 className="text-xl font-semibold text-foreground">History Recording</h1>
         </div>
 
         <HistoryToolbar />
