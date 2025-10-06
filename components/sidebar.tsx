@@ -1,4 +1,6 @@
+"use client"
 import type * as React from "react"
+import { usePathname } from "next/navigation"
 import {
   Sidebar,
   SidebarContent,
@@ -14,13 +16,11 @@ import {
 import { Home, Calendar, History, Sparkles } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-// Navigation data
 const navItems = [
   {
     title: "Home",
-    url: "#",
+    url: "home",
     icon: Home,
-    isActive: true,
   },
   {
     title: "Calendar",
@@ -29,12 +29,11 @@ const navItems = [
   },
   {
     title: "History",
-    url: "#",
+    url: "history",
     icon: History,
   },
 ]
 
-// User data (you can replace this with actual user data)
 const user = {
   name: "John Doe",
   email: "john@example.com",
@@ -42,6 +41,7 @@ const user = {
 }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const pathName = usePathname();
   return (
     <Sidebar {...props}>
       <SidebarHeader className="border-b border-sidebar-border">
@@ -70,7 +70,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    isActive={item.isActive}
+                    isActive={pathName === `/${item.url}`}
                     className="h-12 px-3 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
                   >
                     <a href={item.url} className="flex items-center gap-3">
