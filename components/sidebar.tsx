@@ -1,6 +1,9 @@
 "use client"
 import type * as React from "react"
 import { usePathname } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
+import { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabase"
 import {
   Sidebar,
   SidebarContent,
@@ -33,31 +36,57 @@ const navItems = [
     icon: History,
   },
 ]
-
-const user = {
-  name: "John Doe",
-  email: "john@example.com",
-  avatar: "/placeholder.svg?height=32&width=32",
-}
+async function fetchUserProfile(userId: string) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+  
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  
+    return data;
+  }
 
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const [user, setUser] = useState<any>(null);
+
     const pathName = usePathname();
+    const auth  = useAuth();
+    useEffect(() => {
+        loadUserProfile();
+    }, [auth.user]);
+
+    async function loadUserProfile() {
+        if (auth.user) {
+            console.log("fetching user profile", auth.user.id);
+            const res = await fetchUserProfile(auth.user.id);
+            setUser(res);
+        } else {
+            setUser(null);
+        }
+    }
+
+
   return (
     <Sidebar {...props}>
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-3 px-2 py-4">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+            <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name} />
             <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
-              {user.name
+              {user?.name
                 .split(" ")
-                .map((n) => n[0])
+                .map((n : string) => n[0])
                 .join("")}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-sidebar-foreground">{user.name}</span>
-            <span className="text-xs text-sidebar-foreground/70">{user.email}</span>
+            <span className="text-sm font-semibold text-sidebar-foreground">{user?.name}</span>
+            <span className="text-xs text-sidebar-foreground/70">{user?.email}</span>
           </div>
         </div>
       </SidebarHeader>

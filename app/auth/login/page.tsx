@@ -1,44 +1,51 @@
-'use client';
+"use client";
 
-import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import Link from 'next/link';
-import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
-import { Alert, AlertDescription } from '@/components/ui/alert';
-import { Loader2, Mail, Lock, ArrowRight, Mic } from 'lucide-react';
-import { useAuth } from '@/hooks/use-auth';
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Alert, AlertDescription } from "@/components/ui/alert";
+import { Loader2, Mail, Lock, ArrowRight, Mic } from "lucide-react";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function LoginPage() {
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState('');
+  const [error, setError] = useState("");
   const router = useRouter();
   const { signIn, user } = useAuth();
 
   useEffect(() => {
     if (user) {
-      router.push('/dashboard');
+      console.log("User already logged in, redirecting to dashboard", user);
+      router.push("/home");
     }
   }, [user, router]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    setError('');
+    setError("");
 
     try {
       const { error } = await signIn(email, password);
       if (error) {
         setError(error.message);
       } else {
-        router.push('/dashboard');
+        router.push("/dashboard");
       }
     } catch (err) {
-      setError('An unexpected error occurred');
+      setError("An unexpected error occurred");
     } finally {
       setLoading(false);
     }
@@ -51,8 +58,12 @@ export default function LoginPage() {
           <div className="w-16 h-16 bg-blue-600 rounded-xl mx-auto mb-4 flex items-center justify-center shadow-lg hover-lift">
             <Mic className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">Welcome back</h1>
-          <p className="text-gray-600">Sign in to your meeting transcription account</p>
+          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+            Welcome back
+          </h1>
+          <p className="text-gray-600">
+            Sign in to your meeting transcription account
+          </p>
         </div>
 
         <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm animate-slide-up hover-lift">
@@ -102,8 +113,8 @@ export default function LoginPage() {
                 </div>
               </div>
 
-              <Button 
-                type="submit" 
+              <Button
+                type="submit"
                 className="w-full bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
                 disabled={loading}
               >
@@ -112,15 +123,15 @@ export default function LoginPage() {
                 ) : (
                   <ArrowRight className="w-4 h-4 mr-2" />
                 )}
-                {loading ? 'Signing in...' : 'Sign in'}
+                {loading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Dont have an account?{' '}
-                <Link 
-                  href="/auth/signup" 
+                Dont have an account?{" "}
+                <Link
+                  href="/auth/signup"
                   className="text-blue-600 hover:text-blue-700 font-medium transition-colors hover:underline"
                 >
                   Sign up
@@ -133,3 +144,4 @@ export default function LoginPage() {
     </div>
   );
 }
+
