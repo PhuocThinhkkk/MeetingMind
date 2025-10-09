@@ -56,9 +56,9 @@ export type AudioFile = {
   file_size: number
   mime_type: string
   transcription_status: string
-  created_at: string
-  updated_at: string
-  transcript: Transcript | null
+  created_at?: string
+  updated_at?: string
+  transcript?: Transcript | null
 }
 
 export type Transcript = {

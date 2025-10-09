@@ -14,6 +14,9 @@ import {
   RealtimeTranslateResponse,
 } from "@/types/transcription";
 
+import { encodeWAV, mergeChunks } from "@/lib/utils";
+import { saveAudioFile } from "@/lib/query/audio";
+
 type RecorderContextType = {
   isRecording: boolean;
   startRecording: () => Promise<void>;
@@ -35,8 +38,6 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
-  // TODO: store audio later
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const {
     isRecording,
@@ -46,6 +47,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     startRecording,
     stopRecording,
     clearTranscript,
+    audioBlob,
   } = useRealtimeTranscription({
     onError: (error: string) => {
       console.error("Transcription error:", error);
@@ -128,7 +130,9 @@ export function useRealtimeTranscription({
   const isAssemblyReady = useRef(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
+  const currentAudioBufferRef = useRef<Uint8Array[]>([]);
   const audioBufferRef = useRef<Uint8Array[]>([]);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   let totalByteLength = 0;
 
   const updateStatus = useCallback(
@@ -284,13 +288,14 @@ export function useRealtimeTranscription({
         const pcmData = float32ToInt16(resampled);
 
         const chunk = new Uint8Array(pcmData.buffer);
+        currentAudioBufferRef.current.push(chunk);
         audioBufferRef.current.push(chunk);
         totalByteLength += chunk.byteLength;
 
         if (totalByteLength >= 1800) {
           const merged = new Uint8Array(totalByteLength);
           let offset = 0;
-          for (const part of audioBufferRef.current) {
+          for (const part of currentAudioBufferRef.current) {
             if (offset + part.length <= merged.length) {
               merged.set(part, offset);
               offset += part.length;
@@ -305,7 +310,7 @@ export function useRealtimeTranscription({
 
           wsRef.current.send(merged.buffer);
           console.log("Sent audio chunk of size:", merged.byteLength);
-          audioBufferRef.current = [];
+          currentAudioBufferRef.current = [];
           totalByteLength = 0;
         }
       }
@@ -324,6 +329,13 @@ export function useRealtimeTranscription({
     console.log("stop recording");
 
     isAssemblyReady.current = false;
+    if (audioBufferRef.current.length != 0) {
+      const merged = mergeChunks(audioBufferRef.current);
+      const pcm = new Int16Array(merged.buffer);
+      const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
+      setAudioBlob(wavBlob);
+      saveAudioFile(wavBlob, "99f17d87-9f0c-432c-a504-2178a1cebaf5", "hi mom");
+    }
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -340,7 +352,7 @@ export function useRealtimeTranscription({
       audioContextRef.current = null;
     }
 
-    audioBufferRef.current = [];
+    currentAudioBufferRef.current = [];
     totalByteLength = 0;
 
     workletNodeRef.current = null;
@@ -374,6 +386,7 @@ export function useRealtimeTranscription({
     startRecording,
     stopRecording,
     clearTranscript,
+    audioBlob,
   };
 }
 

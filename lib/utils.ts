@@ -90,3 +90,99 @@ export function formatDate(dateString: string): string {
     minute: "2-digit",
   });
 }
+
+/**
+ *
+ * Encodes an Int16Array of audio samples into a WAV file Blob.
+ * The function constructs the WAV file header and appends the PCM samples.
+ * The resulting Blob can be used for playback or saving as a .wav file.
+ *
+ * @param {Int16Array} samples - The input Int16Array containing audio samples.
+ * @param {number} sampleRate - The sample rate of the audio (default is 16000 Hz).
+ * @returns {Blob} - A Blob representing the WAV file.
+ */
+
+export function encodeWAV(samples: Int16Array, sampleRate = 16000) {
+  const buffer = new ArrayBuffer(44 + samples.length * 2);
+  const view = new DataView(buffer);
+
+  // RIFF header
+  writeString(view, 0, "RIFF");
+  view.setUint32(4, 36 + samples.length * 2, true);
+  writeString(view, 8, "WAVE");
+
+  // fmt chunk
+  writeString(view, 12, "fmt ");
+  view.setUint32(16, 16, true); // chunk size
+  view.setUint16(20, 1, true); // PCM format
+  view.setUint16(22, 1, true); // mono
+  view.setUint32(24, sampleRate, true);
+  view.setUint32(28, sampleRate * 2, true); // byte rate
+  view.setUint16(32, 2, true); // block align
+  view.setUint16(34, 16, true); // bits per sample
+
+  // data chunk
+  writeString(view, 36, "data");
+  view.setUint32(40, samples.length * 2, true);
+
+  // PCM samples
+  let offset = 44;
+  for (let i = 0; i < samples.length; i++, offset += 2) {
+    view.setInt16(offset, samples[i], true);
+  }
+
+  return new Blob([view], { type: "audio/wav" });
+}
+
+function writeString(view: DataView, offset: number, str: string) {
+  for (let i = 0; i < str.length; i++) {
+    view.setUint8(offset + i, str.charCodeAt(i));
+  }
+}
+
+
+/**
+ *
+ * Merges multiple Uint8Array chunks into a single Uint8Array.
+ * This is useful for combining audio data received in chunks into a single buffer.
+ *
+ * @param {Uint8Array[]} chunks - An array of Uint8Array chunks to merge.
+ * @returns {Uint8Array} - A single Uint8Array containing all the merged chunks.
+ */
+export function mergeChunks(chunks: Uint8Array[]): Uint8Array {
+  let totalLength = 0;
+  for (const chunk of chunks) {
+    totalLength += chunk.length;
+  }
+
+  const merged = new Uint8Array(totalLength);
+
+  let offset = 0;
+  for (const chunk of chunks) {
+    merged.set(chunk, offset);
+    offset += chunk.length;
+  }
+
+  return merged;
+}
+/**
+ *
+ * Gets the duration of an audio Blob in seconds.
+ * This function creates an HTMLAudioElement, sets its source to the Blob,
+ * and listens for the 'loadedmetadata' event to retrieve the duration.
+ *
+ * @param {Blob} blob - The audio Blob to get the duration of.
+ * @returns {Promise<number>} - A promise that resolves to the duration in seconds.
+ */
+
+export async function getAudioDuration(blob: Blob): Promise<number> {
+  return new Promise((resolve, reject) => {
+    const audio = document.createElement("audio");
+    audio.src = URL.createObjectURL(blob);
+    audio.addEventListener("loadedmetadata", () => {
+      resolve(audio.duration);
+    });
+    audio.addEventListener("error", reject);
+  });
+}
+

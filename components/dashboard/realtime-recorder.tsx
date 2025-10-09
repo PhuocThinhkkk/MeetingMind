@@ -34,6 +34,7 @@ export function RealtimeRecorder({
     setSessionStartTime,
     isRecording,
     status,
+    audioBlob,
   } = useRecorder();
 
   const handleStartRecording = async () => {
