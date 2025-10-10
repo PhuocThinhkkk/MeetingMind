@@ -16,6 +16,7 @@ import {
 
 import { encodeWAV, mergeChunks } from "@/lib/utils";
 import { saveAudioFile } from "@/lib/query/audio";
+import { saveTranscript } from "@/lib/query/transcription";
 
 type RecorderContextType = {
   isRecording: boolean;
@@ -334,7 +335,7 @@ export function useRealtimeTranscription({
       const pcm = new Int16Array(merged.buffer);
       const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
       setAudioBlob(wavBlob);
-      saveAudioFile(wavBlob, "99f17d87-9f0c-432c-a504-2178a1cebaf5", "hi mom");
+      handlingSaveAudioAndTranscript(wavBlob, transcriptWords);
     }
 
     if (streamRef.current) {
@@ -427,4 +428,20 @@ function float32ToInt16(float32) {
     int16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
   }
   return int16;
+}
+
+async function handlingSaveAudioAndTranscript(
+  blob: Blob,
+  transcriptWords: TranscriptionWord[],
+) {
+  try {
+    const audio = await saveAudioFile(
+      blob,
+      "99f17d87-9f0c-432c-a504-2178a1cebaf5",
+      "hi mom",
+    );
+    await saveTranscript(audio.id, transcriptWords);
+  } catch (error) {
+    console.error("Error saving audio or transcript:", error);
+  }
 }

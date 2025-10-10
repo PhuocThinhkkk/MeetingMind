@@ -1,5 +1,19 @@
 import { supabase } from "@/lib/supabase";
 import { getAudioDuration } from "@/lib/utils";
+import { AudioFile } from "@/types/transcription";
+
+export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
+  const { data, error } = await supabase
+    .from("audio_files")
+    .select("*, transcripts(*)")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+  if (error) {
+    console.error("Error fetching audio history:", error);
+    return [];
+  }
+  return (data as AudioFile[]) || [];
+}
 
 /**
     * Saves an audio Blob to Supabase Storage and records its metadata in the database.
@@ -59,5 +73,8 @@ export async function saveAudioFile(
     throw error;
   }
 
-  return data;
+  return data as AudioFile;
 }
+
+
+

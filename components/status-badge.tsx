@@ -7,27 +7,33 @@ type StatusBadgeProps = {
 
 export function StatusBadge({ status }: StatusBadgeProps) {
   const statusConfig = {
-    completed: {
-      label: "Completed",
+    done: {
+      label: "done",
       variant: "default" as const,
       icon: CheckCircle2,
       className: "bg-green-500/10 text-green-700 dark:text-green-400 border-green-500/20",
     },
     processing: {
-      label: "Processing",
+      label: "processing",
       variant: "secondary" as const,
       icon: Clock,
       className: "bg-blue-500/10 text-blue-700 dark:text-blue-400 border-blue-500/20",
     },
-    failed: {
-      label: "Failed",
+    error: {
+      label: "error",
       variant: "destructive" as const,
       icon: XCircle,
       className: "bg-red-500/10 text-red-700 dark:text-red-400 border-red-500/20",
     },
+    unknown: {
+        label: "unknown",
+        variant: "destructive" as const,
+        icon: XCircle,
+        className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20",
+    },
   }
 
-  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.processing
+  const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.unknown
   const Icon = config.icon
 
   return (

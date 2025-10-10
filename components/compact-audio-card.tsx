@@ -6,7 +6,7 @@ import { FileAudio } from "lucide-react";
 import { useRouter } from "next/navigation";
 import TimeDisplay from "@/components/time-display";
 import { AudioFile } from "@/types/transcription";
-import {  formatDuration, formatFileSize} from "@/lib/utils"
+import { formatDuration, formatFileSize } from "@/lib/utils";
 
 type CompactAudioCardProps = {
   audio: AudioFile;
@@ -16,9 +16,7 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
   const router = useRouter();
 
   const handleClick = () => {
-    if (audio.transcript) {
-      router.push(`?id=${audio.id}`);
-    }
+    router.push(`?audioId=${audio.id}`);
   };
 
   return (
@@ -48,4 +46,3 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
     </Card>
   );
 }
-

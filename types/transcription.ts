@@ -1,8 +1,8 @@
 export interface TranscriptionData {
   id: string;
   name: string;
-  type: 'file' | 'realtime';
-  status: 'pending' | 'processing' | 'done' | 'failed' | 'recording';
+  type: "file" | "realtime";
+  status: "pending" | "processing" | "done" | "failed" | "recording";
   duration?: number;
   created_at: string;
   transcript?: {
@@ -34,7 +34,7 @@ export interface RealtimeTranscriptChunk {
 }
 
 export interface BeginMsg {
-  type : "ready"
+  type: "ready";
 }
 
 export interface AudioChunk {
@@ -43,30 +43,32 @@ export interface AudioChunk {
 }
 
 export interface RealtimeTranslateResponse {
-    type: "translate";
-    words: string;
+  type: "translate";
+  words: string;
 }
 
 export type AudioFile = {
-  id: string
-  user_id: string
-  name: string
-  url: string
-  duration: number
-  file_size: number
-  mime_type: string
-  transcription_status: string
-  created_at?: string
-  updated_at?: string
-  transcript?: Transcript | null
-}
+  id: string;
+  user_id: string;
+  name: string;
+  url: string;
+  duration: number;
+  file_size: number;
+  mime_type: string;
+  transcription_status: string;
+  created_at: string;
+  updated_at: string;
+  transcripts?: Transcript | null;
+};
+export type SaveAudioFileInput = Omit<
+  AudioFile,
+  "id" | "created_at" | "updated_at"
+>;
 
 export type Transcript = {
-  id: string
-  audio_id: string
-  text: string
-  language: string
-  confidence_score: number
-  speakers_detected: number
-  created_at: string
-}
+  id: string;
+  audio_id: string;
+  text: string;
+  created_at: string;
+};
+export type SaveTranscriptInput = TranscriptionWord[];

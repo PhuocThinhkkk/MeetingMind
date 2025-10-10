@@ -1,63 +1,48 @@
-import { Badge } from "@/components/ui/badge"
-import { Users, Languages, Target, Calendar } from "lucide-react"
-import { Transcript } from "@/types/transcription"
-import { formatDate, } from "@/lib/utils"
-
+import { Badge } from "@/components/ui/badge";
+import { Calendar } from "lucide-react";
+import { Transcript } from "@/types/transcription";
+import { formatDate } from "@/lib/utils";
 
 type TranscriptDetailsProps = {
-  transcript: Transcript
-}
-
+  transcript: Transcript;
+};
 
 export function TranscriptDetails({ transcript }: TranscriptDetailsProps) {
-  const confidencePercentage = (transcript.confidence_score * 100).toFixed(1)
+  let currentTranscriptId;
+  if (transcript.id) {
+    currentTranscriptId = transcript.id.slice(0, 8) + "...";
+  } else {
+    currentTranscriptId = "N/A";
+    console.error("Transcript ID is undefined", transcript);
+  }
 
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 gap-4">
         <div className="flex items-center gap-2">
-          <Languages className="w-4 h-4 text-muted-foreground" />
-          <div>
-            <p className="text-xs text-muted-foreground">Language</p>
-            <p className="text-sm font-medium text-foreground">{transcript.language}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Target className="w-4 h-4 text-muted-foreground" />
-          <div>
-            <p className="text-xs text-muted-foreground">Confidence</p>
-            <p className="text-sm font-medium text-foreground">{confidencePercentage}%</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <Users className="w-4 h-4 text-muted-foreground" />
-          <div>
-            <p className="text-xs text-muted-foreground">Speakers</p>
-            <p className="text-sm font-medium text-foreground">{transcript.speakers_detected}</p>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
           <Calendar className="w-4 h-4 text-muted-foreground" />
           <div>
             <p className="text-xs text-muted-foreground">Transcribed</p>
-            <p className="text-sm font-medium text-foreground">{formatDate(transcript.created_at)}</p>
+            <p className="text-sm font-medium text-foreground">
+              {formatDate(transcript.created_at)}
+            </p>
           </div>
         </div>
       </div>
 
       <div className="bg-background rounded-lg p-4 border">
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-semibold text-foreground">Transcript Text</h4>
+          <h4 className="text-sm font-semibold text-foreground">
+            Transcript Text
+          </h4>
           <Badge variant="secondary" className="text-xs">
-            ID: {transcript.id.slice(0, 8)}...
+            ID: {currentTranscriptId}
           </Badge>
         </div>
-        <p className="text-sm text-foreground leading-relaxed">{transcript.text}</p>
+        <p className="text-sm text-foreground leading-relaxed">
+          {transcript.text}
+        </p>
       </div>
     </div>
-  )
+  );
 }
-

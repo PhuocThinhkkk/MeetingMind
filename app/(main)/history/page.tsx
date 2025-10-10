@@ -3,23 +3,11 @@ import { AudioHistoryList } from "@/components/audio-history-list";
 import { useAuth } from "@/hooks/use-auth";
 import { HistoryToolbar } from "@/components/history-toolbar";
 import { TranscriptModal } from "@/components/transcript-modal";
-import { supabase } from "@/lib/supabase";
+import { getAudioHistory } from "@/lib/query/audio";
 import { AudioFile } from "@/types/transcription";
 import React from "react";
 import { useSearchParams } from "next/navigation";
 
-async function getAudioHistory(userId: string): Promise<AudioFile[]> {
-  const { data, error } = await supabase
-    .from("audio_files")
-    .select("*")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
-  if (error) {
-    console.error("Error fetching audio history:", error);
-    return [];
-  }
-  return (data as AudioFile[]) || [];
-}
 
 export default function TranscriptHistoryPage() {
   const [audios, setAudios] = React.useState<AudioFile[]>([]);
