@@ -23,8 +23,15 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
     <Card
       className="p-3 hover:bg-accent/50 transition-colors cursor-pointer"
       onClick={handleClick}
-    >
-      <div className="flex items-center gap-3">
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          handleClick();
+        }
+      }}
+      role="button"
+      tabIndex={0}
+    >      <div className="flex items-center gap-3">
         <div className="p-2 bg-primary/10 rounded-lg shrink-0">
           <FileAudio className="w-4 h-4 text-primary" />
         </div>

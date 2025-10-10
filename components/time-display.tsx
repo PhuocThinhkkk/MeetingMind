@@ -20,12 +20,15 @@ export default function TimeDisplay({ dateString }: { dateString: string }) {
 
   useEffect(() => {
     const date = new Date(dateString);
+    if (isNaN(date.getTime())) {
+      setTime("--:--");
+      return;
+    }
     const formatted = date.toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
     setTime(formatted);
   }, [dateString]);
-
   return <span>{time}</span>;
 }

@@ -4,9 +4,7 @@ import { CheckCircle2, Clock, XCircle } from "lucide-react"
 type StatusBadgeProps = {
   status: string
 }
-
-export function StatusBadge({ status }: StatusBadgeProps) {
-  const statusConfig = {
+const statusConfig = {
     done: {
       label: "done",
       variant: "default" as const,
@@ -32,6 +30,9 @@ export function StatusBadge({ status }: StatusBadgeProps) {
         className: "bg-yellow-500/10 text-yellow-700 dark:text-yellow-400 border-yellow-500/20",
     },
   }
+
+export function StatusBadge({ status }: StatusBadgeProps) {
+  
 
   const config = statusConfig[status as keyof typeof statusConfig] || statusConfig.unknown
   const Icon = config.icon

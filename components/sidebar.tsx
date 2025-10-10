@@ -78,10 +78,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
           <Avatar className="h-10 w-10">
             <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name} />
             <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
-              {user?.name
-                .split(" ")
-                .map((n : string) => n[0])
-                .join("")}
+              {(user?.name?.split(" ") ?? [])
+                .map((n) => n?.[0] ?? "")
+                .join("") || "?"}            
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">

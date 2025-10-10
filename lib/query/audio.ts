@@ -39,50 +39,59 @@ export async function saveAudioFile(
   name: string,
 ) {
 
-  const mimeType = blob.type;
-  const fileSize = blob.size;
+    const mimeType = blob.type;
+    const fileSize = blob.size;
 
-  const filePath = `recordings/${userId}/${Date.now()}-${name}.wav`;
+    const filePath = `recordings/${userId}/${Date.now()}-${name}.wav`;
 
-  const { error: uploadError } = await supabase.storage
-    .from("audio-files")
-    .upload(filePath, blob, {
-      contentType: mimeType,
-    });
+    const { error: uploadError } = await supabase.storage
+      .from("audio-files")
+      .upload(filePath, blob, {
+        contentType: mimeType,
+      });
 
-  if (uploadError) {
-    console.error("Upload error:", uploadError);
-    throw uploadError;
-  }
+    if (uploadError) {
+      console.error("Upload error:", uploadError);
+      throw uploadError;
+    }
 
-  const { data: publicUrlData } = supabase.storage
-    .from("audio-files")
-    .getPublicUrl(filePath);
+    const { data: publicUrlData } = supabase.storage
+      .from("audio-files")
+      .getPublicUrl(filePath);
 
-  const url = publicUrlData.publicUrl;
+    const url = publicUrlData.publicUrl;
 
-  const duration = await getAudioDuration(blob);
+    let duration
+    try {
+      duration = await getAudioDuration(blob);
+    } catch (err){
+      console.error("Error when saving audio file: ", err)
+    }
+    if ( duration == undefined ) {
+      duration = 0;
+    } 
 
-  const { data, error } = await supabase
-    .from("audio_files")
-    .insert({
-      user_id: userId,
-      name,
-      url,
-      duration: Math.round(duration),
-      file_size: fileSize,
-      mime_type: mimeType,
-      transcription_status: "done",
-    })
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from("audio_files")
+      .insert({
+        user_id: userId,
+        name,
+        url,
+        duration: Math.round(duration),
+        file_size: fileSize,
+        mime_type: mimeType,
+        transcription_status: "done",
+      })
+      .select()
+      .single();
 
-  if (error) {
-    console.error("DB insert error:", error);
-    throw error;
-  }
+    if (error) {
+      console.error("DB insert error:", error);
+      throw error;
+    }
 
-  return data as AudioFile;
+    return data as AudioFile;
+ 
 }
 
 

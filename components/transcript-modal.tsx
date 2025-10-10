@@ -20,7 +20,6 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
     router.push("/history")
   }
 
-  console.log("Rendering TranscriptModal for audio:", audio)
   return (
     <Dialog open={true} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">

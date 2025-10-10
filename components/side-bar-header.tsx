@@ -10,8 +10,7 @@ export default function SideBarHeader() {
         orientation="vertical"
         className="mr-2 data-[orientation=vertical]:h-4"
       />
-      <span className="text-lg font-semibold">Transciption</span>
-      <div className="flex justify-end flex-1">
+      <span className="text-lg font-semibold">Transcription</span>      <div className="flex justify-end flex-1">
         <SignOutBtn />
       </div>
     </header>

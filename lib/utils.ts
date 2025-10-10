@@ -27,14 +27,14 @@ export function convertFloat32ToInt16(buffer: Float32Array) {
 }
 
 export function waitFor(timeout = 5000): Promise<void> {
-  return new Promise((resolve, reject) => {
+  return new Promise((resolve) => {
     setTimeout(() => {
       const seconds = timeout / 1000;
       console.log("Wait for ", seconds, " seconds!");
+      resolve();
     }, timeout);
   });
 }
-
 /**
  *
  * Formats a duration given in seconds into a human-readable string.
@@ -47,14 +47,13 @@ export function waitFor(timeout = 5000): Promise<void> {
 export function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
   const minutes = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
+  const secs = Math.floor(seconds % 60);
 
   if (hours > 0) {
     return `${hours}h ${minutes}m ${secs}s`;
   }
   return `${minutes}m ${secs}s`;
 }
-
 /**
  *
  * Formats a file size given in bytes into a human-readable string in MB or GB.
@@ -66,7 +65,7 @@ export function formatDuration(seconds: number): string {
  */
 export function formatFileSize(bytes: number): string {
   const mb = bytes / (1024 * 1024);
-  if (mb >= 1000) {
+  if (mb >= 1024) {
     return `${(mb / 1024).toFixed(2)} GB`;
   }
   return `${mb.toFixed(2)} MB`;
@@ -178,11 +177,15 @@ export function mergeChunks(chunks: Uint8Array[]): Uint8Array {
 export async function getAudioDuration(blob: Blob): Promise<number> {
   return new Promise((resolve, reject) => {
     const audio = document.createElement("audio");
-    audio.src = URL.createObjectURL(blob);
+    const url = URL.createObjectURL(blob);
+    audio.src = url;
     audio.addEventListener("loadedmetadata", () => {
+      URL.revokeObjectURL(url);
       resolve(audio.duration);
     });
-    audio.addEventListener("error", reject);
+    audio.addEventListener("error", (error) => {
+      URL.revokeObjectURL(url);
+      reject(error);
+    });
   });
 }
-

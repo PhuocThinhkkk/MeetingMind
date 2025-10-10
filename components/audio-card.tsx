@@ -17,8 +17,19 @@ type AudioCardProps = {
 
 export function AudioCard({ audio, isExpanded, onToggle }: AudioCardProps) {
   return (
-    <Card className="overflow-hidden transition-all hover:shadow-md cursor-pointer" onClick={onToggle}>
-      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] min-h-[200px]">
+    <Card 
+      className="overflow-hidden transition-all hover:shadow-md cursor-pointer" 
+      onClick={onToggle}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault()
+          onToggle()
+        }
+      }}
+      tabIndex={0}
+      role="button"
+      aria-expanded={isExpanded}
+    >      <div className="grid grid-cols-1 lg:grid-cols-[350px_1fr] min-h-[200px]">
         {/* Left side - Audio info (compact) */}
         <div className="border-r">
           <CardHeader className="pb-3">

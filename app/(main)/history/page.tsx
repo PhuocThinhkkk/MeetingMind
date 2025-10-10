@@ -14,24 +14,22 @@ export default function TranscriptHistoryPage() {
   const { user } = useAuth();
 
   React.useEffect(() => {
-      initializeAudiosFetch();
-  }, [user]); // we need this cuz user isnt defined on first render
-  //shit 
-  //shit
+      async function initializeAudiosFetch() {
+          if (!user) {
+              setAudios([]);
+              return;
+          }
+          const audios = await getAudioHistory(user.id);
+          if (audios.length === 0) {
+              setAudios([]);
+              return;
+          }
+          console.log("Fetched audio history for user", user.id, audios);
+          setAudios(audios);
+      }
 
-  async function initializeAudiosFetch(){
-    if (!user) {
-      setAudios([]);
-      return;
-    }
-    const audios = await getAudioHistory(user.id)
-    if( audios.length === 0 ){
-        setAudios([]);
-        return;
-    }
-    console.log("Fetched audio history for user", user.id, audios);
-    setAudios(audios);
-  }
+      initializeAudiosFetch();
+  }, [user]);
 
   const searchParams = useSearchParams();
   const audioId = searchParams.get("audioId");
@@ -41,8 +39,7 @@ export default function TranscriptHistoryPage() {
 
   return (
     <main className="min-h-screen w-full bg-background">
-      <div className="container mx-aut px-4 py-6 max-w-6xl">
-        <div className="mb-6 border-b pb-3">
+      <div className="container mx-auto px-4 py-6 max-w-6xl">        <div className="mb-6 border-b pb-3">
           <h1 className="text-xl font-semibold text-foreground">
             History Recording
           </h1>

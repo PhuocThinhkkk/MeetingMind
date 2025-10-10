@@ -37,3 +37,5 @@ next-env.d.ts
 
 
 socket-server/.env
+
+.vscode

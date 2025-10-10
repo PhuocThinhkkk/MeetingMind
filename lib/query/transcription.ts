@@ -13,7 +13,10 @@ export async function saveTranscript(
   audioId: string,
   transcripts: SaveTranscriptInput,
 ) {
-    const transcriptText = transcripts.map(t => t.text).join(' ');
+  if (!transcripts || transcripts.length === 0) {
+    throw new Error('Transcripts array cannot be empty');
+  }
+  const transcriptText = transcripts.map(t => t.text).join(' ');
   const { data, error } = await supabase
     .from("transcripts")
     .insert({

@@ -134,8 +134,7 @@ export function useRealtimeTranscription({
   const currentAudioBufferRef = useRef<Uint8Array[]>([]);
   const audioBufferRef = useRef<Uint8Array[]>([]);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  let totalByteLength = 0;
-
+  const totalByteLengthRef = useRef<number>(0);
   const updateStatus = useCallback(
     (newStatus: typeof status) => {
       console.log("status change!", newStatus);
@@ -291,10 +290,10 @@ export function useRealtimeTranscription({
         const chunk = new Uint8Array(pcmData.buffer);
         currentAudioBufferRef.current.push(chunk);
         audioBufferRef.current.push(chunk);
-        totalByteLength += chunk.byteLength;
+        totalByteLengthRef.current += chunk.byteLength;
 
-        if (totalByteLength >= 1800) {
-          const merged = new Uint8Array(totalByteLength);
+        if (totalByteLengthRef.current >= 1800) {
+          const merged = new Uint8Array(totalByteLengthRef.current);
           let offset = 0;
           for (const part of currentAudioBufferRef.current) {
             if (offset + part.length <= merged.length) {
@@ -312,7 +311,7 @@ export function useRealtimeTranscription({
           wsRef.current.send(merged.buffer);
           console.log("Sent audio chunk of size:", merged.byteLength);
           currentAudioBufferRef.current = [];
-          totalByteLength = 0;
+          totalByteLengthRef.current = 0;
         }
       }
     };
@@ -330,14 +329,13 @@ export function useRealtimeTranscription({
     console.log("stop recording");
 
     isAssemblyReady.current = false;
-    if (audioBufferRef.current.length != 0) {
+    if (audioBufferRef.current.length !== 0) {
       const merged = mergeChunks(audioBufferRef.current);
       const pcm = new Int16Array(merged.buffer);
       const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
       setAudioBlob(wavBlob);
       handlingSaveAudioAndTranscript(wavBlob, transcriptWords);
     }
-
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -354,7 +352,7 @@ export function useRealtimeTranscription({
     }
 
     currentAudioBufferRef.current = [];
-    totalByteLength = 0;
+    totalByteLengthRef.current = 0;
 
     workletNodeRef.current = null;
 
