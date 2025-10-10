@@ -4,6 +4,11 @@ import { Button } from "@/components/ui/button";
 import { LogOut } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 
+/**
+ * Renders a "Sign Out" button that signs the user out and then navigates to the login page.
+ *
+ * @returns A Button element that triggers sign-out and redirects the user to `/auth/login` when clicked.
+ */
 export function SignOutBtn() {
 
   const router = useRouter();

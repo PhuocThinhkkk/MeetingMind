@@ -7,6 +7,14 @@ type TranscriptDetailsProps = {
   transcript: Transcript;
 };
 
+/**
+ * Renders transcript metadata and content with a trimmed ID badge and formatted date.
+ *
+ * Displays the transcribed date, a header containing a truncated transcript ID (first 8 characters followed by "..." or "N/A" when absent), and the transcript text. If `transcript.id` is undefined, an error is logged to the console.
+ *
+ * @param transcript - The transcript object to display (expected to include `id`, `created_at`, and `text`).
+ * @returns A React element showing the transcript's date, ID badge, and text content.
+ */
 export function TranscriptDetails({ transcript }: TranscriptDetailsProps) {
   let currentTranscriptId;
   if (transcript.id) {

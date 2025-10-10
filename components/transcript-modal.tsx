@@ -13,6 +13,15 @@ type TranscriptModalProps = {
 }
 
 
+/**
+ * Render a modal dialog showing details and transcript for an audio file.
+ *
+ * Displays the audio title, creation date, transcription status, metadata (duration, file size, MIME type),
+ * and either the transcript content or a "No transcript available" fallback. Closing the dialog navigates to `/history`.
+ *
+ * @param audio - The audio file metadata and optional transcript to display
+ * @returns A JSX element containing the transcript modal dialog
+ */
 export function TranscriptModal({ audio }: TranscriptModalProps) {
   const router = useRouter()
 
@@ -74,4 +83,3 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
     </Dialog>
   )
 }
-

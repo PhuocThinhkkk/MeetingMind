@@ -3,11 +3,13 @@ import { supabase } from "@/lib/supabase";
 
 
 /**
- * Saves a transcript to the database.
- * @param {string} audioId - The ID of the associated audio file.
- * @param {SaveTranscriptInput} transcript - The transcript data to save.
- * @returns {Promise<any>} - The database record of the saved transcript.
- * @throws Will throw an error if the database insert fails.
+ * Save a transcript for an audio file to the database.
+ *
+ * @param audioId - The ID of the associated audio file.
+ * @param transcripts - Array of transcript segments whose `text` fields will be concatenated and stored.
+ * @returns The inserted transcript record from the database.
+ * @throws If `transcripts` is empty.
+ * @throws If the database insert operation fails.
  */
 export async function saveTranscript(
   audioId: string,

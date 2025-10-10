@@ -36,7 +36,13 @@ const navItems = [
     icon: History,
   },
 ]
-async function fetchUserProfile(userId: string) {
+/**
+   * Load a user profile from the `users` table for the given user ID.
+   *
+   * @param userId - The id of the user to fetch
+   * @returns The user record object if found, `null` when an error occurs or no record is returned
+   */
+  async function fetchUserProfile(userId: string) {
     const { data, error } = await supabase
       .from('users')
       .select('*')
@@ -51,6 +57,11 @@ async function fetchUserProfile(userId: string) {
     return data;
   }
 
+/**
+ * Renders the application's main sidebar with user profile, navigation, and footer; loads the current user's profile when authentication state changes.
+ *
+ * @returns A Sidebar element populated with the current user's avatar, name, and email (when available), a navigation menu whose active item is derived from the current pathname, and a footer with product branding.
+ */
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     const [user, setUser] = useState<any>(null);
 

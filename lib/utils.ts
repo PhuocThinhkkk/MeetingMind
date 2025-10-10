@@ -1,20 +1,23 @@
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
+/**
+ * Combines multiple class value inputs into a single merged class string, resolving Tailwind CSS class conflicts.
+ *
+ * @param inputs - One or more class values (strings, arrays, objects, etc.) to be combined and merged
+ * @returns The resulting merged class name string
+ */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
 /**
+ * Convert a Float32Array of normalized PCM samples to 16-bit PCM samples.
  *
- * Converts a Float32Array buffer to an Int16Array buffer.
- * This is useful for audio processing where 16-bit PCM data is required.
- * Each float value in the input buffer is clamped between -1 and 1,
- * then scaled to the range of Int16 (-32768 to 32767).
- * Using this function because Assembly just supports Int16 PCM audio format.
+ * Each input sample is clamped to the range -1 to 1 and mapped to the signed 16-bit integer range (-32768 to 32767).
  *
- * @param {Float32Array} buffer - The input Float32Array buffer containing audio samples.
- * @returns {Int16Array} - The resulting Int16Array buffer with converted audio samples.
+ * @param buffer - Input Float32Array of normalized audio samples.
+ * @returns The converted Int16Array containing 16-bit PCM samples.
  */
 export function convertFloat32ToInt16(buffer: Float32Array) {
   const l = buffer.length;
@@ -26,6 +29,12 @@ export function convertFloat32ToInt16(buffer: Float32Array) {
   return int16Buffer;
 }
 
+/**
+ * Delays execution for the specified number of milliseconds.
+ *
+ * @param timeout - Delay duration in milliseconds (default: 5000)
+ * @returns No value.
+ */
 export function waitFor(timeout = 5000): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(() => {
@@ -36,13 +45,10 @@ export function waitFor(timeout = 5000): Promise<void> {
   });
 }
 /**
+ * Formats a duration in seconds into a human-readable string.
  *
- * Formats a duration given in seconds into a human-readable string.
- * examples:
- * - 3661 seconds -> "1h 1m 1s"
- * - 61 seconds -> "1m 1s"
- * @param {number} seconds - The duration in seconds to format.
- * @returns {string} - The formatted duration string.
+ * @param seconds - Duration in seconds to format.
+ * @returns The formatted duration as "Xh Ym Zs" when hours are present, otherwise "Ym Zs".
  */
 export function formatDuration(seconds: number): string {
   const hours = Math.floor(seconds / 3600);
@@ -55,13 +61,10 @@ export function formatDuration(seconds: number): string {
   return `${minutes}m ${secs}s`;
 }
 /**
+ * Format a byte count into a human-readable size string using MB or GB.
  *
- * Formats a file size given in bytes into a human-readable string in MB or GB.
- * examples:
- * - 10485760 bytes -> "10.00 MB"
- *   - 1073741824 bytes -> "1.00 GB"
- *   @param {number} bytes - The file size in bytes to format.
- *   @returns {string} - The formatted file size string.
+ * @param bytes - File size in bytes.
+ * @returns The size formatted with two decimal places, using "MB" when under 1024 MB and "GB" otherwise.
  */
 export function formatFileSize(bytes: number): string {
   const mb = bytes / (1024 * 1024);
@@ -72,12 +75,10 @@ export function formatFileSize(bytes: number): string {
 }
 
 /**
+ * Formats an ISO date string into an en-US localized date and time string.
  *
- * Formats an ISO date string into a human-readable date and time string.
- * Example:
- * - "2023-10-05T14:48:00.000Z" -> "Oct 5, 2023, 02:48 PM"
- * @param {string} dateString - The ISO date string to format.
- * @returns {string} - The formatted date string.
+ * @param dateString - The ISO date string to format (e.g., "2023-10-05T14:48:00.000Z").
+ * @returns The formatted date and time in en-US locale (e.g., "Oct 5, 2023, 02:48 PM").
  */
 export function formatDate(dateString: string): string {
   const date = new Date(dateString);
@@ -91,14 +92,13 @@ export function formatDate(dateString: string): string {
 }
 
 /**
+ * Encodes 16-bit PCM samples into a WAV file Blob.
  *
- * Encodes an Int16Array of audio samples into a WAV file Blob.
- * The function constructs the WAV file header and appends the PCM samples.
- * The resulting Blob can be used for playback or saving as a .wav file.
+ * Constructs a RIFF/WAVE file with a mono, 16-bit PCM fmt chunk and a data chunk, and returns a Blob with MIME type `audio/wav`.
  *
- * @param {Int16Array} samples - The input Int16Array containing audio samples.
- * @param {number} sampleRate - The sample rate of the audio (default is 16000 Hz).
- * @returns {Blob} - A Blob representing the WAV file.
+ * @param samples - The Int16Array of 16-bit PCM audio samples.
+ * @param sampleRate - The audio sample rate in hertz (defaults to 16000).
+ * @returns A Blob containing the encoded WAV file suitable for playback or saving.
  */
 
 export function encodeWAV(samples: Int16Array, sampleRate = 16000) {
@@ -133,6 +133,15 @@ export function encodeWAV(samples: Int16Array, sampleRate = 16000) {
   return new Blob([view], { type: "audio/wav" });
 }
 
+/**
+ * Writes an ASCII string into a DataView as consecutive bytes starting at the given offset.
+ *
+ * Each character's UTF-16 code unit is written as a single byte (low 8 bits) using `setUint8`.
+ *
+ * @param view - The DataView to write bytes into
+ * @param offset - The byte offset in `view` where writing begins
+ * @param str - The string whose characters will be written as bytes
+ */
 function writeString(view: DataView, offset: number, str: string) {
   for (let i = 0; i < str.length; i++) {
     view.setUint8(offset + i, str.charCodeAt(i));
@@ -141,12 +150,10 @@ function writeString(view: DataView, offset: number, str: string) {
 
 
 /**
+ * Concatenates an array of Uint8Array chunks into a single contiguous Uint8Array, preserving order.
  *
- * Merges multiple Uint8Array chunks into a single Uint8Array.
- * This is useful for combining audio data received in chunks into a single buffer.
- *
- * @param {Uint8Array[]} chunks - An array of Uint8Array chunks to merge.
- * @returns {Uint8Array} - A single Uint8Array containing all the merged chunks.
+ * @param chunks - The byte chunks to concatenate.
+ * @returns A Uint8Array containing the concatenated bytes of all chunks in order.
  */
 export function mergeChunks(chunks: Uint8Array[]): Uint8Array {
   let totalLength = 0;
@@ -165,13 +172,11 @@ export function mergeChunks(chunks: Uint8Array[]): Uint8Array {
   return merged;
 }
 /**
+ * Retrieve the duration of an audio Blob in seconds.
  *
- * Gets the duration of an audio Blob in seconds.
- * This function creates an HTMLAudioElement, sets its source to the Blob,
- * and listens for the 'loadedmetadata' event to retrieve the duration.
- *
- * @param {Blob} blob - The audio Blob to get the duration of.
- * @returns {Promise<number>} - A promise that resolves to the duration in seconds.
+ * @param blob - The audio Blob to measure
+ * @returns The audio duration in seconds
+ * @throws If the audio metadata cannot be loaded, rejects with the underlying error
  */
 
 export async function getAudioDuration(blob: Blob): Promise<number> {

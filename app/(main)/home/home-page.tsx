@@ -28,6 +28,13 @@ interface AudioFile {
   progress?: number;
 }
 
+/**
+ * Renders the dashboard for uploading, recording, and viewing transcriptions of audio meetings.
+ *
+ * Redirects unauthenticated users to /auth/login, loads recent audio files for the signed-in user, and provides handlers for file upload and realtime transcription completion. Displays upload and realtime recorder controls and a list of recent meetings with transcription status, progress indicators, and per-item actions.
+ *
+ * @returns The page element containing upload/recorder controls and the recent meetings list.
+ */
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();
@@ -267,4 +274,3 @@ export default function HomePage() {
     </div>
   );
 }
-

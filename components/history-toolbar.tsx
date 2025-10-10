@@ -10,6 +10,11 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Search, Calendar, Filter, ChevronDown, Plus } from "lucide-react";
 
+/**
+ * Render a toolbar with a search input, a primary "New flow" button, and right-aligned filter controls for the history view.
+ *
+ * @returns A JSX element containing: a search input with leading icon, a "New flow" action button, a dropdown for status filtering (All, Completed, Processing, Failed), and compact buttons for date range, filter, and adding a new column.
+ */
 export function HistoryToolbar() {
   return (
     <div className="mb-6 space-y-4">

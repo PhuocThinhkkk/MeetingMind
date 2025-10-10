@@ -2,6 +2,15 @@ import { supabase } from "@/lib/supabase";
 import { getAudioDuration } from "@/lib/utils";
 import { AudioFile } from "@/types/transcription";
 
+/**
+ * Retrieve a user's audio history including their associated transcript (if any).
+ *
+ * The results are ordered by creation time descending. Each returned item’s
+ * `transcript` field is normalized to the first related transcript object or `null`.
+ *
+ * @param userId - The user id to filter audio records by
+ * @returns An array of `AudioFile` objects with normalized `transcript` values
+ */
 export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
   const { data, error } = await supabase
     .from("audio_files")
@@ -25,13 +34,11 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
 }
 
 /**
-    * Saves an audio Blob to Supabase Storage and records its metadata in the database.
-    * @param {Blob} blob - The audio Blob to save.
-    * @param {string} userId - The ID of the user uploading the audio.
-    * @param {string} name - The name to assign to the audio file.
-    * @returns {Promise<any>} - The database record of the saved audio file.
-    * @throws Will throw an error if the upload or database insert fails.
-    */
+ * Save an audio Blob to Supabase Storage and record its metadata in the database.
+ *
+ * @returns The created `AudioFile` record inserted into the `audio_files` table
+ * @throws The Supabase upload error or database insertion error if the storage upload or DB insert fails
+ */
 
 export async function saveAudioFile(
   blob: Blob,
@@ -93,6 +100,5 @@ export async function saveAudioFile(
     return data as AudioFile;
  
 }
-
 
 
