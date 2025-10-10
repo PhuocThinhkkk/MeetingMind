@@ -1,19 +1,12 @@
 import { useEffect, useState } from "react";
 
 /**
+ * Renders a local time string (e.g., "02:48 PM") from an ISO date string.
  *
- * Displays a time (in "hh:mm AM/PM" format) from a given ISO date string.
- * This component formats the date on the client only,
- * preventing SSR hydration mismatches caused by timezone differences.
+ * Computes the display value on the client to avoid SSR timezone/hydration mismatches.
  *
- * @example
- * ```tsx
- * <TimeDisplay dateString="2023-10-05T14:48:00.000Z" />
- * // Renders "02:48 PM" in a UTC-4 local timezone.
- * ```
- *
- * @param dateString - The ISO date string to format and display.
- * @returns A <span> element with the formatted local time.
+ * @param dateString - ISO 8601 date string to format.
+ * @returns A <span> element containing the formatted local time or "--:--" if the input is an invalid date.
  */
 export default function TimeDisplay({ dateString }: { dateString: string }) {
   const [time, setTime] = useState<string>("");

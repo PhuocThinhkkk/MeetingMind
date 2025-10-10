@@ -31,6 +31,14 @@ const statusConfig = {
     },
   }
 
+/**
+ * Renders a status badge with an icon and label corresponding to the provided status.
+ *
+ * If the status is not recognized, the fallback "unknown" badge is used.
+ *
+ * @param status - One of `"done"`, `"processing"`, or `"error"`. Any other value selects the `"unknown"` fallback.
+ * @returns A Badge React element showing the icon and label for the resolved status.
+ */
 export function StatusBadge({ status }: StatusBadgeProps) {
   
 
@@ -44,4 +52,3 @@ export function StatusBadge({ status }: StatusBadgeProps) {
     </Badge>
   )
 }
-

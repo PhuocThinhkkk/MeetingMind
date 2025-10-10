@@ -113,6 +113,22 @@ interface UseRealtimeTranscriptionProps {
   ) => void;
 }
 
+/**
+ * Manage real-time audio capture, streaming to a transcription service, and transcript/translation state.
+ *
+ * @param onError - Optional callback invoked with a user-facing error message when an operational error occurs
+ * @param onStatusChange - Optional callback invoked when the internal recording status changes
+ *
+ * @returns An object exposing the recorder state and controls:
+ *  - isRecording: `true` when audio capture and streaming are active, `false` otherwise
+ *  - status: Current lifecycle status: `"idle" | "connecting" | "recording" | "processing" | "error"`
+ *  - transcriptWords: Array of `TranscriptionWord` representing the current transcript (partial and final words)
+ *  - translateWords: Array of translated strings received from the service
+ *  - startRecording: Begins audio capture, prepares the audio pipeline and WebSocket connection
+ *  - stopRecording: Stops capture and streaming, finalizes any pending audio, and marks transcript words as final
+ *  - clearTranscript: Clears the in-memory transcriptWords
+ *  - audioBlob: Recorded audio as a WAV `Blob` when available, or `null` otherwise
+ */
 export function useRealtimeTranscription({
   onError,
   onStatusChange,
@@ -418,7 +434,14 @@ async function resampleTo16kHz(float32) {
   return rendered.getChannelData(0);
 }
 
-// @ts-ignore
+/**
+ * Convert normalized 32-bit float PCM samples to signed 16-bit PCM samples.
+ *
+ * Clamps input samples to the range [-1, 1] and scales them to the signed 16-bit range.
+ *
+ * @param float32 - The input Float32Array of audio samples, typically in the range [-1, 1].
+ * @returns An Int16Array containing the converted signed 16-bit PCM samples (approximately -32768 to 32767).
+ */
 function float32ToInt16(float32) {
   const int16 = new Int16Array(float32.length);
   for (let i = 0; i < float32.length; i++) {
@@ -428,6 +451,15 @@ function float32ToInt16(float32) {
   return int16;
 }
 
+/**
+ * Saves an audio Blob and its associated transcript to persistent storage.
+ *
+ * @param blob - The audio data to persist
+ * @param transcriptWords - The transcript words associated with the audio
+ *
+ * @remarks
+ * Errors encountered while saving are caught and logged; they are not rethrown.
+ */
 async function handlingSaveAudioAndTranscript(
   blob: Blob,
   transcriptWords: TranscriptionWord[],

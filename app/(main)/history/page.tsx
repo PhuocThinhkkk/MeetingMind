@@ -9,6 +9,13 @@ import React from "react";
 import { useSearchParams } from "next/navigation";
 
 
+/**
+ * Render the transcript history page that displays the current user's audio recordings and, when an audio is selected via URL, opens its transcript in a modal.
+ *
+ * The component fetches the authenticated user's audio history and clears the list if no user is present or no recordings are returned.
+ *
+ * @returns The page JSX containing the header, history toolbar, audio history list, and an optional TranscriptModal for the selected audio.
+ */
 export default function TranscriptHistoryPage() {
   const [audios, setAudios] = React.useState<AudioFile[]>([]);
   const { user } = useAuth();

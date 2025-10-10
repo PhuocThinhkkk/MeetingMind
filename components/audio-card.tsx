@@ -15,6 +15,16 @@ type AudioCardProps = {
 }
 
 
+/**
+ * Renders an accessible, clickable card for an audio file showing metadata, transcription status, and optional transcript details.
+ *
+ * Displays the audio name and creation date, duration, file size, MIME type, and a status badge; shows a processing or failed indicator when applicable.
+ *
+ * @param audio - The audio file data used to populate metadata, status, and transcript content.
+ * @param isExpanded - Whether the transcript details panel is expanded.
+ * @param onToggle - Callback invoked to toggle the expanded state (also triggered by Enter/Space).
+ * @returns A Card element representing the audio entry with a left metadata panel and a right transcript/details panel.
+ */
 export function AudioCard({ audio, isExpanded, onToggle }: AudioCardProps) {
   return (
     <Card 
@@ -102,4 +112,3 @@ export function AudioCard({ audio, isExpanded, onToggle }: AudioCardProps) {
     </Card>
   )
 }
-

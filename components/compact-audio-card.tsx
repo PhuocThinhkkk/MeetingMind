@@ -12,6 +12,15 @@ type CompactAudioCardProps = {
   audio: AudioFile;
 };
 
+/**
+ * Render a compact, focusable audio card for the given audio file.
+ *
+ * Displays the audio name, transcription status, creation time, duration, and file size,
+ * and navigates to `?audioId=<id>` when clicked or activated via keyboard.
+ *
+ * @param audio - The audio file to display (used for title, status, timestamps, duration, and size)
+ * @returns A JSX element representing the clickable audio card
+ */
 export function CompactAudioCard({ audio }: CompactAudioCardProps) {
   const router = useRouter();
 

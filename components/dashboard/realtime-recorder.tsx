@@ -21,6 +21,15 @@ interface RealtimeRecorderProps {
   onTranscriptionComplete: (data: TranscriptionData) => void;
 }
 
+/**
+ * UI component that provides controls and a live transcription view for capturing realtime audio.
+ *
+ * Renders a card with status, start/stop controls, a live duration indicator while recording, and an embedded
+ * RealTimeTranscriptionPage that becomes visible when recording starts.
+ *
+ * @param onTranscriptionComplete - Callback invoked when a realtime recording finishes and at least one transcript word exists. Receives a `TranscriptionData` object describing the recording (id, name, type, status, duration, created_at, and transcript with text, words, speakers_detected, and confidence_score).
+ * @returns A React element rendering the realtime recorder user interface.
+ */
 export function RealtimeRecorder({
   onTranscriptionComplete,
 }: RealtimeRecorderProps) {
