@@ -58,7 +58,7 @@ export type AudioFile = {
   transcription_status: string;
   created_at: string;
   updated_at: string;
-  transcripts?: Transcript | null;
+  transcript?: Transcript | null;
 };
 export type SaveAudioFileInput = Omit<
   AudioFile,

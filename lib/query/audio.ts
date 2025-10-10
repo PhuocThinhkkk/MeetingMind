@@ -5,14 +5,23 @@ import { AudioFile } from "@/types/transcription";
 export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
   const { data, error } = await supabase
     .from("audio_files")
-    .select("*, transcripts(*)")
+    .select("*, transcript:transcripts(*)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
   if (error) {
     console.error("Error fetching audio history:", error);
     return [];
   }
-  return (data as AudioFile[]) || [];
+  if (!data || data.length === 0){
+      console.warn("no audio found! Data: ", data)
+  }
+
+  const audiosFormatted = data.map((item) => ({
+    ...item,
+    transcript: item.transcript?.[0] ?? null,
+  })) as AudioFile[];
+  
+  return audiosFormatted;
 }
 
 /**

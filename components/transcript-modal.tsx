@@ -20,6 +20,7 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
     router.push("/history")
   }
 
+  console.log("Rendering TranscriptModal for audio:", audio)
   return (
     <Dialog open={true} onOpenChange={handleClose}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -62,8 +63,8 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
           </div>
 
           {/* Transcript details */}
-          {audio.transcripts ? (
-            <TranscriptDetails transcript={audio.transcripts} />
+          {audio.transcript ? (
+            <TranscriptDetails transcript={audio.transcript} />
           ) : (
             <div className="p-8 text-center text-muted-foreground">
               <p>No transcript available</p>
