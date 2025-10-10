@@ -14,6 +14,10 @@ import {
   RealtimeTranslateResponse,
 } from "@/types/transcription";
 
+import { encodeWAV, mergeChunks } from "@/lib/utils";
+import { saveAudioFile } from "@/lib/query/audio";
+import { saveTranscript } from "@/lib/query/transcription";
+
 type RecorderContextType = {
   isRecording: boolean;
   startRecording: () => Promise<void>;
@@ -35,8 +39,6 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
-  // TODO: store audio later
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
 
   const {
     isRecording,
@@ -46,6 +48,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     startRecording,
     stopRecording,
     clearTranscript,
+    audioBlob,
   } = useRealtimeTranscription({
     onError: (error: string) => {
       console.error("Transcription error:", error);
@@ -110,6 +113,22 @@ interface UseRealtimeTranscriptionProps {
   ) => void;
 }
 
+/**
+ * Manage real-time audio capture, streaming to a transcription service, and transcript/translation state.
+ *
+ * @param onError - Optional callback invoked with a user-facing error message when an operational error occurs
+ * @param onStatusChange - Optional callback invoked when the internal recording status changes
+ *
+ * @returns An object exposing the recorder state and controls:
+ *  - isRecording: `true` when audio capture and streaming are active, `false` otherwise
+ *  - status: Current lifecycle status: `"idle" | "connecting" | "recording" | "processing" | "error"`
+ *  - transcriptWords: Array of `TranscriptionWord` representing the current transcript (partial and final words)
+ *  - translateWords: Array of translated strings received from the service
+ *  - startRecording: Begins audio capture, prepares the audio pipeline and WebSocket connection
+ *  - stopRecording: Stops capture and streaming, finalizes any pending audio, and marks transcript words as final
+ *  - clearTranscript: Clears the in-memory transcriptWords
+ *  - audioBlob: Recorded audio as a WAV `Blob` when available, or `null` otherwise
+ */
 export function useRealtimeTranscription({
   onError,
   onStatusChange,
@@ -128,9 +147,10 @@ export function useRealtimeTranscription({
   const isAssemblyReady = useRef(false);
   const audioContextRef = useRef<AudioContext | null>(null);
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
+  const currentAudioBufferRef = useRef<Uint8Array[]>([]);
   const audioBufferRef = useRef<Uint8Array[]>([]);
-  let totalByteLength = 0;
-
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
+  const totalByteLengthRef = useRef<number>(0);
   const updateStatus = useCallback(
     (newStatus: typeof status) => {
       console.log("status change!", newStatus);
@@ -284,13 +304,14 @@ export function useRealtimeTranscription({
         const pcmData = float32ToInt16(resampled);
 
         const chunk = new Uint8Array(pcmData.buffer);
+        currentAudioBufferRef.current.push(chunk);
         audioBufferRef.current.push(chunk);
-        totalByteLength += chunk.byteLength;
+        totalByteLengthRef.current += chunk.byteLength;
 
-        if (totalByteLength >= 1800) {
-          const merged = new Uint8Array(totalByteLength);
+        if (totalByteLengthRef.current >= 1800) {
+          const merged = new Uint8Array(totalByteLengthRef.current);
           let offset = 0;
-          for (const part of audioBufferRef.current) {
+          for (const part of currentAudioBufferRef.current) {
             if (offset + part.length <= merged.length) {
               merged.set(part, offset);
               offset += part.length;
@@ -305,8 +326,8 @@ export function useRealtimeTranscription({
 
           wsRef.current.send(merged.buffer);
           console.log("Sent audio chunk of size:", merged.byteLength);
-          audioBufferRef.current = [];
-          totalByteLength = 0;
+          currentAudioBufferRef.current = [];
+          totalByteLengthRef.current = 0;
         }
       }
     };
@@ -324,7 +345,13 @@ export function useRealtimeTranscription({
     console.log("stop recording");
 
     isAssemblyReady.current = false;
-
+    if (audioBufferRef.current.length !== 0) {
+      const merged = mergeChunks(audioBufferRef.current);
+      const pcm = new Int16Array(merged.buffer);
+      const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
+      setAudioBlob(wavBlob);
+      handlingSaveAudioAndTranscript(wavBlob, transcriptWords);
+    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -340,8 +367,8 @@ export function useRealtimeTranscription({
       audioContextRef.current = null;
     }
 
-    audioBufferRef.current = [];
-    totalByteLength = 0;
+    currentAudioBufferRef.current = [];
+    totalByteLengthRef.current = 0;
 
     workletNodeRef.current = null;
 
@@ -374,6 +401,7 @@ export function useRealtimeTranscription({
     startRecording,
     stopRecording,
     clearTranscript,
+    audioBlob,
   };
 }
 
@@ -406,7 +434,14 @@ async function resampleTo16kHz(float32) {
   return rendered.getChannelData(0);
 }
 
-// @ts-ignore
+/**
+ * Convert normalized 32-bit float PCM samples to signed 16-bit PCM samples.
+ *
+ * Clamps input samples to the range [-1, 1] and scales them to the signed 16-bit range.
+ *
+ * @param float32 - The input Float32Array of audio samples, typically in the range [-1, 1].
+ * @returns An Int16Array containing the converted signed 16-bit PCM samples (approximately -32768 to 32767).
+ */
 function float32ToInt16(float32) {
   const int16 = new Int16Array(float32.length);
   for (let i = 0; i < float32.length; i++) {
@@ -414,4 +449,29 @@ function float32ToInt16(float32) {
     int16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
   }
   return int16;
+}
+
+/**
+ * Saves an audio Blob and its associated transcript to persistent storage.
+ *
+ * @param blob - The audio data to persist
+ * @param transcriptWords - The transcript words associated with the audio
+ *
+ * @remarks
+ * Errors encountered while saving are caught and logged; they are not rethrown.
+ */
+async function handlingSaveAudioAndTranscript(
+  blob: Blob,
+  transcriptWords: TranscriptionWord[],
+) {
+  try {
+    const audio = await saveAudioFile(
+      blob,
+      "99f17d87-9f0c-432c-a504-2178a1cebaf5",
+      "hi mom",
+    );
+    await saveTranscript(audio.id, transcriptWords);
+  } catch (error) {
+    console.error("Error saving audio or transcript:", error);
+  }
 }

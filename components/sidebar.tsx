@@ -1,4 +1,9 @@
+"use client"
 import type * as React from "react"
+import { usePathname } from "next/navigation"
+import { useAuth } from "@/hooks/use-auth"
+import { useState, useEffect } from "react"
+import { supabase } from "@/lib/supabase"
 import {
   Sidebar,
   SidebarContent,
@@ -14,13 +19,11 @@ import {
 import { Home, Calendar, History, Sparkles } from "lucide-react"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 
-// Navigation data
 const navItems = [
   {
     title: "Home",
-    url: "#",
+    url: "home",
     icon: Home,
-    isActive: true,
   },
   {
     title: "Calendar",
@@ -29,35 +32,71 @@ const navItems = [
   },
   {
     title: "History",
-    url: "#",
+    url: "history",
     icon: History,
   },
 ]
+/**
+   * Load a user profile from the `users` table for the given user ID.
+   *
+   * @param userId - The id of the user to fetch
+   * @returns The user record object if found, `null` when an error occurs or no record is returned
+   */
+  async function fetchUserProfile(userId: string) {
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', userId)
+      .single();
+  
+    if (error) {
+      console.error('Error fetching user profile:', error);
+      return null;
+    }
+  
+    return data;
+  }
 
-// User data (you can replace this with actual user data)
-const user = {
-  name: "John Doe",
-  email: "john@example.com",
-  avatar: "/placeholder.svg?height=32&width=32",
-}
-
+/**
+ * Renders the application's main sidebar with user profile, navigation, and footer; loads the current user's profile when authentication state changes.
+ *
+ * @returns A Sidebar element populated with the current user's avatar, name, and email (when available), a navigation menu whose active item is derived from the current pathname, and a footer with product branding.
+ */
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
+    const [user, setUser] = useState<any>(null);
+
+    const pathName = usePathname();
+    const auth  = useAuth();
+    useEffect(() => {
+        loadUserProfile();
+    }, [auth.user]);
+
+    async function loadUserProfile() {
+        if (auth.user) {
+            console.log("fetching user profile", auth.user.id);
+            const res = await fetchUserProfile(auth.user.id);
+            setUser(res);
+        } else {
+            setUser(null);
+        }
+    }
+
+
   return (
     <Sidebar {...props}>
       <SidebarHeader className="border-b border-sidebar-border">
         <div className="flex items-center gap-3 px-2 py-4">
           <Avatar className="h-10 w-10">
-            <AvatarImage src={user.avatar || "/placeholder.svg"} alt={user.name} />
+            <AvatarImage src={user?.avatar || "/placeholder.svg"} alt={user?.name} />
             <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
-              {user.name
-                .split(" ")
-                .map((n) => n[0])
-                .join("")}
+              {(user?.name?.split(" ") ?? [])
+                .map((n) => n?.[0] ?? "")
+                .join("") || "?"}            
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="text-sm font-semibold text-sidebar-foreground">{user.name}</span>
-            <span className="text-xs text-sidebar-foreground/70">{user.email}</span>
+            <span className="text-sm font-semibold text-sidebar-foreground">{user?.name}</span>
+            <span className="text-xs text-sidebar-foreground/70">{user?.email}</span>
           </div>
         </div>
       </SidebarHeader>
@@ -70,7 +109,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton
                     asChild
-                    isActive={item.isActive}
+                    isActive={pathName === `/${item.url}`}
                     className="h-12 px-3 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground transition-colors"
                   >
                     <a href={item.url} className="flex items-center gap-3">

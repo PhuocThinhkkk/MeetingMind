@@ -27,20 +27,28 @@ interface AuthProviderProps {
   children: ReactNode;
 }
 
+/**
+ * Provides authentication state and actions to its descendant components via AuthContext.
+ *
+ * The provider tracks the current `user`, `session`, and `loading` state, subscribes to
+ * authentication state changes, and exposes `signUp`, `signIn`, and `signOut` functions
+ * to consumers of the context.
+ *
+ * @param children - React elements that will have access to the authentication context
+ * @returns The AuthContext provider element wrapping `children`
+ */
 export function AuthProvider({ children }: AuthProviderProps) {
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // Get initial session
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
     });
 
-    // Listen for auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (event, session) => {
@@ -48,7 +56,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      // Create user profile if signing up
       if (event === 'SIGNED_UP' && session?.user) {
         await createUserProfile(session.user);
       }
