@@ -29,6 +29,7 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useAudio } from "@/components/context/audios-list-context";
 
 type CompactAudioCardProps = {
   audio: AudioFile;
@@ -138,8 +139,10 @@ function ConfirmDeletingDialog({
   setShowDeleteDialog: (arg: boolean) => void;
   audio: AudioFile;
 }) {
+  const { setAudios } = useAudio();
   function confirmDelete() {
     // TODO: Implement delete functionality
+    setAudios((prev) => prev.filter((a) => a.id !== audio.id));
     console.log("Delete audio:", audio.id);
     setShowDeleteDialog(false);
   }
@@ -177,9 +180,14 @@ function RenameInputDialog({
   setShowRenameDialog: (arg: boolean) => void;
   audio: AudioFile;
 }) {
+  const { setAudios } = useAudio();
   const [newName, setNewName] = useState(audio.name);
 
   function confirmRename() {
+    setAudios((prev) =>
+      prev.map((a) => (a.id === audio.id ? { ...a, name: newName } : a)),
+    );
+
     console.log("Rename audio:", audio.id, "New name:", newName);
     setShowRenameDialog(false);
   }
