@@ -442,6 +442,7 @@ async function resampleTo16kHz(float32) {
  * @param float32 - The input Float32Array of audio samples, typically in the range [-1, 1].
  * @returns An Int16Array containing the converted signed 16-bit PCM samples (approximately -32768 to 32767).
  */
+// @ts-ignore
 function float32ToInt16(float32) {
   const int16 = new Int16Array(float32.length);
   for (let i = 0; i < float32.length; i++) {

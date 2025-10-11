@@ -3,6 +3,7 @@ package ws
 import (
 	"encoding/json"
 	"errors"
+	"log"
 )
 
 type TranscriptWriter struct {
@@ -13,14 +14,15 @@ type TranscriptWriter struct {
 
 type TranscriptState struct {
 	CurrentWordsTranscript chan (string)
-	CurrentSentence []string
-	NewWords        []AssemblyResponseWord
-	CurrentTurnID   int
-	EndOfTurn       bool
+	CurrentSentence        []string
+	NewWords               []AssemblyResponseWord
+	CurrentTurnID          int
+	EndOfTurn              bool
 }
 
 func NewTranscriptState() *TranscriptState {
 	return &TranscriptState{
+		CurrentWordsTranscript: make(chan string),
 		CurrentSentence: make([]string, 0, 10),
 		CurrentTurnID:   -1,
 		NewWords:        make([]AssemblyResponseWord, 0, 10),
@@ -48,6 +50,7 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 		joinErr := errors.Join(err1, err)
 		return joinErr
 	}
+	log.Println("[INFOR] process client msg")
 
 	c.Transcript.NewWords = make([]AssemblyResponseWord, 0, 10)
 	for index, assemblyWord := range turn.Words {
@@ -76,7 +79,7 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 	}
 
 	clientTranscriptWriter := NewTranscriptWriter(c.Transcript.EndOfTurn, c.Transcript.NewWords)
-	c.TranscriptWord <- clientTranscriptWriter 
+	c.TranscriptWord <- clientTranscriptWriter
 
 	str := ""
 	for _, w := range c.Transcript.NewWords {

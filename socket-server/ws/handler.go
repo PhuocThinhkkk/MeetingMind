@@ -99,18 +99,20 @@ func (c *Client) processMsgTranscript() {
 				return
 			}
 			if parsed["type"] == "Turn" {
+				log.Println("hello", len(msg)," length of bytes")
 
 				err = c.updateStateTranscript(msg)
 				if err != nil {
 					log.Println("err when update transcript: ", err)
 					return
 				}
+				log.Println("[INFOR] Recived ", len(msg)," length of bytes")
 
 			}
 		}
 	}
 }
-
+ 
 func (c *Client) readTranslate() {
 	defer func() {
 		UnregisterClient(c)
@@ -130,6 +132,8 @@ func (c *Client) readTranslate() {
 					log.Println("err when encoding transcript word msg: ", err)
 					continue
 				}
+				log.Println("Infor: reading translate")
+
 				_ = byteMsg
 				// TODO: call translation api here
 				// For now just do a dummy translation
