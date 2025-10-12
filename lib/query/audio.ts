@@ -102,3 +102,34 @@ export async function saveAudioFile(
 }
 
 
+export async function updateAudioName(audioId : string, newName : string) {
+  const { data, error } = await supabase
+    .from('audio_files')
+    .update({ name: newName, updated_at: new Date().toISOString() })
+    .eq('id', audioId)
+    .select()  
+
+  if (error) {
+    console.error('❌ Error updating audio name:', error)
+    throw error;
+  }
+
+  console.log('✅ Audio name updated:', data)
+  return data[0] as AudioFile
+}
+
+
+export async function deleteAudioById(audioId : string) {
+  const { error } = await supabase
+    .from('audio_files')
+    .delete()
+    .eq('id', audioId)
+
+  if (error) {
+    console.error('❌ Error deleting audio:', error)
+    throw error;
+  }
+
+  console.log(`🗑️ Audio with ID ${audioId} deleted`)
+  return true
+}

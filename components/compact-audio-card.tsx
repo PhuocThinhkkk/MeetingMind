@@ -30,6 +30,8 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAudio } from "@/components/context/audios-list-context";
+import { deleteAudioById, updateAudioName } from "@/lib/query/audio";
+import { toast } from "sonner";
 
 type CompactAudioCardProps = {
   audio: AudioFile;
@@ -139,12 +141,25 @@ function ConfirmDeletingDialog({
   setShowDeleteDialog: (arg: boolean) => void;
   audio: AudioFile;
 }) {
-  const { setAudios } = useAudio();
-  function confirmDelete() {
-    // TODO: Implement delete functionality
-    setAudios((prev) => prev.filter((a) => a.id !== audio.id));
-    console.log("Delete audio:", audio.id);
-    setShowDeleteDialog(false);
+  const { audios, setAudios } = useAudio();
+  async function confirmDelete() {
+    const target = audios.find((a) => a.id === audio.id);
+    try {
+      if (!target) {
+        toast.error("There is no audio like that to delete");
+        return;
+      }
+      setAudios((prev) => prev.filter((a) => a.id !== audio.id));
+      console.log("Delete audio:", audio.id);
+      setShowDeleteDialog(false);
+      await deleteAudioById(audio.id);
+    } catch (e) {
+      if (!target) {
+        return;
+      }
+      setAudios((prev) => [...prev, target]);
+      toast.error("Error deleting audio, pls try again");
+    }
   }
   return (
     <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
@@ -183,13 +198,39 @@ function RenameInputDialog({
   const { setAudios } = useAudio();
   const [newName, setNewName] = useState(audio.name);
 
-  function confirmRename() {
-    setAudios((prev) =>
-      prev.map((a) => (a.id === audio.id ? { ...a, name: newName } : a)),
-    );
+  async function confirmRename() {
+    let oldName: string = "";
+    try {
+      setAudios((prev) =>
+        prev.map((a) => {
+          if (a.id === audio.id) {
+            oldName = a.name;
+            return { ...a, name: newName };
+          } else {
+            return a;
+          }
+        }),
+      );
 
-    console.log("Rename audio:", audio.id, "New name:", newName);
-    setShowRenameDialog(false);
+      console.log("Rename audio:", audio.id, "New name:", newName);
+      setShowRenameDialog(false);
+      await updateAudioName(audio.id, newName);
+    } catch (e) {
+      toast.error(`Can not rename the ${audio.name} audio`);
+      if (oldName === "") {
+        console.error("There some error when selecting the audio, pls try again");
+        return;
+      }
+      setAudios((prev) =>
+        prev.map((a) => {
+          if (a.id === audio.id) {
+            return { ...a, name: oldName };
+          } else {
+            return a;
+          }
+        }),
+      );
+    }
   }
   return (
     <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
@@ -226,4 +267,3 @@ function RenameInputDialog({
     </Dialog>
   );
 }
-
