@@ -17,6 +17,8 @@ import {
 import { encodeWAV, mergeChunks } from "@/lib/utils";
 import { saveAudioFile } from "@/lib/query/audio";
 import { saveTranscript } from "@/lib/query/transcription";
+import { User } from "@supabase/supabase-js";
+import { useAuth } from "@/hooks/use-auth";
 
 type RecorderContextType = {
   isRecording: boolean;
@@ -141,6 +143,7 @@ export function useRealtimeTranscription({
     [],
   );
   const [translateWords, setTranslateWords] = useState<string[]>([]);
+  const { user } = useAuth()
 
   const wsRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -350,7 +353,7 @@ export function useRealtimeTranscription({
       const pcm = new Int16Array(merged.buffer);
       const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
       setAudioBlob(wavBlob);
-      handlingSaveAudioAndTranscript(wavBlob, transcriptWords);
+      handlingSaveAudioAndTranscript(user as User, wavBlob, transcriptWords);
     }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -462,14 +465,15 @@ function float32ToInt16(float32) {
  * Errors encountered while saving are caught and logged; they are not rethrown.
  */
 async function handlingSaveAudioAndTranscript(
+  user: User,
   blob: Blob,
   transcriptWords: TranscriptionWord[],
 ) {
   try {
     const audio = await saveAudioFile(
       blob,
-      "99f17d87-9f0c-432c-a504-2178a1cebaf5",
-      "hi mom",
+      user.id,
+      "Unnamed",
     );
     await saveTranscript(audio.id, transcriptWords);
   } catch (error) {
