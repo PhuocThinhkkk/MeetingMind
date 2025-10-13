@@ -8,80 +8,29 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, ChevronDown, CalendarIcon, Plus } from "lucide-react";
-import { useState, useMemo, useEffect } from "react";
-import { AudioFile } from "@/types/transcription";
-import { useAudio } from "./context/audios-list-context";
+import { Search, ChevronDown } from "lucide-react";
+
+export interface HistoryToolbarProps {
+  selectedStatus: string;
+  setSelectedStatus: (arg: string) => void;
+  searchQuery: string;
+  setSearchQuery: (arg: string) => void;
+}
 
 /**
  * Render a toolbar with a search input, status filter dropdown, date range picker, and new column button for the history view.
  *
  * @returns A JSX element containing: a search input with leading icon, a dropdown for status filtering (All, Done, Processing, Error, Unknown), date range picker, and new column button.
  */
-export function HistoryToolbar() {
-  const { audios, setAudios } = useAudio();
-  const [searchQuery, setSearchQuery] = useState("");
-  const [selectedStatus, setSelectedStatus] = useState<string>("All");
-  const [dateRange, setDateRange] = useState<{
-    from: Date | undefined;
-    to: Date | undefined;
-  }>({
-    from: undefined,
-    to: undefined,
-  });
-  const [originalAudios, setOriginalAudios] = useState<AudioFile[]>([]);
-
-  useEffect(() => {
-    if (originalAudios.length === 0 && audios.length > 0) {
-      setOriginalAudios(audios);
-    }
-  }, [audios, originalAudios.length]);
-
-  const filteredAudios = useMemo(() => {
-    let filtered = [...originalAudios];
-
-    if (searchQuery.trim()) {
-      filtered = filtered.filter((audio) =>
-        audio.name.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-    }
-
-    if (selectedStatus !== "All") {
-      const statusMap: Record<string, string> = {
-        Done: "done",
-        Processing: "processing",
-        Error: "error",
-        Unknown: "unknown",
-      };
-      const mappedStatus =
-        statusMap[selectedStatus] || selectedStatus.toLowerCase();
-      filtered = filtered.filter(
-        (audio) => audio.transcription_status.toLowerCase() === mappedStatus,
-      );
-    }
-
-    if (dateRange.from || dateRange.to) {
-      filtered = filtered.filter((audio) => {
-        const audioDate = new Date(audio.created_at);
-        const fromMatch = dateRange.from ? audioDate >= dateRange.from : true;
-        const toMatch = dateRange.to
-          ? audioDate <= new Date(dateRange.to.setHours(23, 59, 59, 999))
-          : true;
-        return fromMatch && toMatch;
-      });
-    }
-
-    return filtered;
-  }, [originalAudios, searchQuery, selectedStatus, dateRange]);
-
-  useEffect(() => {
-    setAudios(filteredAudios);
-  }, [filteredAudios, setAudios]);
-
+export function HistoryToolbar({
+  selectedStatus,
+  setSelectedStatus,
+  searchQuery,
+  setSearchQuery,
+}: HistoryToolbarProps) {
   const handleStatusSelect = (status: string) => {
     setSelectedStatus(status);
   };
-
 
   return (
     <div className="mb-6">
@@ -121,9 +70,7 @@ export function HistoryToolbar() {
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
       </div>
     </div>
   );
 }
-

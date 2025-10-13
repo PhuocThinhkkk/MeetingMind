@@ -7,6 +7,7 @@ import { getAudioHistory } from "@/lib/query/audio";
 import React from "react";
 import { useSearchParams } from "next/navigation";
 import { useAudio } from "@/components/context/audios-list-context";
+import { SelectionState } from "react-day-picker";
 
 /**
  * Render the transcript history page that displays the current user's audio recordings and, when an audio is selected via URL, opens its transcript in a modal.
@@ -44,6 +45,35 @@ export default function TranscriptHistoryPage() {
     };
   }, [user]);
 
+  const [searchQuery, setSearchQuery] = React.useState("");
+  const [selectedStatus, setSelectedStatus] = React.useState<string>("All");
+
+  const filteredAudios = React.useMemo(() => {
+    let filtered = [...audios];
+
+    if (searchQuery.trim()) {
+      filtered = filtered.filter((audio) =>
+        audio.name.toLowerCase().includes(searchQuery.toLowerCase()),
+      );
+    }
+
+    if (selectedStatus !== "All") {
+      const statusMap: Record<string, string> = {
+        Done: "done",
+        Processing: "processing",
+        Error: "error",
+        Unknown: "unknown",
+      };
+      const mappedStatus =
+        statusMap[selectedStatus] || selectedStatus.toLowerCase();
+      filtered = filtered.filter(
+        (audio) => audio.transcription_status.toLowerCase() === mappedStatus,
+      );
+    }
+
+    return filtered;
+  }, [searchQuery, selectedStatus]);
+
   const searchParams = useSearchParams();
   const audioId = searchParams.get("audioId");
   const selectedAudio = audioId
@@ -52,8 +82,14 @@ export default function TranscriptHistoryPage() {
 
   return (
     <>
-      <HistoryToolbar />
-      <AudioHistoryList audioHistory={audios} />
+      <HistoryToolbar
+        setSearchQuery={setSearchQuery}
+        setSelectedStatus={setSelectedStatus}
+        searchQuery={searchQuery}
+        selectedStatus={selectedStatus}
+      />
+
+      <AudioHistoryList audioHistory={filteredAudios} />
       {selectedAudio && <TranscriptModal audio={selectedAudio} />}
     </>
   );
