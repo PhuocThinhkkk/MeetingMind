@@ -1,6 +1,13 @@
 import { AudioProvider } from "@/components/context/audios-list-context";
 import TranscriptHistoryPage from "./transcript-history-page";
 
+/**
+ * Render the History Recording page layout.
+ *
+ * Includes a header and a centered container that provides audio context to the transcript history content.
+ *
+ * @returns A JSX element for the History Recording page containing the header and a content area wrapped with an audio provider context.
+ */
 export default function HistoryPage() {
   return (
     <main className="min-h-screen w-full bg-background">
@@ -18,4 +25,3 @@ export default function HistoryPage() {
     </main>
   );
 }
-
