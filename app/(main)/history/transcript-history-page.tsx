@@ -72,7 +72,7 @@ export default function TranscriptHistoryPage() {
     }
 
     return filtered;
-  }, [searchQuery, selectedStatus]);
+  }, [audios, searchQuery, selectedStatus]);
 
   const searchParams = useSearchParams();
   const audioId = searchParams.get("audioId");
