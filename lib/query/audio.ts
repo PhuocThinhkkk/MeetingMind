@@ -21,15 +21,15 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
     console.error("Error fetching audio history:", error);
     return [];
   }
-  if (!data || data.length === 0){
-      console.warn("no audio found! Data: ", data)
+  if (!data || data.length === 0) {
+    console.warn("no audio found! Data: ", data);
   }
 
   const audiosFormatted = data.map((item) => ({
     ...item,
     transcript: item.transcript?.[0] ?? null,
   })) as AudioFile[];
-  
+
   return audiosFormatted;
 }
 
@@ -40,96 +40,89 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
  * @throws The Supabase upload error or database insertion error if the storage upload or DB insert fails
  */
 
-export async function saveAudioFile(
-  blob: Blob,
-  userId: string,
-  name: string,
-) {
+export async function saveAudioFile(blob: Blob, userId: string, name: string) {
+  const mimeType = blob.type;
+  const fileSize = blob.size;
 
-    const mimeType = blob.type;
-    const fileSize = blob.size;
+  const filePath = `recordings/${userId}/${Date.now()}-${name}.wav`;
 
-    const filePath = `recordings/${userId}/${Date.now()}-${name}.wav`;
+  const { error: uploadError } = await supabase.storage
+    .from("audio-files")
+    .upload(filePath, blob, {
+      contentType: mimeType,
+    });
 
-    const { error: uploadError } = await supabase.storage
-      .from("audio-files")
-      .upload(filePath, blob, {
-        contentType: mimeType,
-      });
+  if (uploadError) {
+    console.error("Upload error:", uploadError);
+    throw uploadError;
+  }
 
-    if (uploadError) {
-      console.error("Upload error:", uploadError);
-      throw uploadError;
-    }
+  const { data: publicUrlData } = supabase.storage
+    .from("audio-files")
+    .getPublicUrl(filePath);
 
-    const { data: publicUrlData } = supabase.storage
-      .from("audio-files")
-      .getPublicUrl(filePath);
+  const url = publicUrlData.publicUrl;
 
-    const url = publicUrlData.publicUrl;
+  let duration;
+  try {
+    duration = await getAudioDuration(blob);
+  } catch (err) {
+    console.error("Error when saving audio file: ", err);
+  }
+  if (duration == undefined) {
+    duration = 0;
+  }
 
-    let duration
-    try {
-      duration = await getAudioDuration(blob);
-    } catch (err){
-      console.error("Error when saving audio file: ", err)
-    }
-    if ( duration == undefined ) {
-      duration = 0;
-    } 
-
-    const { data, error } = await supabase
-      .from("audio_files")
-      .insert({
-        user_id: userId,
-        name,
-        url,
-        duration: Math.round(duration),
-        file_size: fileSize,
-        mime_type: mimeType,
-        transcription_status: "done",
-      })
-      .select()
-      .single();
-
-    if (error) {
-      console.error("DB insert error:", error);
-      throw error;
-    }
-
-    return data as AudioFile;
- 
-}
-
-
-export async function updateAudioName(audioId : string, newName : string) {
   const { data, error } = await supabase
-    .from('audio_files')
-    .update({ name: newName, updated_at: new Date().toISOString() })
-    .eq('id', audioId)
-    .select()  
+    .from("audio_files")
+    .insert({
+      user_id: userId,
+      name,
+      url,
+      duration: Math.round(duration),
+      file_size: fileSize,
+      mime_type: mimeType,
+      transcription_status: "done",
+    })
+    .select()
+    .single();
 
   if (error) {
-    console.error('❌ Error updating audio name:', error)
+    console.error("DB insert error:", error);
     throw error;
   }
 
-  console.log('✅ Audio name updated:', data)
-  return data[0] as AudioFile
+  return data as AudioFile;
 }
 
-
-export async function deleteAudioById(audioId : string) {
-  const { error } = await supabase
-    .from('audio_files')
-    .delete()
-    .eq('id', audioId)
+export async function updateAudioName(audioId: string, newName: string) {
+  const { data, error } = await supabase
+    .from("audio_files")
+    .update({ name: newName, updated_at: new Date().toISOString() })
+    .eq("id", audioId)
+    .select()
+    .single();
 
   if (error) {
-    console.error('❌ Error deleting audio:', error)
+    console.error("❌ Error updating audio name:", error);
     throw error;
   }
 
-  console.log(`🗑️ Audio with ID ${audioId} deleted`)
-  return true
+  console.log("✅ Audio name updated:", data);
+  return data as AudioFile;
+}
+
+export async function deleteAudioById(audioId: string) {
+  const { error } = await supabase
+    .from("audio_files")
+    .delete()
+    .eq("id", audioId);
+
+  if (error) {
+    console.error("❌ Error deleting audio:", error);
+    throw error;
+  }
+
+  console.log(`🗑️ Audio with ID ${audioId} deleted`);
+  return true;
 }

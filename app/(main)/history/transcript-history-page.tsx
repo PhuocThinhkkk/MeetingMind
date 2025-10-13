@@ -20,12 +20,16 @@ export default function TranscriptHistoryPage() {
   const { user } = useAuth();
 
   React.useEffect(() => {
+    let cancelled = false;
     async function initializeAudiosFetch() {
       if (!user) {
         setAudios([]);
         return;
       }
       const audios = await getAudioHistory(user.id);
+      if (cancelled) {
+        return;
+      }
       if (audios.length === 0) {
         setAudios([]);
         return;
@@ -35,6 +39,9 @@ export default function TranscriptHistoryPage() {
     }
 
     initializeAudiosFetch();
+    return () => {
+      cancelled = true;
+    };
   }, [user]);
 
   const searchParams = useSearchParams();
