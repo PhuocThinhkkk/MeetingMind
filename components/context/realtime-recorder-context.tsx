@@ -456,13 +456,13 @@ function float32ToInt16(float32) {
 }
 
 /**
- * Saves an audio Blob and its associated transcript to persistent storage.
+ * Persist an audio Blob and its associated transcript for the specified user.
  *
+ * Attempts to save the audio file and then the transcript; any errors encountered are caught and logged.
+ *
+ * @param user - The owner of the recording
  * @param blob - The audio data to persist
  * @param transcriptWords - The transcript words associated with the audio
- *
- * @remarks
- * Errors encountered while saving are caught and logged; they are not rethrown.
  */
 async function handlingSaveAudioAndTranscript(
   user: User,

@@ -10,11 +10,11 @@ import { useAudio } from "@/components/context/audios-list-context";
 import { SelectionState } from "react-day-picker";
 
 /**
- * Render the transcript history page that displays the current user's audio recordings and, when an audio is selected via URL, opens its transcript in a modal.
+ * Renders the transcript history page showing the current user's audio recordings and opens a transcript modal when an audio is selected via the URL.
  *
- * The component fetches the authenticated user's audio history and clears the list if no user is present or no recordings are returned.
+ * The component fetches the authenticated user's audio history and updates the audio context; if no user is present or the fetch returns an empty list, the audio list is cleared.
  *
- * @returns The page JSX containing the header, history toolbar, audio history list, and an optional TranscriptModal for the selected audio.
+ * @returns The page JSX containing the history toolbar, filtered audio history list, and an optional TranscriptModal for the selected audio.
  */
 export default function TranscriptHistoryPage() {
   const { audios, setAudios } = useAudio();
@@ -22,6 +22,12 @@ export default function TranscriptHistoryPage() {
 
   React.useEffect(() => {
     let cancelled = false;
+    /**
+     * Fetches the authenticated user's audio history and updates the audios state.
+     *
+     * If there is no authenticated user or the fetched list is empty, clears the audios state.
+     * If the operation is cancelled after the fetch completes, it does not modify state.
+     */
     async function initializeAudiosFetch() {
       if (!user) {
         setAudios([]);

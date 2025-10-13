@@ -132,6 +132,16 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
   );
 }
 
+/**
+ * Render a confirmation dialog for deleting an audio file.
+ *
+ * On confirmation, the component optimistically removes the audio from the app's audio list, requests backend deletion, and restores the audio while showing an error toast if the request fails.
+ *
+ * @param showDeleteDialog - Whether the delete confirmation dialog is visible.
+ * @param setShowDeleteDialog - Setter to open or close the dialog.
+ * @param audio - The audio file to be deleted (used for display and as the deletion target).
+ * @returns The AlertDialog UI that prompts for deletion and triggers the delete flow when confirmed.
+ */
 function ConfirmDeletingDialog({
   showDeleteDialog,
   setShowDeleteDialog,
@@ -186,6 +196,14 @@ function ConfirmDeletingDialog({
   );
 }
 
+/**
+ * Renders a dialog that lets the user rename an audio file and applies an optimistic local update with rollback on error.
+ *
+ * @param showRenameDialog - Whether the rename dialog is open
+ * @param setShowRenameDialog - Setter to open or close the rename dialog
+ * @param audio - The audio file being renamed
+ * @returns A Dialog element containing an input for the new name and actions to confirm or cancel the rename
+ */
 function RenameInputDialog({
   showRenameDialog,
   setShowRenameDialog,

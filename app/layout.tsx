@@ -11,6 +11,12 @@ export const metadata: Metadata = {
   description: 'Transform your meetings with AI-powered transcription, summaries, and insights',
 };
 
+/**
+ * Root application layout that wraps page content with the authentication provider and applies the global Inter font.
+ *
+ * @param children - The page or component tree to render; it will be wrapped by `AuthProvider`.
+ * @returns The root HTML structure (html lang="en") with a body that applies the Inter font and contains the authenticated children.
+ */
 export default function RootLayout({
   children,
 }: {

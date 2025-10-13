@@ -95,6 +95,14 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
   return data as AudioFile;
 }
 
+/**
+ * Update an audio file's name and refresh its `updated_at` timestamp in the database.
+ *
+ * @param audioId - The ID of the audio file to update
+ * @param newName - The new name to assign to the audio file
+ * @returns The updated `AudioFile` record
+ * @throws Supabase error when the update operation fails
+ */
 export async function updateAudioName(audioId: string, newName: string) {
   const { data, error } = await supabase
     .from("audio_files")
@@ -112,6 +120,13 @@ export async function updateAudioName(audioId: string, newName: string) {
   return data as AudioFile;
 }
 
+/**
+ * Delete an audio file record by its ID.
+ *
+ * @param audioId - The ID of the audio record to delete
+ * @returns `true` if the record was deleted
+ * @throws The database error when the delete operation fails
+ */
 export async function deleteAudioById(audioId: string) {
   const { error } = await supabase
     .from("audio_files")
