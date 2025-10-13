@@ -8,62 +8,72 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Search, Calendar, Filter, ChevronDown, Plus } from "lucide-react";
+import { Search, ChevronDown } from "lucide-react";
+
+export interface HistoryToolbarProps {
+  selectedStatus: string;
+  setSelectedStatus: (arg: string) => void;
+  searchQuery: string;
+  setSearchQuery: (arg: string) => void;
+}
 
 /**
- * Render a toolbar with a search input, a primary "New flow" button, and right-aligned filter controls for the history view.
+ * Render a history toolbar containing a controlled search input and a status filter dropdown.
  *
- * @returns A JSX element containing: a search input with leading icon, a "New flow" action button, a dropdown for status filtering (All, Completed, Processing, Failed), and compact buttons for date range, filter, and adding a new column.
+ * @param selectedStatus - The currently selected status label shown in the dropdown
+ * @param setSelectedStatus - Callback to update the selected status when a dropdown item is chosen
+ * @param searchQuery - The current text value of the search input
+ * @param setSearchQuery - Callback to update the search query as the user types
+ * @returns The toolbar JSX element containing the search input (with leading icon) and a status dropdown with items: All, Done, Processing, Error, Unknown
  */
-export function HistoryToolbar() {
+export function HistoryToolbar({
+  selectedStatus,
+  setSelectedStatus,
+  searchQuery,
+  setSearchQuery,
+}: HistoryToolbarProps) {
+  const handleStatusSelect = (status: string) => {
+    setSelectedStatus(status);
+  };
+
   return (
-    <div className="mb-6 space-y-4">
+    <div className="mb-6">
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
           <Input
             placeholder="Search"
             className="pl-9 h-10 bg-background w-full"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
 
-        <Button size="lg" className="h-10 flex-shrink-0">
-          <Plus className="w-4 h-4 mr-2" />
-          New flow
-        </Button>
-      </div>
-
-      {/* Filter toolbar */}
-      <div className="flex items-center justify-end gap-3">
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
-            <Button variant="outline" size="sm" className="h-9 bg-transparent">
-              All
+            <Button variant="outline" size="sm" className="h-10 bg-transparent">
+              {selectedStatus}
               <ChevronDown className="w-4 h-4 ml-2" />
             </Button>
           </DropdownMenuTrigger>
-          <DropdownMenuContent align="start">
-            <DropdownMenuItem>All</DropdownMenuItem>
-            <DropdownMenuItem>Completed</DropdownMenuItem>
-            <DropdownMenuItem>Processing</DropdownMenuItem>
-            <DropdownMenuItem>Failed</DropdownMenuItem>
+          <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() => handleStatusSelect("All")}>
+              All
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusSelect("Done")}>
+              Done
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusSelect("Processing")}>
+              Processing
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusSelect("Error")}>
+              Error
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={() => handleStatusSelect("Unknown")}>
+              Unknown
+            </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
-
-        <Button variant="outline" size="sm" className="h-9 bg-transparent">
-          <Calendar className="w-4 h-4 mr-2" />
-          Date Range
-        </Button>
-
-        <Button variant="outline" size="sm" className="h-9 bg-transparent">
-          <Filter className="w-4 h-4 mr-2" />
-          Filter
-        </Button>
-
-        <Button variant="outline" size="sm" className="h-9 bg-transparent">
-          <Plus className="w-4 h-4 mr-2" />
-          Add new column
-        </Button>
       </div>
     </div>
   );
