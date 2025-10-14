@@ -188,7 +188,7 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
           </div>
 
           {audio.transcript ? (
-            <TranscriptDetails transcript={audio.transcript} />
+            <TranscriptDetails transcript={audio.transcript} currentTimeSeconds={currentTimeSeconds}/>
           ) : (
             <div className="p-8 text-center text-muted-foreground">
               <p>No transcript available</p>

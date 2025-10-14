@@ -69,12 +69,16 @@ export type Transcript = {
   id: string;
   audio_id: string;
   text: string;
+  words?: Transcript_Word[];
   created_at: string;
 };
 
 //TODO: this thing use for db call i will clean this later
-export type Transcript_Word = TranscriptionWord & { 
+export type Transcript_Word = { 
     id: string;
+    start_time: number;
+    end_time: number;
+    text: string;
     create_at: string;
     update_at: string;
 }
