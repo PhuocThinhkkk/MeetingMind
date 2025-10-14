@@ -166,7 +166,6 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
               </span>
             </div>
 
-            {/* Volume */}
             <button
               onClick={toggleMute}
               className="p-2 rounded-full bg-muted hover:bg-muted/50 transition shrink-0"
@@ -188,7 +187,6 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
             />
           </div>
 
-          {/* Transcript details */}
           {audio.transcript ? (
             <TranscriptDetails transcript={audio.transcript} />
           ) : (

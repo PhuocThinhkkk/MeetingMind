@@ -14,23 +14,56 @@ import { AudioFile } from "@/types/transcription";
 export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
   const { data, error } = await supabase
     .from("audio_files")
-    .select("*, transcript:transcripts(*)")
+    .select(
+      `
+      *,
+      transcript:transcripts(
+        *,
+        words:transcription_words!fk_transcript(*)
+      )
+    `,
+    )
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
+
   if (error) {
     console.error("Error fetching audio history:", error);
     return [];
   }
+
   if (!data || data.length === 0) {
-    console.warn("no audio found! Data: ", data);
+    console.warn("No audio found! Data:", data);
+    return [];
   }
 
-  const audiosFormatted = data.map((item) => ({
-    ...item,
-    transcript: item.transcript?.[0] ?? null,
-  })) as AudioFile[];
+  try {
+    const audiosFormatted = data.map((audio) => {
+      let transcript: any = { words: [] };
 
-  return audiosFormatted;
+      if (
+        audio.transcript &&
+        audio.transcript.length > 0 &&
+        audio.transcript[0]
+      ) {
+        transcript = audio.transcript[0];
+
+        if (!transcript.words) {
+          transcript.words = [];
+        }
+      }
+
+      const formattedTranscript = {
+        ...transcript,
+        words: transcript.words,
+      };
+
+      return { ...audio, transcript: formattedTranscript };
+    }) as AudioFile[];
+
+    return audiosFormatted;
+  } catch (e) {
+    throw new Error(`can not format audio: ${e}`);
+  }
 }
 
 /**
@@ -141,3 +174,4 @@ export async function deleteAudioById(audioId: string) {
   console.log(`🗑️ Audio with ID ${audioId} deleted`);
   return true;
 }
+
