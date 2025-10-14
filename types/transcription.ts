@@ -19,8 +19,8 @@ export interface TranscriptionData {
   };
   file_url?: string;
 }
-
-export interface TranscriptionWord {
+//TODO: name this properly later
+export type TranscriptionWord = {
   text: string;
   confidence: number;
   start: number;
@@ -71,4 +71,11 @@ export type Transcript = {
   text: string;
   created_at: string;
 };
+
+//TODO: this thing use for db call i will clean this later
+export type Transcript_Word = TranscriptionWord & { 
+    id: string;
+    create_at: string;
+    update_at: string;
+}
 export type SaveTranscriptInput = TranscriptionWord[];
