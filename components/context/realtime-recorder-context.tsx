@@ -478,8 +478,8 @@ async function handlingSaveAudioAndTranscript(
     if (!blob) {
       throw new Error("The audio of the recording isnt found");
     }
-    if (!transcriptWords) {
-      throw new Error("There is nothing in transcription ");
+    if (!transcriptWords || transcriptWords.length === 0) {
+      throw new Error("There is nothing in transcription");
     }
 
     const audio = await saveAudioFile(blob, user.id, "Unnamed");
