@@ -14,7 +14,7 @@ export async function saveTranscriptWords(
     word_is_final: word.word_is_final,
   }));
 
-  const { data, error } = await supabase.from("transcription_words").insert(rows);
+  const { data, error } = await supabase.from("transcription_words").insert(rows).select();
 
   if (error) {
     throw new Error("Error when saving transcript words: " + error.message);

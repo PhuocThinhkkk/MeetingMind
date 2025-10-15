@@ -79,7 +79,6 @@ export type Transcript_Word = {
     start_time: number;
     end_time: number;
     text: string;
-    create_at: string;
-    update_at: string;
+    confidence: number;
 }
 export type SaveTranscriptInput = TranscriptionWord[];

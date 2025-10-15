@@ -68,6 +68,10 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
       const current = audioRef.current.currentTime;
       const dur = audioRef.current.duration;
       setCurrentTimeSeconds(current);
+      if (dur <= 0) {
+        setProgressPercent(0);
+        return 
+      }
       setProgressPercent((current / dur) * 100);
     }
   }
@@ -188,7 +192,10 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
           </div>
 
           {audio.transcript ? (
-            <TranscriptDetails transcript={audio.transcript} currentTimeSeconds={currentTimeSeconds}/>
+            <TranscriptDetails
+              transcript={audio.transcript}
+              currentTimeSeconds={currentTimeSeconds}
+            />
           ) : (
             <div className="p-8 text-center text-muted-foreground">
               <p>No transcript available</p>
