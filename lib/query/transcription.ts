@@ -1,4 +1,4 @@
-import { SaveTranscriptInput } from "@/types/transcription";
+import { SaveTranscriptInput, Transcript } from "@/types/transcription";
 import { supabase } from "@/lib/supabase";
 
 
@@ -31,5 +31,5 @@ export async function saveTranscript(
     console.error("Error saving transcript:", error);
     throw error;
   }
-  return data;
+  return data as Transcript;
 }

@@ -19,6 +19,7 @@ import { saveAudioFile } from "@/lib/query/audio";
 import { saveTranscript } from "@/lib/query/transcription";
 import { User } from "@supabase/supabase-js";
 import { useAuth } from "@/hooks/use-auth";
+import { saveTranscriptWords } from "@/lib/query/transcript-words";
 
 type RecorderContextType = {
   isRecording: boolean;
@@ -143,7 +144,7 @@ export function useRealtimeTranscription({
     [],
   );
   const [translateWords, setTranslateWords] = useState<string[]>([]);
-  const { user } = useAuth()
+  const { user } = useAuth();
 
   const wsRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -470,13 +471,22 @@ async function handlingSaveAudioAndTranscript(
   transcriptWords: TranscriptionWord[],
 ) {
   try {
-    const audio = await saveAudioFile(
-      blob,
-      user.id,
-      "Unnamed",
-    );
-    await saveTranscript(audio.id, transcriptWords);
+    if (!user) {
+      throw new Error("pls sign in first to use our application");
+    }
+
+    if (!blob) {
+      throw new Error("The audio of the recording isnt found");
+    }
+    if (!transcriptWords || transcriptWords.length === 0) {
+      throw new Error("There is nothing in transcription");
+    }
+
+    const audio = await saveAudioFile(blob, user.id, "Unnamed");
+    const transcription = await saveTranscript(audio.id, transcriptWords);
+    await saveTranscriptWords(transcription.id, transcriptWords);
   } catch (error) {
     console.error("Error saving audio or transcript:", error);
   }
 }
+

@@ -5,6 +5,7 @@ import { formatDate } from "@/lib/utils";
 
 type TranscriptDetailsProps = {
   transcript: Transcript;
+  currentTimeSeconds: number;
 };
 
 /**
@@ -15,14 +16,28 @@ type TranscriptDetailsProps = {
  * @param transcript - The transcript object to display (expected to include `id`, `created_at`, and `text`).
  * @returns A React element showing the transcript's date, ID badge, and text content.
  */
-export function TranscriptDetails({ transcript }: TranscriptDetailsProps) {
-  let currentTranscriptId;
-  if (transcript.id) {
-    currentTranscriptId = transcript.id.slice(0, 8) + "...";
-  } else {
-    currentTranscriptId = "N/A";
+export function TranscriptDetails({
+  transcript,
+  currentTimeSeconds,
+}: TranscriptDetailsProps) {
+  const currentMs = currentTimeSeconds * 1000;
+  let currentTranscriptId = transcript.id
+    ? transcript.id.slice(0, 8) + "..."
+    : "N/A";
+
+  if (!transcript.id) {
     console.error("Transcript ID is undefined", transcript);
   }
+
+  const windowBefore = 300; 
+  const windowAfter = 300; 
+
+  const activeWords =
+    transcript.words?.filter(
+      (word) =>
+        currentMs >= word.start_time - windowBefore &&
+        currentMs <= word.end_time + windowAfter,
+    ) || [];
 
   return (
     <div className="space-y-4">
@@ -35,6 +50,7 @@ export function TranscriptDetails({ transcript }: TranscriptDetailsProps) {
           </p>
         </div>
       </div>
+
       <div className="bg-background rounded-lg p-4 border">
         <div className="flex items-center justify-between mb-3">
           <h4 className="text-sm font-semibold text-foreground">
@@ -44,10 +60,26 @@ export function TranscriptDetails({ transcript }: TranscriptDetailsProps) {
             ID: {currentTranscriptId}
           </Badge>
         </div>
+
         <p className="text-sm text-foreground leading-relaxed">
-          {transcript.text}
+          {transcript.words ? (
+            transcript.words.map((word) => {
+              const isActive = activeWords.includes(word);
+              return (
+                <span
+                  key={word.id}
+                  className={isActive ? "text-blue-500 bg-blue-100 font-bold" : ""}
+                >
+                  {word.text + " "}
+                </span>
+              );
+            })
+          ) : (
+            <span>{transcript.text}</span>
+          )}
         </p>
       </div>
     </div>
   );
 }
+
