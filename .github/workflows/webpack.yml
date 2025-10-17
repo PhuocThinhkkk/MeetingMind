@@ -26,6 +26,11 @@ jobs:
         run: npm ci --legacy-peer-deps
 
       - name: Run Tests
+        env:
+
+          NEXT_PUBLIC_SUPABASE_URL: "http://localhost:1234"
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: "fake-key"
+
         run: npx jest --ci --runInBand
 
       - name: Build Next.js
