@@ -27,13 +27,14 @@ jobs:
 
       - name: Run Tests
         env:
-
-          NEXT_PUBLIC_SUPABASE_URL: "http://localhost:1234"
-          NEXT_PUBLIC_SUPABASE_ANON_KEY: "fake-key"
-
+            NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:1234' }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'fake-key' }}
         run: npx jest --ci --runInBand
 
       - name: Build Next.js
+        env:
+            NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:1234' }}
+            NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'fake-key' }}
         run: npm run build
           
   go:
@@ -57,6 +58,11 @@ jobs:
 
       - name: Run Go app (smoke test)
         working-directory: ./socket-server
+        env:
+          PORT=9090
+          FRONTEND_URL=http://localhost:3000
+
+          ASSEMBLYAI_API_KEY=${{ secrets.ASSEMBLYAI_API_KEY || 'fake-key' }}
         run: |
           go run . &
           sleep 5
