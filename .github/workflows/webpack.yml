@@ -59,10 +59,10 @@ jobs:
       - name: Run Go app (smoke test)
         working-directory: ./socket-server
         env:
-          PORT=9090
-          FRONTEND_URL=http://localhost:3000
+          PORT: 9090
+          FRONTEND_URL: http://localhost:3000
 
-          ASSEMBLYAI_API_KEY=${{ secrets.ASSEMBLYAI_API_KEY || 'fake-key' }}
+          ASSEMBLYAI_API_KEY: ${{ secrets.ASSEMBLYAI_API_KEY || 'fake-key' }}
         run: |
           go run . &
           sleep 5
