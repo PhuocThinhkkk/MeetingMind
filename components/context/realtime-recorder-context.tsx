@@ -410,7 +410,7 @@ export function useRealtimeTranscription({
 }
 
 // @ts-ignore
-async function resampleTo16kHz(float32) {
+export async function resampleTo16kHz(float32) {
   const originalSampleRate = 48000;
   const targetSampleRate = 16000;
   const audioBuffer = new AudioBuffer({
@@ -447,7 +447,7 @@ async function resampleTo16kHz(float32) {
  * @returns An Int16Array containing the converted signed 16-bit PCM samples (approximately -32768 to 32767).
  */
 // @ts-ignore
-function float32ToInt16(float32) {
+export function float32ToInt16(float32) {
   const int16 = new Int16Array(float32.length);
   for (let i = 0; i < float32.length; i++) {
     const s = Math.max(-1, Math.min(1, float32[i]));
@@ -465,7 +465,7 @@ function float32ToInt16(float32) {
  * @param blob - The audio data to persist
  * @param transcriptWords - The transcript words associated with the audio
  */
-async function handlingSaveAudioAndTranscript(
+export async function handlingSaveAudioAndTranscript(
   user: User,
   blob: Blob,
   transcriptWords: TranscriptionWord[],

@@ -1,5 +1,6 @@
 import { AudioProvider } from "@/components/context/audios-list-context";
 import TranscriptHistoryPage from "./transcript-history-page";
+import { Suspense } from "react";
 
 /**
  * Render the History Recording page layout.
@@ -18,9 +19,11 @@ export default function HistoryPage() {
             History Recording
           </h1>
         </div>
-        <AudioProvider>
-            <TranscriptHistoryPage/>
-        </AudioProvider>
+        <Suspense fallback={<div>Loading...</div>}>
+          <AudioProvider>
+            <TranscriptHistoryPage />
+          </AudioProvider>
+        </Suspense>
       </div>
     </main>
   );
