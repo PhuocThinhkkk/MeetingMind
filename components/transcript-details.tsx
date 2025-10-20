@@ -1,6 +1,6 @@
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
-import { Transcript } from "@/types/transcription";
+import { Transcript } from "@/types/transcription.db";
 import { formatDate } from "@/lib/utils";
 
 type TranscriptDetailsProps = {

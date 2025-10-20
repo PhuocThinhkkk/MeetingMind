@@ -10,7 +10,6 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   FileText, 
-  MessageSquare, 
   Calendar, 
   Download, 
   Share,
@@ -18,7 +17,6 @@ import {
   User,
   Send,
   CheckCircle,
-  AlertCircle,
   Loader2
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -43,27 +41,23 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
 
   const fetchTranscriptionData = async () => {
     try {
-      // Fetch transcript
       const { data: transcriptData } = await supabase
         .from('transcripts')
         .select('*')
         .eq('audio_id', file.id)
         .single();
 
-      // Fetch summary
       const { data: summaryData } = await supabase
         .from('summaries')
         .select('*')
         .eq('audio_id', file.id)
         .single();
 
-      // Fetch events
       const { data: eventsData } = await supabase
         .from('events')
         .select('*')
         .eq('audio_id', file.id);
 
-      // Fetch Q&A history
       const { data: qaData } = await supabase
         .from('qa_logs')
         .select('*')
@@ -86,7 +80,6 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
 
     setAskingQuestion(true);
     try {
-      // Simulate AI response (replace with actual AI integration)
       const simulatedAnswer = "Based on the meeting transcript, I can provide you with relevant information. This is a simulated AI response that would analyze the content and provide accurate answers.";
 
       const { data, error } = await supabase

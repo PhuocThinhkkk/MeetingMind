@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader } from "@/components/ui/card"
 import { StatusBadge } from "@/components/status-badge"
 import { TranscriptDetails } from "@/components/transcript-details"
 import { FileAudio, Clock, HardDrive } from "lucide-react"
-import { AudioFile } from "@/types/transcription"
+import { AudioFile } from "@/types/transcription.db"
 import { formatDate, formatDuration, formatFileSize} from "@/lib/utils"
 
 

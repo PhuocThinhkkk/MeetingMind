@@ -1,6 +1,6 @@
 import { supabase } from "@/lib/supabase";
 import { getAudioDuration } from "@/lib/utils";
-import { AudioFile } from "@/types/transcription";
+import { AudioFile } from "@/types/transcription.db";
 
 /**
  * Retrieve a user's audio history including their associated transcript (if any).
@@ -28,7 +28,7 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
 
   if (error) {
     console.error("Error fetching audio history:", error);
-    return [];
+    throw error;
   }
 
   if (!data || data.length === 0) {

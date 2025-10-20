@@ -1,4 +1,4 @@
-import { SaveTranscriptInput, Transcript } from "@/types/transcription";
+import { SaveTranscriptInput, Transcript } from "@/types/transcription.db";
 import { supabase } from "@/lib/supabase";
 
 

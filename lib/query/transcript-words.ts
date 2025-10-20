@@ -1,9 +1,10 @@
-import { Transcript_Word, TranscriptionWord } from "@/types/transcription";
+import { RealtimeTranscriptionWord } from "@/types/transcription.ws";
+import { TranscriptionWord } from "@/types/transcription.db";
 import { supabase } from "../supabase";
 
 export async function saveTranscriptWords(
   transcriptionId: string,
-  transcriptWords: TranscriptionWord[]
+  transcriptWords: RealtimeTranscriptionWord[]
 ) {
   const rows = transcriptWords.map((word) => ({
     transcript_id: transcriptionId,
@@ -20,6 +21,6 @@ export async function saveTranscriptWords(
     throw new Error("Error when saving transcript words: " + error.message);
   }
   if(!data) return []
-  return data as Transcript_Word[];
+  return data as TranscriptionWord[];
 }
 
