@@ -8,18 +8,12 @@ import {
 } from "react";
 
 import {
-  TranscriptionWord,
+  RealtimeTranscriptionWord,
   RealtimeTranscriptChunk,
-  AudioChunk,
   RealtimeTranslateResponse,
-} from "@/types/transcription";
+} from "@/types/transcription.ws";
 
-import { encodeWAV, mergeChunks } from "@/lib/utils";
-import { saveAudioFile } from "@/lib/query/audio";
-import { saveTranscript } from "@/lib/query/transcription";
-import { User } from "@supabase/supabase-js";
 import { useAuth } from "@/hooks/use-auth";
-import { saveTranscriptWords } from "@/lib/query/transcript-words";
 
 type RecorderContextType = {
   isRecording: boolean;
@@ -28,7 +22,7 @@ type RecorderContextType = {
   clearTranscript: () => void;
   audioBlob: Blob | null;
   status: string;
-  transcriptWords: TranscriptionWord[];
+  transcriptWords: RealtimeTranscriptionWord[];
   translateWords: string[];
   sessionStartTime: Date | null;
   setSessionStartTime: React.Dispatch<React.SetStateAction<Date | null>>;
@@ -125,7 +119,7 @@ interface UseRealtimeTranscriptionProps {
  * @returns An object exposing the recorder state and controls:
  *  - isRecording: `true` when audio capture and streaming are active, `false` otherwise
  *  - status: Current lifecycle status: `"idle" | "connecting" | "recording" | "processing" | "error"`
- *  - transcriptWords: Array of `TranscriptionWord` representing the current transcript (partial and final words)
+ *  - transcriptWords: Array of `RealtimeTranscriptionWord` representing the current transcript (partial and final words)
  *  - translateWords: Array of translated strings received from the service
  *  - startRecording: Begins audio capture, prepares the audio pipeline and WebSocket connection
  *  - stopRecording: Stops capture and streaming, finalizes any pending audio, and marks transcript words as final
@@ -140,7 +134,7 @@ export function useRealtimeTranscription({
   const [status, setStatus] = useState<
     "idle" | "connecting" | "recording" | "processing" | "error"
   >("idle");
-  const [transcriptWords, setTranscriptWords] = useState<TranscriptionWord[]>(
+  const [transcriptWords, setTranscriptWords] = useState<RealtimeTranscriptionWord[]>(
     [],
   );
   const [translateWords, setTranslateWords] = useState<string[]>([]);
@@ -191,7 +185,7 @@ export function useRealtimeTranscription({
               console.warn("No words in transcription response");
               return;
             }
-            const newWords: TranscriptionWord[] = data.words.map(
+            const newWords: RealtimeTranscriptionWord[] = data.words.map(
               (word, index) => ({
                 text: word.text,
                 word_is_final: word.word_is_final,
@@ -349,13 +343,6 @@ export function useRealtimeTranscription({
     console.log("stop recording");
 
     isAssemblyReady.current = false;
-    if (audioBufferRef.current.length !== 0) {
-      const merged = mergeChunks(audioBufferRef.current);
-      const pcm = new Int16Array(merged.buffer);
-      const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
-      setAudioBlob(wavBlob);
-      handlingSaveAudioAndTranscript(user as User, wavBlob, transcriptWords);
-    }
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -384,6 +371,17 @@ export function useRealtimeTranscription({
     }, 1000);
   }, [updateStatus]);
 
+  function UploadAudio(){
+      if (audioBufferRef.current.length !== 0) {
+        const merged = mergeChunks(audioBufferRef.current);
+        const pcm = new Int16Array(merged.buffer);
+        const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
+        setAudioBlob(wavBlob);
+        handlingSaveAudioAndTranscript(user as User, wavBlob, transcriptWords);
+      }
+  }
+
+
   const clearTranscript = useCallback(() => {
     setTranscriptWords([]);
   }, []);
@@ -408,85 +406,3 @@ export function useRealtimeTranscription({
     audioBlob,
   };
 }
-
-// @ts-ignore
-export async function resampleTo16kHz(float32) {
-  const originalSampleRate = 48000;
-  const targetSampleRate = 16000;
-  const audioBuffer = new AudioBuffer({
-    length: float32.length,
-    numberOfChannels: 1,
-    sampleRate: originalSampleRate,
-  });
-
-  audioBuffer.copyToChannel(float32, 0, 0);
-
-  const offlineContext = new OfflineAudioContext({
-    numberOfChannels: 1,
-    length: Math.round(
-      (float32.length * targetSampleRate) / originalSampleRate,
-    ),
-    sampleRate: targetSampleRate,
-  });
-
-  const source = offlineContext.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(offlineContext.destination);
-  source.start();
-
-  const rendered = await offlineContext.startRendering();
-  return rendered.getChannelData(0);
-}
-
-/**
- * Convert normalized 32-bit float PCM samples to signed 16-bit PCM samples.
- *
- * Clamps input samples to the range [-1, 1] and scales them to the signed 16-bit range.
- *
- * @param float32 - The input Float32Array of audio samples, typically in the range [-1, 1].
- * @returns An Int16Array containing the converted signed 16-bit PCM samples (approximately -32768 to 32767).
- */
-// @ts-ignore
-export function float32ToInt16(float32) {
-  const int16 = new Int16Array(float32.length);
-  for (let i = 0; i < float32.length; i++) {
-    const s = Math.max(-1, Math.min(1, float32[i]));
-    int16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
-  }
-  return int16;
-}
-
-/**
- * Persist an audio Blob and its associated transcript for the specified user.
- *
- * Attempts to save the audio file and then the transcript; any errors encountered are caught and logged.
- *
- * @param user - The owner of the recording
- * @param blob - The audio data to persist
- * @param transcriptWords - The transcript words associated with the audio
- */
-export async function handlingSaveAudioAndTranscript(
-  user: User,
-  blob: Blob,
-  transcriptWords: TranscriptionWord[],
-) {
-  try {
-    if (!user) {
-      throw new Error("pls sign in first to use our application");
-    }
-
-    if (!blob) {
-      throw new Error("The audio of the recording isnt found");
-    }
-    if (!transcriptWords || transcriptWords.length === 0) {
-      throw new Error("There is nothing in transcription");
-    }
-
-    const audio = await saveAudioFile(blob, user.id, "Unnamed");
-    const transcription = await saveTranscript(audio.id, transcriptWords);
-    await saveTranscriptWords(transcription.id, transcriptWords);
-  } catch (error) {
-    console.error("Error saving audio or transcript:", error);
-  }
-}
-

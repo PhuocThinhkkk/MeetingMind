@@ -16,17 +16,12 @@ import { FileAudio, Clock, MoreHorizontal } from "lucide-react";
 import { RealtimeRecorder } from "@/components/dashboard/realtime-recorder";
 import { AudioUpload } from "@/components/dashboard/audio-upload";
 import { useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/lib/supabase";
-import { TranscriptionData } from "@/types/transcription";
-
-interface AudioFile {
-  id: string;
-  name: string;
-  duration: number;
-  transcription_status: "pending" | "processing" | "done" | "failed";
-  created_at: string;
-  progress?: number;
-}
+import { AudioFile, } from "@/types/transcription.db";
+import { getAudioHistory, saveAudioFile } from "@/lib/query/audio";
+import { saveTranscript } from "@/lib/query/transcription";
+import { saveTranscriptWords } from "@/lib/query/transcript-words";
+import { SaveTranscriptInput } from "@/types/transcription.db";
+import { formatDuration } from "@/lib/utils";
 
 /**
  * Renders the dashboard for uploading, recording, and viewing transcriptions of audio meetings.
@@ -40,7 +35,7 @@ export default function HomePage() {
   const router = useRouter();
   const [audioFiles, setAudioFiles] = useState<AudioFile[]>([]);
   const [selectedTranscription, setSelectedTranscription] =
-    useState<TranscriptionData | null>(null);
+    useState<AudioFile | null>(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -56,17 +51,10 @@ export default function HomePage() {
   }, [user]);
 
   const fetchAudioFiles = async () => {
+    if (!user) return;
     try {
-      const { data, error } = await supabase
-        .from("audio_files")
-        .select("*")
-        .order("created_at", { ascending: false });
-
-      if (error) {
-        console.error("Error fetching audio files:", error);
-      } else {
-        setAudioFiles(data || []);
-      }
+      const data = await getAudioHistory(user.id);
+      setAudioFiles(data || []);
     } catch (error) {
       console.error("Error fetching audio files:", error);
     } finally {
@@ -74,75 +62,37 @@ export default function HomePage() {
     }
   };
 
-  const handleFileUpload = async (file: File) => {
+  async function handleFileUpload() {
     if (!user) return;
-
     try {
-      const fileExt = file.name.split(".").pop();
-      const fileName = `${Date.now()}.${fileExt}`;
-      const filePath = `${user.id}/${fileName}`;
-
-      const { error: uploadError } = await supabase.storage
-        .from("audio-files")
-        .upload(filePath, file);
-
-      if (uploadError) {
-        console.error("Error uploading file:", uploadError);
-        return;
-      }
-
-      const {
-        data: { publicUrl },
-      } = supabase.storage.from("audio-files").getPublicUrl(filePath);
-
-      const { data, error } = await supabase
-        .from("audio_files")
-        .insert([
-          {
-            user_id: user.id,
-            name: file.name,
-            url: publicUrl,
-            duration: 0,
-            file_size: file.size,
-            mime_type: file.type,
-            transcription_status: "pending",
-          },
-        ])
-        .select()
-        .single();
-
-      if (error) {
-        console.error("Error creating audio file record:", error);
-      } else {
-        setAudioFiles((prev) => [data, ...prev]);
-      }
     } catch (error) {
       console.error("Error uploading file:", error);
     }
-  };
+  }
 
-  const handleRealtimeTranscriptionComplete = (data: TranscriptionData) => {
-    setSelectedTranscription(data);
-  };
+  async function handleRealtimeTranscriptionComplete(
+    blob: Blob,
+    transcript: SaveTranscriptInput,
+  ) {
+    if (!user) return;
+    try {
+      const data = await handlingSaveAudioAndTranscript(
+        user.id,
+        blob,
+        transcript,
+      );
+      if (!data) return;
+      setAudioFiles((prev) => [data, ...prev]);
+      setSelectedTranscription(data);
+    } catch (error) {
+      console.error("Error uploading file:", error);
+    }
+  }
 
   const handleFileTranscriptionView = (file: AudioFile) => {
-    const transcriptionData: TranscriptionData = {
-      id: file.id,
-      name: file.name,
-      type: "file",
-      status: file.transcription_status as any,
-      duration: file.duration,
-      created_at: file.created_at,
-      file_url: (file as any).url,
-    };
-    setSelectedTranscription(transcriptionData);
+    setSelectedTranscription(file);
   };
 
-  const formatDuration = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = Math.floor(seconds % 60);
-    return `${minutes}:${remainingSeconds.toString().padStart(2, "0")}`;
-  };
   const getStatusColor = (status: string) => {
     switch (status) {
       case "done":
@@ -273,4 +223,38 @@ export default function HomePage() {
       </div>
     </div>
   );
+}
+/**
+ * Persist an audio Blob and its associated transcript for the specified user.
+ *
+ * Attempts to save the audio file and then the transcript; any errors encountered are caught and logged.
+ *
+ * @param user - The owner of the recording
+ * @param blob - The audio data to persist
+ * @param transcriptWords - The transcript words associated with the audio
+ */
+export async function handlingSaveAudioAndTranscript(
+  userId: string,
+  blob: Blob,
+  transcriptWords: SaveTranscriptInput,
+) {
+  if (!userId) {
+    throw new Error("pls sign in first to use our application");
+  }
+
+  if (!blob) {
+    throw new Error("The audio of the recording isnt found");
+  }
+  if (!transcriptWords || transcriptWords.length === 0) {
+    throw new Error("There is nothing in transcription");
+  }
+
+  const audio = await saveAudioFile(blob, userId, "Unnamed");
+  const transcription = await saveTranscript(audio.id, transcriptWords);
+  const words = await saveTranscriptWords(transcription.id, transcriptWords);
+  const completedAudioFile: AudioFile = {
+    ...audio,
+    transcript: { ...transcription, words: words },
+  };
+  return completedAudioFile;
 }

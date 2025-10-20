@@ -13,12 +13,18 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { TranscriptionData, TranscriptionWord } from "@/types/transcription";
 import RealTimeTranscriptionPage from "./realtime-view-transcription";
 import { useRecorder } from "@/components/context/realtime-recorder-context";
+import { SaveTranscriptInput } from "@/types/transcription.db";
+import { useAuth } from "@/hooks/use-auth";
+import { formatDuration } from "@/lib/utils";
 
 interface RealtimeRecorderProps {
-  onTranscriptionComplete: (data: TranscriptionData) => void;
+  onTranscriptionComplete: (
+    userId: string,
+    audioBlob: Blob,
+    transcription: SaveTranscriptInput,
+  ) => void;
 }
 
 /**
@@ -33,6 +39,7 @@ interface RealtimeRecorderProps {
 export function RealtimeRecorder({
   onTranscriptionComplete,
 }: RealtimeRecorderProps) {
+  const { user } = useAuth();
   const [showTranscription, setShowTranscription] = useState(false);
   const {
     transcriptWords,
@@ -52,34 +59,15 @@ export function RealtimeRecorder({
   };
 
   const handleStopRecording = () => {
+    if (!audioBlob) return;
+    if (!user) return;
+    const transcription = transcriptWords;
+    onTranscriptionComplete(user.id, audioBlob, transcription);
     stopRecording();
-
-    if (sessionStartTime && transcriptWords.length > 0) {
-      const duration = Math.floor(
-        (Date.now() - sessionStartTime.getTime()) / 1000,
-      );
-      const transcriptionData: TranscriptionData = {
-        id: `realtime-${Date.now()}`,
-        name: `Live Recording - ${sessionStartTime.toLocaleTimeString()}`,
-        type: "realtime",
-        status: "done",
-        duration,
-        created_at: sessionStartTime.toISOString(),
-        transcript: {
-          text: transcriptWords.map((w) => w.text).join(" "),
-          words: transcriptWords,
-          speakers_detected: 1,
-          confidence_score: 0.85,
-        },
-      };
-
-      onTranscriptionComplete(transcriptionData);
-    }
-
     setSessionStartTime(null);
   };
 
-  const getStatusColor = () => {
+  function getStatusColor() {
     switch (status) {
       case "recording":
         return "bg-red-100 text-red-800 border-red-200";
@@ -92,7 +80,7 @@ export function RealtimeRecorder({
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  };
+  }
 
   const getStatusIcon = () => {
     switch (status) {
@@ -108,16 +96,14 @@ export function RealtimeRecorder({
         return <MicOff className="w-4 h-4" />;
     }
   };
-
-  const formatDuration = () => {
-    if (!sessionStartTime) return "00:00";
-    const elapsed = Math.floor(
-      (Date.now() - sessionStartTime.getTime()) / 1000,
-    );
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  };
+  let duration = 0;
+  const now = Date.now() / 1000;
+  if (!sessionStartTime) {
+    duration = 0;
+  } else {
+    const startTimeSeconds = sessionStartTime.getTime() / 1000;
+    duration = now - startTimeSeconds;
+  }
 
   return (
     <>
@@ -135,7 +121,7 @@ export function RealtimeRecorder({
               {status === "recording" && (
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <span>{formatDuration()}</span>
+                  <span>{formatDuration(duration)}</span>
                 </div>
               )}
             </div>

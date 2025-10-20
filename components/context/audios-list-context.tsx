@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { AudioFile } from "@/types/transcription";
+import { AudioFile } from "@/types/transcription.db";
 
 type AudioContextType = {
   audios: AudioFile[];
