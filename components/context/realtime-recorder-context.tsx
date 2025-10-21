@@ -1,3 +1,4 @@
+import { log } from "@/lib/logger";
 import {
   useState,
   useRef,
@@ -14,6 +15,7 @@ import {
 } from "@/types/transcription.ws";
 
 import { useAuth } from "@/hooks/use-auth";
+import { resampleTo16kHz, float32ToInt16 } from "@/lib/transcription"
 
 type RecorderContextType = {
   isRecording: boolean;
@@ -48,7 +50,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     audioBlob,
   } = useRealtimeTranscription({
     onError: (error: string) => {
-      console.error("Transcription error:", error);
+      log.error("Transcription error:", error);
     },
 
     onStatusChange: (newStatus: string) => {
@@ -138,7 +140,6 @@ export function useRealtimeTranscription({
     [],
   );
   const [translateWords, setTranslateWords] = useState<string[]>([]);
-  const { user } = useAuth();
 
   const wsRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -151,7 +152,7 @@ export function useRealtimeTranscription({
   const totalByteLengthRef = useRef<number>(0);
   const updateStatus = useCallback(
     (newStatus: typeof status) => {
-      console.log("status change!", newStatus);
+      log.info("status change!", newStatus);
       setStatus(newStatus);
       onStatusChange?.(newStatus);
     },
@@ -165,11 +166,11 @@ export function useRealtimeTranscription({
       wsRef.current = new WebSocket(`${wsUrl}/ws`);
 
       if (!wsRef?.current) {
-        console.log("no ws current yet.");
+        log.info("no ws current yet.");
         return;
       }
       wsRef.current.onopen = () => {
-        console.log("WebSocket connected");
+        log.info("WebSocket connected");
         updateStatus("recording");
       };
 
@@ -177,12 +178,12 @@ export function useRealtimeTranscription({
         try {
           const res = JSON.parse(event.data);
           if (res.type === READY_RESPONSE) {
-            console.log("Assembly is ready!");
+            log.info("Assembly is ready!");
             isAssemblyReady.current = true;
           } else if (res.type === TRANSCRIPT_RESPONSE) {
             const data: RealtimeTranscriptChunk = res;
             if (data.words.length === 0) {
-              console.warn("No words in transcription response");
+              log.warn("No words in transcription response");
               return;
             }
             const newWords: RealtimeTranscriptionWord[] = data.words.map(
@@ -202,37 +203,37 @@ export function useRealtimeTranscription({
               return updatedWords;
             });
           } else if (res.type === TRANSLATE_RESPONSE) {
-            console.log("Received translation response:", res);
+            log.info("Received translation response:", res);
             const data: RealtimeTranslateResponse = res;
             if (data.words === "") {
-              console.warn("No words in translation response");
+              log.warn("No words in translation response");
               return;
             }
             const newWord = data.words;
             setTranslateWords((prev) => [...prev, newWord]);
           } else {
-            console.error("Unknown response :", res);
+            log.error("Unknown response :", res);
           }
         } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
+          log.error("Error parsing WebSocket message:", error);
           onError?.("Failed to parse real time data");
         }
       };
 
       wsRef.current.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        log.error("WebSocket error:", error);
         updateStatus("error");
         onError?.("WebSocket connection failed");
       };
 
       wsRef.current.onclose = (e) => {
-        console.log("WebSocket disconnected", e.reason, e.code);
+        log.info("WebSocket disconnected", e.reason, e.code);
         if (status === "recording") {
           updateStatus("idle");
         }
       };
     } catch (error) {
-      console.error("Failed to connect WebSocket:", error);
+      log.error("Failed to connect WebSocket:", error);
       updateStatus("error");
       onError?.("Failed to connect to transcription service");
     }
@@ -257,13 +258,13 @@ export function useRealtimeTranscription({
         audio: true,
       });
     } catch (err) {
-      console.error("System audio permission denied:", err);
+      log.error("System audio permission denied:", err);
     }
 
     try {
       micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
     } catch (err) {
-      console.error("Microphone permission denied:", err);
+      log.error("Microphone permission denied:", err);
     }
 
     if (!systemStream && !micStream) {
@@ -314,16 +315,16 @@ export function useRealtimeTranscription({
               merged.set(part, offset);
               offset += part.length;
             } else {
-              console.warn("Audio chunk too large, skipping overflow data");
+              log.warn("Audio chunk too large, skipping overflow data");
             }
           }
           if (!wsRef.current) {
-            console.log("ws have been closed already");
+            log.info("ws have been closed already");
             return;
           }
 
           wsRef.current.send(merged.buffer);
-          console.log("Sent audio chunk of size:", merged.byteLength);
+          log.info("Sent audio chunk of size:", merged.byteLength);
           currentAudioBufferRef.current = [];
           totalByteLengthRef.current = 0;
         }
@@ -340,9 +341,10 @@ export function useRealtimeTranscription({
     console.trace("🔥 stopRecording() called");
     setIsRecording(false);
     updateStatus("processing");
-    console.log("stop recording");
+    log.info("stop recording");
 
     isAssemblyReady.current = false;
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -371,17 +373,6 @@ export function useRealtimeTranscription({
     }, 1000);
   }, [updateStatus]);
 
-  function UploadAudio(){
-      if (audioBufferRef.current.length !== 0) {
-        const merged = mergeChunks(audioBufferRef.current);
-        const pcm = new Int16Array(merged.buffer);
-        const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
-        setAudioBlob(wavBlob);
-        handlingSaveAudioAndTranscript(user as User, wavBlob, transcriptWords);
-      }
-  }
-
-
   const clearTranscript = useCallback(() => {
     setTranscriptWords([]);
   }, []);
@@ -389,7 +380,7 @@ export function useRealtimeTranscription({
   useEffect(() => {
     return () => {
       if (isRecording) {
-        console.log("curpit");
+        log.info("curpit");
         stopRecording();
       }
     };

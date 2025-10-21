@@ -1,5 +1,6 @@
 'use client';
 
+import { log } from "@/lib/logger";
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -69,7 +70,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
       setEvents(eventsData || []);
       setQaHistory(qaData || []);
     } catch (error) {
-      console.error('Error fetching transcription data:', error);
+      log.error('Error fetching transcription data:', error);
     } finally {
       setLoading(false);
     }
@@ -101,7 +102,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
       }
       setQuestion('');
     } catch (error) {
-      console.error('Error asking question:', error);
+      log.error('Error asking question:', error);
     } finally {
       setAskingQuestion(false);
     }

@@ -9,6 +9,7 @@ import { AudioFile } from "@/types/transcription.db";
 import { formatDuration, formatFileSize } from "@/lib/utils";
 import { FileAudio, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { log } from "@/lib/logger";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -160,7 +161,7 @@ function ConfirmDeletingDialog({
         return;
       }
       setAudios((prev) => prev.filter((a) => a.id !== audio.id));
-      console.log("Delete audio:", audio.id);
+      log.info("Delete audio:", audio.id);
       setShowDeleteDialog(false);
       await deleteAudioById(audio.id);
     } catch (e) {
@@ -230,13 +231,13 @@ function RenameInputDialog({
         }),
       );
 
-      console.log("Rename audio:", audio.id, "New name:", newName);
+      log.info("Rename audio:", audio.id, "New name:", newName);
       setShowRenameDialog(false);
       await updateAudioName(audio.id, newName);
     } catch (e) {
       toast.error(`Can not rename the ${audio.name} audio`);
       if (oldName === "") {
-        console.error("There some error when selecting the audio, pls try again");
+        log.error("There some error when selecting the audio, pls try again");
         return;
       }
       setAudios((prev) =>

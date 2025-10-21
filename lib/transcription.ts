@@ -1,22 +1,5 @@
 
 /**
- * Formats an ISO date string into an en-US localized date and time string.
- *
- * @param dateString - The ISO date string to format (e.g., "2023-10-05T14:48:00.000Z").
- * @returns The formatted date and time in en-US locale (e.g., "Oct 5, 2023, 02:48 PM").
- */
-export function formatDate(dateString: string): string {
-  const date = new Date(dateString);
-  return date.toLocaleDateString("en-US", {
-    year: "numeric",
-    month: "short",
-    day: "numeric",
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-}
-
-/**
  * Encodes 16-bit PCM samples into a WAV file Blob.
  *
  * Constructs a RIFF/WAVE file with a mono, 16-bit PCM fmt chunk and a data chunk, and returns a Blob with MIME type `audio/wav`.

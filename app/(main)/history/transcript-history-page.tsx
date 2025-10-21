@@ -1,5 +1,6 @@
 "use client";
 import { AudioHistoryList } from "@/components/audio-history-list";
+import { log } from "@/lib/logger";
 import { useAuth } from "@/hooks/use-auth";
 import { HistoryToolbar } from "@/components/history-toolbar";
 import { TranscriptModal } from "@/components/transcript-modal";
@@ -7,7 +8,6 @@ import { getAudioHistory } from "@/lib/query/audio";
 import React from "react";
 import { useSearchParams } from "next/navigation";
 import { useAudio } from "@/components/context/audios-list-context";
-import { SelectionState } from "react-day-picker";
 
 /**
  * Renders the transcript history page showing the current user's audio recordings and opens a transcript modal when an audio is selected via the URL.
@@ -41,7 +41,7 @@ export default function TranscriptHistoryPage() {
         setAudios([]);
         return;
       }
-      console.log("Fetched audio history for user", user.id, audios);
+      log.info(`Fetched audio history for user ${user.id}`, audios);
       setAudios(audios);
     }
 

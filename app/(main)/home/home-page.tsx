@@ -1,5 +1,6 @@
 "use client";
 
+import { log } from "@/lib/logger";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import {
@@ -11,7 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Progress } from "@/components/ui/progress";
 import { FileAudio, Clock, MoreHorizontal } from "lucide-react";
 import { RealtimeRecorder } from "@/components/dashboard/realtime-recorder";
 import { AudioUpload } from "@/components/dashboard/audio-upload";
@@ -56,7 +56,7 @@ export default function HomePage() {
       const data = await getAudioHistory(user.id);
       setAudioFiles(data || []);
     } catch (error) {
-      console.error("Error fetching audio files:", error);
+      log.error("Error fetching audio files:", error);
     } finally {
       setLoading(false);
     }
@@ -66,7 +66,7 @@ export default function HomePage() {
     if (!user) return;
     try {
     } catch (error) {
-      console.error("Error uploading file:", error);
+      log.error("Error uploading file:", error);
     }
   }
 
@@ -85,7 +85,7 @@ export default function HomePage() {
       setAudioFiles((prev) => [data, ...prev]);
       setSelectedTranscription(data);
     } catch (error) {
-      console.error("Error uploading file:", error);
+      log.error("Error uploading file:", error);
     }
   }
 
@@ -193,17 +193,6 @@ export default function HomePage() {
                           >
                             {file.transcription_status}
                           </Badge>
-
-                          {file.transcription_status === "processing" &&
-                            file.progress && (
-                              <div className="w-24">
-                                <Progress
-                                  value={file.progress}
-                                  className="h-2"
-                                />
-                              </div>
-                            )}
-
                           <Button
                             variant="ghost"
                             size="sm"

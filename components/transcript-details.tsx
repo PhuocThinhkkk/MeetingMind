@@ -1,3 +1,4 @@
+import { log } from "@/lib/logger";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
 import { Transcript } from "@/types/transcription.db";
@@ -26,7 +27,7 @@ export function TranscriptDetails({
     : "N/A";
 
   if (!transcript.id) {
-    console.error("Transcript ID is undefined", transcript);
+    log.error("Transcript ID is undefined", transcript);
   }
 
   const windowBefore = 300; 

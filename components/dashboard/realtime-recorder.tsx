@@ -21,7 +21,6 @@ import { formatDuration } from "@/lib/utils";
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (
-    userId: string,
     audioBlob: Blob,
     transcription: SaveTranscriptInput,
   ) => void;
@@ -59,11 +58,11 @@ export function RealtimeRecorder({
   };
 
   const handleStopRecording = () => {
-    if (!audioBlob) return;
     if (!user) return;
-    const transcription = transcriptWords;
-    onTranscriptionComplete(user.id, audioBlob, transcription);
     stopRecording();
+    if (!audioBlob) return;
+    const transcription = transcriptWords;
+    onTranscriptionComplete( audioBlob, transcription);
     setSessionStartTime(null);
   };
 

@@ -11,10 +11,10 @@ import {
   Sparkles,
   Languages,
 } from "lucide-react";
-import { TranscriptionWord } from "@/types/transcription";
+import { RealtimeTranscriptionWord } from "@/types/transcription.ws"
 
 interface RealTimeTranscriptionPageProps {
-  transcriptionWords?: TranscriptionWord[];
+  transcriptionWords?: RealtimeTranscriptionWord[];
   translationWords?: string[];
   isVisible?: boolean;
   onExit?: () => void;
@@ -40,10 +40,6 @@ export default function RealTimeTranscriptionPage({
   );
   const [showTranscript, setShowTranscript] = useState(true);
   const [showTranslate, setShowTranslate] = useState(true);
-
-  //TODO: handle this later
-  const translatedText =
-    "Hola a todos, bienvenidos a nuestro sistema de transcripción en vivo. Esto está funcionando muy bien y podemos ver todas las palabras apareciendo en tiempo real.";
 
   useEffect(() => {
     if (isVisible) {
@@ -88,7 +84,7 @@ export default function RealTimeTranscriptionPage({
     return "text-red-600";
   };
 
-  const getWordClassName = (index: number, word: TranscriptionWord) => {
+  const getWordClassName = (index: number, word: RealtimeTranscriptionWord) => {
     let className = `inline-block px-0 py-1 m-1 rounded-lg cursor-pointer transition-all duration-200 text-sm ${getConfidenceColor(word.confidence)}`;
 
     if (highlightedWords.has(index)) {
@@ -100,10 +96,6 @@ export default function RealTimeTranscriptionPage({
     } else {
       className +=
         " hover:bg-gray-100 border-2 border-transparent hover:shadow-sm";
-    }
-
-    if (!word.word_is_final) {
-      className += " opacity-70 italic";
     }
 
     return className;
@@ -319,7 +311,7 @@ export default function RealTimeTranscriptionPage({
                   <div className="text-lg leading-relaxed text-gray-800">
                     { translationWords.length > 0 
                       ? translationWords.join(" ")
-                      : translatedText }
+                      : " Translating..." }
                   </div>
                 )}
               </div>

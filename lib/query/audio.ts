@@ -1,5 +1,6 @@
+import { log } from "@/lib/logger";
 import { supabase } from "@/lib/supabase";
-import { getAudioDuration } from "@/lib/utils";
+import { getAudioDuration } from "@/lib/transcription";
 import { AudioFile } from "@/types/transcription.db";
 
 /**
@@ -27,12 +28,12 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
     .order("created_at", { ascending: false });
 
   if (error) {
-    console.error("Error fetching audio history:", error);
+    log.error("Error fetching audio history:", error);
     throw error;
   }
 
   if (!data || data.length === 0) {
-    console.warn("No audio found! Data:", data);
+    log.warn("No audio found! Data:", data);
     return [];
   }
 
@@ -86,7 +87,7 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
     });
 
   if (uploadError) {
-    console.error("Upload error:", uploadError);
+    log.error("Upload error:", uploadError);
     throw uploadError;
   }
 
@@ -100,7 +101,7 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
   try {
     duration = await getAudioDuration(blob);
   } catch (err) {
-    console.error("Error when saving audio file: ", err);
+    log.error("Error when saving audio file: ", err);
   }
   if (duration == undefined) {
     duration = 0;
@@ -121,7 +122,7 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
     .single();
 
   if (error) {
-    console.error("DB insert error:", error);
+    log.error("DB insert error:", error);
     throw error;
   }
 
@@ -145,11 +146,11 @@ export async function updateAudioName(audioId: string, newName: string) {
     .single();
 
   if (error) {
-    console.error("❌ Error updating audio name:", error);
+    log.error("❌ Error updating audio name:", error);
     throw error;
   }
 
-  console.log("✅ Audio name updated:", data);
+  log.info("✅ Audio name updated:", data);
   return data as AudioFile;
 }
 
@@ -167,11 +168,11 @@ export async function deleteAudioById(audioId: string) {
     .eq("id", audioId);
 
   if (error) {
-    console.error("❌ Error deleting audio:", error);
+    log.error("❌ Error deleting audio:", error);
     throw error;
   }
 
-  console.log(`🗑️ Audio with ID ${audioId} deleted`);
+  log.info(`🗑️ Audio with ID ${audioId} deleted`);
   return true;
 }
 

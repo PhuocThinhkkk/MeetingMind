@@ -1,5 +1,6 @@
 "use client";
 
+import { log } from "@/lib/logger";
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -35,7 +36,7 @@ export default function LoginPage() {
 
   useEffect(() => {
     if (user) {
-      console.log("User already logged in, redirecting to dashboard", user);
+      log.info("User already logged in, redirecting to dashboard", user);
      router.push("/dashboard");
     }
   }, [user, router]);

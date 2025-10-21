@@ -1,3 +1,4 @@
+import { log } from "@/lib/logger";
 import { clsx, type ClassValue } from "clsx";
 import { twMerge } from "tailwind-merge";
 
@@ -39,7 +40,7 @@ export function waitFor(timeout = 5000): Promise<void> {
   return new Promise((resolve) => {
     setTimeout(() => {
       const seconds = timeout / 1000;
-      console.log("Wait for ", seconds, " seconds!");
+      log.info("Wait for ", seconds);
       resolve();
     }, timeout);
   });
@@ -74,3 +75,20 @@ export function formatFileSize(bytes: number): string {
   return `${mb.toFixed(2)} MB`;
 }
 
+
+/**
+ * Formats an ISO date string into an en-US localized date and time string.
+ *
+ * @param dateString - The ISO date string to format (e.g., "2023-10-05T14:48:00.000Z").
+ * @returns The formatted date and time in en-US locale (e.g., "Oct 5, 2023, 02:48 PM").
+ */
+export function formatDate(dateString: string): string {
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}

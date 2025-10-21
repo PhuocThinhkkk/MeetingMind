@@ -1,3 +1,4 @@
+import { log } from "@/lib/logger";
 class PCMProcessor extends AudioWorkletProcessor {
     process(inputs) {
         const input = inputs[0];
@@ -5,7 +6,7 @@ class PCMProcessor extends AudioWorkletProcessor {
 
         const channelCount = input.length;
         if (channelCount > 1 ) {
-            console.log("channelCount: ", channelCount)
+            log.info("channelCount: ", channelCount)
         }
 
         let mixed;

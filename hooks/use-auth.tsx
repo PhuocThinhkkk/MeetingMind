@@ -1,5 +1,6 @@
 'use client';
 
+import { log } from "@/lib/logger";
 import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
 import { User, Session } from '@supabase/supabase-js';
 import { supabase } from '@/lib/supabase';
@@ -78,10 +79,10 @@ export function AuthProvider({ children }: AuthProviderProps) {
         ]);
       
       if (error) {
-        console.error('Error creating user profile:', error);
+        log.error('Error creating user profile:', error);
       }
     } catch (error) {
-      console.error('Error creating user profile:', error);
+      log.error('Error creating user profile:', error);
     }
   };
 
