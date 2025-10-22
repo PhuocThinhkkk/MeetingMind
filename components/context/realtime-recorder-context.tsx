@@ -1,5 +1,12 @@
 import { log } from "@/lib/logger";
 import {
+  requestMicrophoneAudio,
+  requestSystemAudio,
+  mixAudioStreams,
+  setupAudioWorklet,
+} from "@/lib/audioWorkletUtils";
+import { encodeWAV, mergeChunks } from "@/lib/transcriptionUtils";
+import {
   useState,
   useRef,
   useCallback,
@@ -14,8 +21,7 @@ import {
   RealtimeTranslateResponse,
 } from "@/types/transcription.ws";
 
-import { useAuth } from "@/hooks/use-auth";
-import { resampleTo16kHz, float32ToInt16 } from "@/lib/transcription"
+import { resampleTo16kHz, float32ToInt16 } from "@/lib/transcription";
 
 type RecorderContextType = {
   isRecording: boolean;
@@ -136,9 +142,9 @@ export function useRealtimeTranscription({
   const [status, setStatus] = useState<
     "idle" | "connecting" | "recording" | "processing" | "error"
   >("idle");
-  const [transcriptWords, setTranscriptWords] = useState<RealtimeTranscriptionWord[]>(
-    [],
-  );
+  const [transcriptWords, setTranscriptWords] = useState<
+    RealtimeTranscriptionWord[]
+  >([]);
   const [translateWords, setTranslateWords] = useState<string[]>([]);
 
   const wsRef = useRef<WebSocket | null>(null);
@@ -227,7 +233,7 @@ export function useRealtimeTranscription({
       };
 
       wsRef.current.onclose = (e) => {
-        log.info("WebSocket disconnected", e.reason, e.code);
+        log.info(`WebSocket disconnected ${e.reason}`, e.code);
         if (status === "recording") {
           updateStatus("idle");
         }
@@ -244,94 +250,25 @@ export function useRealtimeTranscription({
     updateStatus("connecting");
     connectWebSocket();
 
-    const AudioContextClass =
-      window.AudioContext || (window as any).webkitAudioContext;
-    const audioContext = new AudioContextClass();
-    audioContextRef.current = audioContext;
+    const audioContext = initAudioContext();
 
-    let systemStream: MediaStream | null = null;
-    let micStream: MediaStream | null = null;
-
-    try {
-      systemStream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: true,
-      });
-    } catch (err) {
-      log.error("System audio permission denied:", err);
-    }
-
-    try {
-      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (err) {
-      log.error("Microphone permission denied:", err);
-    }
+    const micStream = await requestMicrophoneAudio();
+    const systemStream = await requestSystemAudio();
 
     if (!systemStream && !micStream) {
       onError?.("Please allow at least microphone or system audio.");
       return;
     }
-    const destination = audioContext.createMediaStreamDestination();
+    const mixedStream = await mixAudioStreams(
+      audioContext,
+      systemStream,
+      micStream,
+    );
 
-    let systemSource: MediaStreamAudioSourceNode;
-    if (systemStream) {
-      systemSource = audioContext.createMediaStreamSource(systemStream);
-      systemSource.connect(destination);
-    }
-
-    let micSource: MediaStreamAudioSourceNode;
-    if (micStream) {
-      micSource = audioContext.createMediaStreamSource(micStream);
-      micSource.connect(destination);
-    }
-
-    const mixedStream = destination.stream;
     streamRef.current = mixedStream;
 
-    await audioContext.audioWorklet.addModule("/worklet-processor.js");
-
-    const source = audioContext.createMediaStreamSource(mixedStream);
-    const workletNode = new AudioWorkletNode(audioContext, "pcm-processor");
-
-    workletNode.port.onmessage = async (event) => {
-      if (
-        event.data &&
-        wsRef.current?.readyState === WebSocket.OPEN &&
-        isAssemblyReady.current
-      ) {
-        const resampled = await resampleTo16kHz(event.data);
-        const pcmData = float32ToInt16(resampled);
-
-        const chunk = new Uint8Array(pcmData.buffer);
-        currentAudioBufferRef.current.push(chunk);
-        audioBufferRef.current.push(chunk);
-        totalByteLengthRef.current += chunk.byteLength;
-
-        if (totalByteLengthRef.current >= 1800) {
-          const merged = new Uint8Array(totalByteLengthRef.current);
-          let offset = 0;
-          for (const part of currentAudioBufferRef.current) {
-            if (offset + part.length <= merged.length) {
-              merged.set(part, offset);
-              offset += part.length;
-            } else {
-              log.warn("Audio chunk too large, skipping overflow data");
-            }
-          }
-          if (!wsRef.current) {
-            log.info("ws have been closed already");
-            return;
-          }
-
-          wsRef.current.send(merged.buffer);
-          log.info("Sent audio chunk of size:", merged.byteLength);
-          currentAudioBufferRef.current = [];
-          totalByteLengthRef.current = 0;
-        }
-      }
-    };
-
-    source.connect(workletNode).connect(audioContext.destination);
+    const workletNode = await setupAudioWorklet(audioContext, mixedStream);
+    handleWorkletSendingMessages(workletNode);
     workletNodeRef.current = workletNode;
 
     setIsRecording(true);
@@ -344,6 +281,8 @@ export function useRealtimeTranscription({
     log.info("stop recording");
 
     isAssemblyReady.current = false;
+
+    updateAudioBlobAfterRecording();
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -376,6 +315,64 @@ export function useRealtimeTranscription({
   const clearTranscript = useCallback(() => {
     setTranscriptWords([]);
   }, []);
+
+  function initAudioContext() {
+    const AudioContextClass =
+      window.AudioContext || (window as any).webkitAudioContext;
+    const audioContext = new AudioContextClass();
+    audioContextRef.current = audioContext;
+    return audioContext;
+  }
+
+  function handleWorkletSendingMessages(workletNode: AudioWorkletNode) {
+    workletNode.port.onmessage = async (event) => {
+      if (
+        event.data &&
+        wsRef.current?.readyState === WebSocket.OPEN &&
+        isAssemblyReady.current
+      ) {
+        const resampled = await resampleTo16kHz(event.data);
+        const pcmData = float32ToInt16(resampled);
+
+        const chunk = new Uint8Array(pcmData.buffer);
+        currentAudioBufferRef.current.push(chunk);
+        audioBufferRef.current.push(chunk);
+        totalByteLengthRef.current += chunk.byteLength;
+
+        if (totalByteLengthRef.current >= 1800) {
+          const merged = new Uint8Array(totalByteLengthRef.current);
+          let offset = 0;
+          for (const part of currentAudioBufferRef.current) {
+            if (offset + part.length <= merged.length) {
+              merged.set(part, offset);
+              offset += part.length;
+            } else {
+              log.warn("Audio chunk too large, skipping overflow data");
+            }
+          }
+
+          if (!wsRef.current) {
+            log.info("ws has been closed already");
+            return;
+          }
+
+          wsRef.current.send(merged.buffer);
+          log.info("Sent audio chunk of size:", merged.byteLength);
+          currentAudioBufferRef.current = [];
+          totalByteLengthRef.current = 0;
+        }
+      }
+    };
+  }
+
+  function updateAudioBlobAfterRecording() {
+    if (audioBufferRef.current.length !== 0) {
+      const merged = mergeChunks(audioBufferRef.current);
+      const pcm = new Int16Array(merged.buffer);
+      const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
+      setAudioBlob(wavBlob);
+    }
+  }
 
   useEffect(() => {
     return () => {
