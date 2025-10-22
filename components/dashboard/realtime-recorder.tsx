@@ -55,14 +55,14 @@ export function RealtimeRecorder({
   const handleStartRecording = async () => {
     await startRecording();
     setShowTranscription(true);
-  };
+  }
 
   const handleStopRecording = () => {
     if (!user) return;
     stopRecording();
     if (!audioBlob) return;
     const transcription = transcriptWords;
-    onTranscriptionComplete( audioBlob, transcription);
+    onTranscriptionComplete(audioBlob, transcription);
     setSessionStartTime(null);
   };
 
@@ -209,7 +209,7 @@ export function RealtimeRecorder({
           transcriptionWords={transcriptWords}
           isVisible={showTranscription}
           onExit={() => {
-            stopRecording();
+            handleStopRecording();
             setShowTranscription(false);
           }}
           onStopRecording={() => {

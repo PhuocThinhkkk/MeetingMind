@@ -298,10 +298,11 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     }
   }
 
-
   useEffect(() => {
     return () => {
+      log.info("Cleaning up recorder on unmount");
       if (isRecording) {
+        log.info("stopping recording due to unmount");
         stopRecording();
       }
     };
