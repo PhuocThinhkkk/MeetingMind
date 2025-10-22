@@ -24,6 +24,15 @@ import {
 
 import { resampleTo16kHz, float32ToInt16 } from "@/lib/transcriptionUtils";
 
+const SAMPLE_RATE = 16000;
+const CHUNK_MS = 128;
+const CHUNK_SIZE = (SAMPLE_RATE * 2 * CHUNK_MS) / 1000;
+
+type ResponseType = "ready" | "transcript" | "translate";
+const READY_RESPONSE: ResponseType = "ready";
+const TRANSCRIPT_RESPONSE: ResponseType = "transcript";
+const TRANSLATE_RESPONSE: ResponseType = "translate";
+
 type RecorderContextType = {
   isRecording: boolean;
   startRecording: () => Promise<void>;
@@ -45,100 +54,6 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
-
-  const {
-    isRecording,
-    status,
-    transcriptWords,
-    translateWords,
-    startRecording,
-    stopRecording,
-    clearTranscript,
-    audioBlob,
-  } = useRealtimeTranscription({
-    onError: (error: string) => {
-      log.error("Transcription error:", error);
-    },
-
-    onStatusChange: (newStatus: string) => {
-      if (newStatus === "recording" && !sessionStartTime) {
-        setSessionStartTime(new Date());
-      }
-    },
-  });
-
-  useEffect(() => {
-    return () => {
-      if (isRecording) {
-        stopRecording();
-      }
-    };
-  }, []);
-
-  return (
-    <RecorderContext.Provider
-      value={{
-        isRecording,
-        startRecording,
-        stopRecording,
-        audioBlob,
-        status,
-        clearTranscript,
-        transcriptWords,
-        translateWords,
-        sessionStartTime,
-        setSessionStartTime,
-      }}
-    >
-      {children}
-    </RecorderContext.Provider>
-  );
-};
-
-export const useRecorder = (): RecorderContextType => {
-  const context = useContext(RecorderContext);
-  if (!context) {
-    throw new Error("useRecorder must be used within a RecorderProvider");
-  }
-  return context;
-};
-
-const SAMPLE_RATE = 16000;
-const CHUNK_MS = 128;
-const CHUNK_SIZE = (SAMPLE_RATE * 2 * CHUNK_MS) / 1000;
-
-type ResponseType = "ready" | "transcript" | "translate";
-const READY_RESPONSE: ResponseType = "ready";
-const TRANSCRIPT_RESPONSE: ResponseType = "transcript";
-const TRANSLATE_RESPONSE: ResponseType = "translate";
-
-interface UseRealtimeTranscriptionProps {
-  onError?: (error: string) => void;
-  onStatusChange?: (
-    status: "idle" | "connecting" | "recording" | "processing" | "error",
-  ) => void;
-}
-
-/**
- * Manage real-time audio capture, streaming to a transcription service, and transcript/translation state.
- *
- * @param onError - Optional callback invoked with a user-facing error message when an operational error occurs
- * @param onStatusChange - Optional callback invoked when the internal recording status changes
- *
- * @returns An object exposing the recorder state and controls:
- *  - isRecording: `true` when audio capture and streaming are active, `false` otherwise
- *  - status: Current lifecycle status: `"idle" | "connecting" | "recording" | "processing" | "error"`
- *  - transcriptWords: Array of `RealtimeTranscriptionWord` representing the current transcript (partial and final words)
- *  - translateWords: Array of translated strings received from the service
- *  - startRecording: Begins audio capture, prepares the audio pipeline and WebSocket connection
- *  - stopRecording: Stops capture and streaming, finalizes any pending audio, and marks transcript words as final
- *  - clearTranscript: Clears the in-memory transcriptWords
- *  - audioBlob: Recorded audio as a WAV `Blob` when available, or `null` otherwise
- */
-export function useRealtimeTranscription({
-  onError,
-  onStatusChange,
-}: UseRealtimeTranscriptionProps = {}) {
   const [isRecording, setIsRecording] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "connecting" | "recording" | "processing" | "error"
@@ -167,6 +82,12 @@ export function useRealtimeTranscription({
     [onStatusChange],
   );
 
+  function onStatusChange(newStatus: string) {
+    if (newStatus === "recording" && !sessionStartTime) {
+      setSessionStartTime(new Date());
+    }
+  }
+
   const connectWebSocket = useCallback(() => {
     const wsUrl =
       process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost:9090";
@@ -188,7 +109,6 @@ export function useRealtimeTranscription({
       wsRef.current.onerror = (error) => {
         log.error("WebSocket error:", error);
         updateStatus("error");
-        onError?.("WebSocket connection failed");
       };
 
       wsRef.current.onclose = (e) => {
@@ -200,9 +120,8 @@ export function useRealtimeTranscription({
     } catch (error) {
       log.error("Failed to connect WebSocket:", error);
       updateStatus("error");
-      onError?.("Failed to connect to transcription service");
     }
-  }, [status, updateStatus, onError]);
+  }, [status, updateStatus]);
 
   const startRecording = useCallback(async () => {
     clearTranscript();
@@ -216,7 +135,8 @@ export function useRealtimeTranscription({
     const systemStream = await requestSystemAudio();
 
     if (!systemStream && !micStream) {
-      onError?.("Please allow at least microphone or system audio.");
+      log.error("No audio streams available");
+      updateStatus("error");
       return;
     }
     const mixedStream = await mixAudioStreams(
@@ -232,7 +152,7 @@ export function useRealtimeTranscription({
     workletNodeRef.current = workletNode;
 
     setIsRecording(true);
-  }, [connectWebSocket, updateStatus, onError]);
+  }, [connectWebSocket, updateStatus]);
 
   const stopRecording = useCallback(() => {
     console.trace("🔥 stopRecording() called");
@@ -365,7 +285,6 @@ export function useRealtimeTranscription({
         }
       } catch (error) {
         log.error("Error parsing WebSocket message:", error);
-        onError?.("Failed to parse real time data");
       }
     };
   }
@@ -379,23 +298,39 @@ export function useRealtimeTranscription({
     }
   }
 
+
   useEffect(() => {
     return () => {
       if (isRecording) {
-        log.info("curpit");
         stopRecording();
       }
     };
   }, []);
 
-  return {
-    isRecording,
-    status,
-    transcriptWords,
-    translateWords,
-    startRecording,
-    stopRecording,
-    clearTranscript,
-    audioBlob,
-  };
-}
+  return (
+    <RecorderContext.Provider
+      value={{
+        isRecording,
+        startRecording,
+        stopRecording,
+        audioBlob,
+        status,
+        clearTranscript,
+        transcriptWords,
+        translateWords,
+        sessionStartTime,
+        setSessionStartTime,
+      }}
+    >
+      {children}
+    </RecorderContext.Provider>
+  );
+};
+
+export const useRecorder = (): RecorderContextType => {
+  const context = useContext(RecorderContext);
+  if (!context) {
+    throw new Error("useRecorder must be used within a RecorderProvider");
+  }
+  return context;
+};
