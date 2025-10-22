@@ -4,6 +4,7 @@ import {
   requestSystemAudio,
   mixAudioStreams,
   setupAudioWorklet,
+  initAudioContext,
 } from "@/lib/audioWorkletUtils";
 import { encodeWAV, mergeChunks } from "@/lib/transcriptionUtils";
 import {
@@ -21,7 +22,7 @@ import {
   RealtimeTranslateResponse,
 } from "@/types/transcription.ws";
 
-import { resampleTo16kHz, float32ToInt16 } from "@/lib/transcription";
+import { resampleTo16kHz, float32ToInt16 } from "@/lib/transcriptionUtils";
 
 type RecorderContextType = {
   isRecording: boolean;
@@ -156,6 +157,7 @@ export function useRealtimeTranscription({
   const audioBufferRef = useRef<Uint8Array[]>([]);
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const totalByteLengthRef = useRef<number>(0);
+
   const updateStatus = useCallback(
     (newStatus: typeof status) => {
       log.info("status change!", newStatus);
@@ -175,55 +177,12 @@ export function useRealtimeTranscription({
         log.info("no ws current yet.");
         return;
       }
+
+      handleWorkletRecivedMessages();
+
       wsRef.current.onopen = () => {
         log.info("WebSocket connected");
         updateStatus("recording");
-      };
-
-      wsRef.current.onmessage = (event) => {
-        try {
-          const res = JSON.parse(event.data);
-          if (res.type === READY_RESPONSE) {
-            log.info("Assembly is ready!");
-            isAssemblyReady.current = true;
-          } else if (res.type === TRANSCRIPT_RESPONSE) {
-            const data: RealtimeTranscriptChunk = res;
-            if (data.words.length === 0) {
-              log.warn("No words in transcription response");
-              return;
-            }
-            const newWords: RealtimeTranscriptionWord[] = data.words.map(
-              (word, index) => ({
-                text: word.text,
-                word_is_final: word.word_is_final,
-                start: word.start,
-                end: word.end,
-                confidence: word.confidence,
-              }),
-            );
-
-            // TODO: handle end of turn later
-            setTranscriptWords((prev) => {
-              const stableCount = prev.filter((w) => w.word_is_final).length;
-              const updatedWords = [...prev.slice(0, stableCount), ...newWords];
-              return updatedWords;
-            });
-          } else if (res.type === TRANSLATE_RESPONSE) {
-            log.info("Received translation response:", res);
-            const data: RealtimeTranslateResponse = res;
-            if (data.words === "") {
-              log.warn("No words in translation response");
-              return;
-            }
-            const newWord = data.words;
-            setTranslateWords((prev) => [...prev, newWord]);
-          } else {
-            log.error("Unknown response :", res);
-          }
-        } catch (error) {
-          log.error("Error parsing WebSocket message:", error);
-          onError?.("Failed to parse real time data");
-        }
       };
 
       wsRef.current.onerror = (error) => {
@@ -251,6 +210,7 @@ export function useRealtimeTranscription({
     connectWebSocket();
 
     const audioContext = initAudioContext();
+    audioContextRef.current = audioContext;
 
     const micStream = await requestMicrophoneAudio();
     const systemStream = await requestSystemAudio();
@@ -316,14 +276,6 @@ export function useRealtimeTranscription({
     setTranscriptWords([]);
   }, []);
 
-  function initAudioContext() {
-    const AudioContextClass =
-      window.AudioContext || (window as any).webkitAudioContext;
-    const audioContext = new AudioContextClass();
-    audioContextRef.current = audioContext;
-    return audioContext;
-  }
-
   function handleWorkletSendingMessages(workletNode: AudioWorkletNode) {
     workletNode.port.onmessage = async (event) => {
       if (
@@ -361,6 +313,59 @@ export function useRealtimeTranscription({
           currentAudioBufferRef.current = [];
           totalByteLengthRef.current = 0;
         }
+      }
+    };
+  }
+
+  function handleWorkletRecivedMessages() {
+    if (!wsRef.current) {
+      log.info("ws has been closed already");
+      return;
+    }
+
+    wsRef.current.onmessage = (event) => {
+      try {
+        const res = JSON.parse(event.data);
+        if (res.type === READY_RESPONSE) {
+          log.info("Assembly is ready!");
+          isAssemblyReady.current = true;
+        } else if (res.type === TRANSCRIPT_RESPONSE) {
+          const data: RealtimeTranscriptChunk = res;
+          if (data.words.length === 0) {
+            log.warn("No words in transcription response");
+            return;
+          }
+          const newWords: RealtimeTranscriptionWord[] = data.words.map(
+            (word, index) => ({
+              text: word.text,
+              word_is_final: word.word_is_final,
+              start: word.start,
+              end: word.end,
+              confidence: word.confidence,
+            }),
+          );
+
+          // TODO: handle end of turn later
+          setTranscriptWords((prev) => {
+            const stableCount = prev.filter((w) => w.word_is_final).length;
+            const updatedWords = [...prev.slice(0, stableCount), ...newWords];
+            return updatedWords;
+          });
+        } else if (res.type === TRANSLATE_RESPONSE) {
+          log.info("Received translation response:", res);
+          const data: RealtimeTranslateResponse = res;
+          if (data.words === "") {
+            log.warn("No words in translation response");
+            return;
+          }
+          const newWord = data.words;
+          setTranslateWords((prev) => [...prev, newWord]);
+        } else {
+          log.error("Unknown response :", res);
+        }
+      } catch (error) {
+        log.error("Error parsing WebSocket message:", error);
+        onError?.("Failed to parse real time data");
       }
     };
   }

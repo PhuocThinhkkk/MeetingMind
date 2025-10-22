@@ -1,6 +1,6 @@
 import { log } from "@/lib/logger";
 import { supabase } from "@/lib/supabase";
-import { getAudioDuration } from "@/lib/transcription";
+import { getAudioDuration } from "@/lib/transcriptionUtils";
 import { AudioFile } from "@/types/transcription.db";
 
 /**

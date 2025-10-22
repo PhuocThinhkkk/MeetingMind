@@ -1,5 +1,12 @@
 import { log } from "./logger";
 
+export function initAudioContext() {
+  const AudioContextClass =
+    window.AudioContext || (window as any).webkitAudioContext;
+  const audioContext = new AudioContextClass();
+  return audioContext;
+}
+
 export async function requestSystemAudio() {
   try {
     return await navigator.mediaDevices.getDisplayMedia({
