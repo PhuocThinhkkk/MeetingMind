@@ -16,7 +16,7 @@ import { FileAudio, Clock, MoreHorizontal } from "lucide-react";
 import { RealtimeRecorder } from "@/components/dashboard/realtime-recorder";
 import { AudioUpload } from "@/components/dashboard/audio-upload";
 import { useAuth } from "@/hooks/use-auth";
-import { AudioFile, } from "@/types/transcription.db";
+import { AudioFile } from "@/types/transcription.db";
 import { getAudioHistory, saveAudioFile } from "@/lib/query/audio-operations";
 import { saveTranscript } from "@/lib/query/transcription-operations";
 import { saveTranscriptWords } from "@/lib/query/transcription-operations";
@@ -74,7 +74,10 @@ export default function HomePage() {
     blob: Blob,
     transcript: SaveTranscriptInput,
   ) {
-    if (!user) return;
+    if (!user) {
+      log.info("User not authenticated. Cannot save transcription.");
+      return;
+    }
     try {
       const data = await handlingSaveAudioAndTranscript(
         user.id,
@@ -234,6 +237,7 @@ export async function handlingSaveAudioAndTranscript(
   if (!blob) {
     throw new Error("The audio of the recording isnt found");
   }
+
   if (!transcriptWords || transcriptWords.length === 0) {
     throw new Error("There is nothing in transcription");
   }

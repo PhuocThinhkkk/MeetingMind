@@ -36,9 +36,8 @@ const TRANSLATE_RESPONSE: ResponseType = "translate";
 type RecorderContextType = {
   isRecording: boolean;
   startRecording: () => Promise<void>;
-  stopRecording: () => void;
+  stopRecording: () => Blob | undefined;
   clearTranscript: () => void;
-  audioBlob: Blob | null;
   status: string;
   transcriptWords: RealtimeTranscriptionWord[];
   translateWords: string[];
@@ -70,7 +69,6 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const currentAudioBufferRef = useRef<Uint8Array[]>([]);
   const audioBufferRef = useRef<Uint8Array[]>([]);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const totalByteLengthRef = useRef<number>(0);
 
   const updateStatus = useCallback(
@@ -162,7 +160,10 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
 
     isAssemblyReady.current = false;
 
-    updateAudioBlobAfterRecording();
+    const blob = updateAudioBlobAfterRecording();
+    if (audioBufferRef.current) {
+      audioBufferRef.current = [];
+    }
 
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
@@ -190,6 +191,8 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
       );
       updateStatus("idle");
     }, 1000);
+
+    return blob
   }, [updateStatus]);
 
   const clearTranscript = useCallback(() => {
@@ -290,11 +293,22 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   }
 
   function updateAudioBlobAfterRecording() {
+    if (!audioBufferRef.current) {
+      log.warn("No audio buffer to process");
+      return;
+    }
+
+    if (audioBufferRef.current.length === 0) {
+      log.warn("Audio buffer is empty, skipping blob creation");
+      return;
+    }
+
     if (audioBufferRef.current.length !== 0) {
       const merged = mergeChunks(audioBufferRef.current);
       const pcm = new Int16Array(merged.buffer);
       const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
-      setAudioBlob(wavBlob);
+      log.info("Created WAV blob of size:", wavBlob.size);
+      return wavBlob;
     }
   }
 
@@ -314,7 +328,6 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
         isRecording,
         startRecording,
         stopRecording,
-        audioBlob,
         status,
         clearTranscript,
         transcriptWords,

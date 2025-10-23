@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { log } from "@/lib/logger";
 import { Badge } from "@/components/ui/badge";
 import {
   Mic,
@@ -49,18 +50,24 @@ export function RealtimeRecorder({
     setSessionStartTime,
     isRecording,
     status,
-    audioBlob,
   } = useRecorder();
 
   const handleStartRecording = async () => {
     await startRecording();
     setShowTranscription(true);
-  }
+  };
 
   const handleStopRecording = () => {
-    if (!user) return;
-    stopRecording();
-    if (!audioBlob) return;
+    if (!user) {
+      log.error("User not authenticated");
+      return;
+    }
+    const audioBlob = stopRecording();
+    if (!audioBlob) {
+      log.error("No audio blob available on stop recording");
+      return;
+    }
+    log.info(`${audioBlob}`);
     const transcription = transcriptWords;
     onTranscriptionComplete(audioBlob, transcription);
     setSessionStartTime(null);
@@ -213,7 +220,7 @@ export function RealtimeRecorder({
             setShowTranscription(false);
           }}
           onStopRecording={() => {
-            stopRecording();
+            handleStopRecording();
             setShowTranscription(false);
           }}
         />
