@@ -17,9 +17,9 @@ import { RealtimeRecorder } from "@/components/dashboard/realtime-recorder";
 import { AudioUpload } from "@/components/dashboard/audio-upload";
 import { useAuth } from "@/hooks/use-auth";
 import { AudioFile, } from "@/types/transcription.db";
-import { getAudioHistory, saveAudioFile } from "@/lib/query/audio";
-import { saveTranscript } from "@/lib/query/transcription";
-import { saveTranscriptWords } from "@/lib/query/transcript-words";
+import { getAudioHistory, saveAudioFile } from "@/lib/query/audio-operations";
+import { saveTranscript } from "@/lib/query/transcription-operations";
+import { saveTranscriptWords } from "@/lib/query/transcription-operations";
 import { SaveTranscriptInput } from "@/types/transcription.db";
 import { formatDuration } from "@/lib/utils";
 

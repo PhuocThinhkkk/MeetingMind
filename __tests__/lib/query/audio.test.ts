@@ -1,4 +1,4 @@
-import { getAudioHistory, saveAudioFile, updateAudioName, deleteAudioById } from '@/lib/query/audio'
+import { getAudioHistory, saveAudioFile, updateAudioName, deleteAudioById } from '@/lib/query/audio-operations'
 import { supabase } from '@/lib/supabase'
 import { getAudioDuration } from '@/lib/utils'
 

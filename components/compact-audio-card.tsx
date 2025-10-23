@@ -31,7 +31,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAudio } from "@/components/context/audios-list-context";
-import { deleteAudioById, updateAudioName } from "@/lib/query/audio";
+import { deleteAudioById, updateAudioName } from "@/lib/query/audio-operations";
 import { toast } from "sonner";
 
 type CompactAudioCardProps = {

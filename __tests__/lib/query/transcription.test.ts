@@ -1,4 +1,4 @@
-import { saveTranscript } from '@/lib/query/transcription'
+import { saveTranscript } from '@/lib/query/transcription-operations'
 import { supabase } from '@/lib/supabase'
 import { TranscriptionWord } from '@/types/transcription'
 

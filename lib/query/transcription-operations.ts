@@ -1,7 +1,8 @@
 import { log } from "@/lib/logger";
 import { SaveTranscriptInput, Transcript } from "@/types/transcription.db";
 import { supabase } from "@/lib/supabase";
-
+import { RealtimeTranscriptionWord } from "@/types/transcription.ws";
+import { TranscriptionWord } from "@/types/transcription.db";
 
 /**
  * Save a transcript for an audio file to the database.
@@ -17,9 +18,9 @@ export async function saveTranscript(
   transcripts: SaveTranscriptInput,
 ) {
   if (!transcripts || transcripts.length === 0) {
-    throw new Error('Transcripts array cannot be empty');
+    throw new Error("Transcripts array cannot be empty");
   }
-  const transcriptText = transcripts.map(t => t.text).join(' ');
+  const transcriptText = transcripts.map((t) => t.text).join(" ");
   const { data, error } = await supabase
     .from("transcripts")
     .insert({
@@ -33,4 +34,29 @@ export async function saveTranscript(
     throw error;
   }
   return data as Transcript;
+}
+
+export async function saveTranscriptWords(
+  transcriptionId: string,
+  transcriptWords: RealtimeTranscriptionWord[],
+) {
+  const rows = transcriptWords.map((word) => ({
+    transcript_id: transcriptionId,
+    text: word.text,
+    confidence: word.confidence,
+    start_time: word.start,
+    end_time: word.end,
+    word_is_final: word.word_is_final,
+  }));
+
+  const { data, error } = await supabase
+    .from("transcription_words")
+    .insert(rows)
+    .select();
+
+  if (error) {
+    throw new Error("Error when saving transcript words: " + error.message);
+  }
+  if (!data) return [];
+  return data as TranscriptionWord[];
 }

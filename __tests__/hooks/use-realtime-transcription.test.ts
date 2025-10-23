@@ -4,19 +4,19 @@
 import { float32ToInt16 } from "@/components/context/realtime-recorder-context"; // adjust import path
 import { handlingSaveAudioAndTranscript } from "@/components/context/realtime-recorder-context";
 
-jest.mock("@/lib/query/audio", () => ({
+jest.mock("@/lib/query/audio-operations", () => ({
   saveAudioFile: jest.fn().mockResolvedValue({ id: "mock-audio-id" }),
 }));
-jest.mock("@/lib/query/transcription", () => ({
+jest.mock("@/lib/query/transcription-operations", () => ({
   saveTranscript: jest.fn().mockResolvedValue({ id: "mock-transcript-id" }),
 }));
-jest.mock("@/lib/query/transcript-words", () => ({
+jest.mock("@/lib/query/transcription-operations", () => ({
   saveTranscriptWords: jest.fn().mockResolvedValue(true),
 }));
 
-const { saveAudioFile } = jest.requireMock("@/lib/query/audio");
-const { saveTranscript } = jest.requireMock("@/lib/query/transcription");
-const { saveTranscriptWords } = jest.requireMock("@/lib/query/transcript-words");
+const { saveAudioFile } = jest.requireMock("@/lib/query/audio-operations");
+const { saveTranscript } = jest.requireMock("@/lib/query/transcription-operations");
+const { saveTranscriptWords } = jest.requireMock("@/lib/query/transcription-operations");
 
 describe("float32ToInt16", () => {
   it("should convert float32 samples to int16 correctly", () => {
