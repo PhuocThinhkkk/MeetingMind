@@ -28,7 +28,7 @@ global.WebSocket = jest.fn(() => ({
   onerror: null,
 }));
 
-jest.mock("/lib/logger.ts", () => ({
+jest.mock("/lib/logger", () => ({
   log: {
     info: jest.fn(),
     warn: jest.fn(),

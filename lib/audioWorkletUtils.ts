@@ -20,7 +20,6 @@ export function initAudioContext() {
 export async function requestSystemAudio() {
   try {
     return await navigator.mediaDevices.getDisplayMedia({
-      video: true,
       audio: true,
     });
   } catch (err) {

@@ -30,22 +30,26 @@ export default function TranscriptHistoryPage() {
      * On successful fetch with results, logs the retrieval and updates the audios state with the fetched list.
      */
     async function initializeAudiosFetch() {
-      if (!user) {
+      try {
+        if (!user) {
+          setAudios([]);
+          return;
+        }
+        const audios = await getAudioHistory(user.id);
+        if (cancelled) {
+          return;
+        }
+        if (audios.length === 0) {
+          setAudios([]);
+          return;
+        }
+        log.info(`Fetched audio history for user ${user.id}`, audios);
+        setAudios(audios);
+      } catch (error) {
+        log.error("Error fetching audio history:", error);
         setAudios([]);
-        return;
       }
-      const audios = await getAudioHistory(user.id);
-      if (cancelled) {
-        return;
-      }
-      if (audios.length === 0) {
-        setAudios([]);
-        return;
-      }
-      log.info(`Fetched audio history for user ${user.id}`, audios);
-      setAudios(audios);
     }
-
     initializeAudiosFetch();
     return () => {
       cancelled = true;
@@ -101,3 +105,4 @@ export default function TranscriptHistoryPage() {
     </>
   );
 }
+
