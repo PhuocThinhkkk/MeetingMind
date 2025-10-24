@@ -27,6 +27,13 @@ interface TranscriptionViewProps {
   onClose: () => void;
 }
 
+/**
+ * Display a dialog that loads and shows a file's transcript, AI summary, extracted events, and Q&A history, and allows asking questions that are persisted as QA logs.
+ *
+ * @param file - Audio/file metadata used to fetch and render transcript, summary, events, and Q&A entries (expects fields like `id`, `name`, `duration`, `created_at`, and `transcription_status`).
+ * @param onClose - Callback invoked when the dialog is closed.
+ * @returns The component's rendered JSX element.
+ */
 export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
   const [question, setQuestion] = useState('');
   const [qaHistory, setQaHistory] = useState<any[]>([]);

@@ -36,6 +36,14 @@ export async function saveTranscript(
   return data as Transcript;
 }
 
+/**
+ * Persist an array of realtime word tokens for a transcription into the database.
+ *
+ * @param transcriptionId - The ID of the transcription to associate each word with
+ * @param transcriptWords - Realtime word objects containing `text`, `start`, `end`, `confidence`, and `word_is_final`
+ * @returns The inserted `TranscriptionWord` records; returns an empty array if the insert returned no data
+ * @throws Error when the database insert operation fails
+ */
 export async function saveTranscriptWords(
   transcriptionId: string,
   transcriptWords: RealtimeTranscriptionWord[],

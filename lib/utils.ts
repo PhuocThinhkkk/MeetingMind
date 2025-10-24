@@ -31,9 +31,9 @@ export function convertFloat32ToInt16(buffer: Float32Array) {
 }
 
 /**
- * Delays execution for the specified number of milliseconds.
+ * Pause execution for a given number of milliseconds.
  *
- * @param timeout - Delay duration in milliseconds (default: 5000)
+ * @param timeout - Delay duration in milliseconds
  * @returns No value.
  */
 export function waitFor(timeout = 5000): Promise<void> {

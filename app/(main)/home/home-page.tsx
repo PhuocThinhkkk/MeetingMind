@@ -24,11 +24,11 @@ import { SaveTranscriptInput } from "@/types/transcription.db";
 import { formatDuration } from "@/lib/utils";
 
 /**
- * Renders the dashboard for uploading, recording, and viewing transcriptions of audio meetings.
+ * Dashboard page for uploading, recording, and browsing audio meeting transcriptions.
  *
- * Redirects unauthenticated users to /auth/login, loads recent audio files for the signed-in user, and provides handlers for file upload and realtime transcription completion. Displays upload and realtime recorder controls and a list of recent meetings with transcription status, progress indicators, and per-item actions.
+ * Loads recent audio files for the signed-in user, redirects unauthenticated users to /auth/login, and provides handlers for file upload and realtime transcription completion while rendering upload/recorder controls and a recent meetings list.
  *
- * @returns The page element containing upload/recorder controls and the recent meetings list.
+ * @returns The page element containing upload and recorder controls and the recent meetings list
  */
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
@@ -62,6 +62,12 @@ export default function HomePage() {
     }
   };
 
+  /**
+   * Initiates the file upload flow for the current authenticated user.
+   *
+   * If there is no authenticated user, the function exits without performing any action.
+   * Any errors raised during the upload process are caught and logged.
+   */
   async function handleFileUpload() {
     if (!user) return;
     try {
@@ -70,6 +76,12 @@ export default function HomePage() {
     }
   }
 
+  /**
+   * Saves a completed real-time transcription and prepends the resulting audio record to the recent meetings list.
+   *
+   * @param blob - The recorded audio Blob to persist.
+   * @param transcript - The transcript data (words and metadata) to save alongside the audio.
+   */
   async function handleRealtimeTranscriptionComplete(
     blob: Blob,
     transcript: SaveTranscriptInput,
@@ -217,13 +229,15 @@ export default function HomePage() {
   );
 }
 /**
- * Persist an audio Blob and its associated transcript for the specified user.
+ * Persist an audio Blob and its transcript for the given user.
  *
- * Attempts to save the audio file and then the transcript; any errors encountered are caught and logged.
- *
- * @param user - The owner of the recording
- * @param blob - The audio data to persist
- * @param transcriptWords - The transcript words associated with the audio
+ * @param userId - The ID of the user who owns the recording
+ * @param blob - The audio data to save
+ * @param transcriptWords - The word-level transcript to associate with the audio; must contain at least one entry
+ * @returns The saved AudioFile with its `transcript` property populated and including `words`
+ * @throws If `userId` is falsy
+ * @throws If `blob` is falsy
+ * @throws If `transcriptWords` is falsy or an empty array
  */
 export async function handlingSaveAudioAndTranscript(
   userId: string,
