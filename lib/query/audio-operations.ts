@@ -4,13 +4,14 @@ import { getAudioDuration } from "@/lib/transcriptionUtils";
 import { AudioFile } from "@/types/transcription.db";
 
 /**
- * Retrieve a user's audio history including their associated transcript (if any).
+ * Retrieve a user's audio history with each item's primary transcript normalized.
  *
- * The results are ordered by creation time descending. Each returned item’s
- * `transcript` field is normalized to the first related transcript object or `null`.
+ * Results are ordered by creation time descending. For each audio record the
+ * `transcript` field is set to the first related transcript object and is
+ * guaranteed to include a `words` array (empty if the transcript had no words).
  *
  * @param userId - The user id to filter audio records by
- * @returns An array of `AudioFile` objects with normalized `transcript` values
+ * @returns An array of `AudioFile` records where each `transcript` is the first related transcript object containing a `words` array
  */
 export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
   const { data, error } = await supabase
@@ -68,10 +69,15 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
 }
 
 /**
- * Save an audio Blob to Supabase Storage and record its metadata in the database.
+ * Store an audio Blob in Supabase Storage and create a corresponding metadata record in the `audio_files` table.
  *
- * @returns The created `AudioFile` record inserted into the `audio_files` table
- * @throws The Supabase upload error or database insertion error if the storage upload or DB insert fails
+ * Attempts to compute the audio duration; if duration calculation fails or is unavailable, the duration is set to 0. The stored record will include a public URL, rounded duration, file size, MIME type, and a transcription status of `"done"`.
+ *
+ * @param blob - The audio data to upload
+ * @param userId - The owning user's ID used to build the storage path
+ * @param name - A base name for the file; a timestamp and `.wav` extension are appended to form the stored filename
+ * @returns The created `AudioFile` record inserted into `audio_files`
+ * @throws If the storage upload fails or the database insert fails
  */
 
 export async function saveAudioFile(blob: Blob, userId: string, name: string) {
@@ -157,9 +163,9 @@ export async function updateAudioName(audioId: string, newName: string) {
 /**
  * Delete an audio file record by its ID.
  *
- * @param audioId - The ID of the audio record to delete
+ * @param audioId - The ID of the audio file to delete
  * @returns `true` if the record was deleted
- * @throws The database error when the delete operation fails
+ * @throws The Supabase error returned when the delete operation fails
  */
 export async function deleteAudioById(audioId: string) {
   const { error } = await supabase
@@ -175,4 +181,3 @@ export async function deleteAudioById(audioId: string) {
   log.info(`🗑️ Audio with ID ${audioId} deleted`);
   return true;
 }
-

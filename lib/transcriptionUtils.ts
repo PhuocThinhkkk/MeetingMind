@@ -1,4 +1,3 @@
-
 /**
  * Encodes 16-bit PCM samples into a WAV file Blob.
  *
@@ -80,11 +79,11 @@ export function mergeChunks(chunks: Uint8Array[]): Uint8Array {
   return merged;
 }
 /**
- * Retrieve the duration of an audio Blob in seconds.
+ * Determines the duration of an audio Blob in seconds.
  *
  * @param blob - The audio Blob to measure
- * @returns The audio duration in seconds
- * @throws If the audio metadata cannot be loaded, rejects with the underlying error
+ * @returns The duration of the audio in seconds
+ * @throws The underlying error if audio metadata cannot be loaded
  */
 
 export async function getAudioDuration(blob: Blob): Promise<number> {
@@ -105,7 +104,12 @@ export async function getAudioDuration(blob: Blob): Promise<number> {
 
 
 
-// @ts-ignore
+/**
+ * Resamples a mono Float32Array assumed at 48000 Hz to 16000 Hz using an OfflineAudioContext.
+ *
+ * @param float32 - Mono audio samples sampled at 48000 Hz.
+ * @returns A Float32Array containing the resampled mono audio at 16000 Hz.
+ */
 export async function resampleTo16kHz(float32) {
   const originalSampleRate = 48000;
   const targetSampleRate = 16000;
@@ -142,7 +146,12 @@ export async function resampleTo16kHz(float32) {
  * @param float32 - The input Float32Array of audio samples, typically in the range [-1, 1].
  * @returns An Int16Array containing the converted signed 16-bit PCM samples (approximately -32768 to 32767).
  */
-// @ts-ignore
+/**
+ * Converts normalized 32-bit float PCM samples to signed 16-bit PCM samples.
+ *
+ * @param float32 - Mono audio samples in the range [-1, 1]; values outside this range will be clamped.
+ * @returns An Int16Array where negative inputs are scaled to the [-32768, -1] range and non-negative inputs to the [0, 32767] range.
+ */
 export function float32ToInt16(float32) {
   const int16 = new Int16Array(float32.length);
   for (let i = 0; i < float32.length; i++) {
@@ -151,4 +160,3 @@ export function float32ToInt16(float32) {
   }
   return int16;
 }
-

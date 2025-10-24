@@ -28,13 +28,10 @@ interface RealtimeRecorderProps {
 }
 
 /**
- * UI component that provides controls and a live transcription view for capturing realtime audio.
+ * Presents controls and a live transcription view for capturing realtime audio.
  *
- * Renders a card with status, start/stop controls, a live duration indicator while recording, and an embedded
- * RealTimeTranscriptionPage that becomes visible when recording starts.
- *
- * @param onTranscriptionComplete - Callback invoked when a realtime recording finishes and at least one transcript word exists. Receives a `TranscriptionData` object describing the recording (id, name, type, status, duration, created_at, and transcript with text, words, speakers_detected, and confidence_score).
- * @returns A React element rendering the realtime recorder user interface.
+ * @param onTranscriptionComplete - Callback invoked when a realtime recording finishes. Receives the recorded audio `Blob` and a `SaveTranscriptInput` representing the transcription (text, words, speakers, confidence, etc.).
+ * @returns The React element rendering the realtime recorder user interface.
  */
 export function RealtimeRecorder({
   onTranscriptionComplete,
@@ -73,6 +70,18 @@ export function RealtimeRecorder({
     setSessionStartTime(null);
   };
 
+  /**
+   * Selects the Tailwind CSS class string used for the status badge based on the current recorder status.
+   *
+   * @returns A string of Tailwind CSS classes for the badge's background, text, and border corresponding to the current status.
+   *
+   * Mappings:
+   * - "recording"  → "bg-red-100 text-red-800 border-red-200"
+   * - "connecting" → "bg-yellow-100 text-yellow-800 border-yellow-200"
+   * - "processing" → "bg-blue-100 text-blue-800 border-blue-200"
+   * - "error"      → "bg-red-100 text-red-800 border-red-200"
+   * - default      → "bg-gray-100 text-gray-800 border-gray-200"
+   */
   function getStatusColor() {
     switch (status) {
       case "recording":

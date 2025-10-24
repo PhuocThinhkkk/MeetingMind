@@ -72,6 +72,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         loadUserProfile();
     }, [auth.user]);
 
+    /**
+     * Load the authenticated user's profile into component state or clear it when unauthenticated.
+     *
+     * When an authenticated user is present, fetches that user's profile data and stores it in the local `user` state; when no authenticated user exists, sets `user` to `null`.
+     */
     async function loadUserProfile() {
         if (auth.user) {
             log.info("fetching user profile", auth.user.id);

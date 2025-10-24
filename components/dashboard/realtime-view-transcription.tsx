@@ -21,6 +21,16 @@ interface RealTimeTranscriptionPageProps {
   onStopRecording?: () => void;
 }
 
+/**
+ * Render a live transcription and translation UI that displays streaming words, per-word actions (select, highlight, question), and controls for translation visibility and recording.
+ *
+ * @param transcriptionWords - Array of realtime transcription words to display and interact with.
+ * @param translationWords - Array of translated word strings to show in the translation panel.
+ * @param isVisible - Whether the transcription UI should be visible; when false the component renders null.
+ * @param onExit - Callback invoked after the UI exit animation completes.
+ * @param onStopRecording - Callback invoked when the user requests to stop recording.
+ * @returns The component's rendered UI element when visible, or `null` when not visible.
+ */
 export default function RealTimeTranscriptionPage({
   transcriptionWords: words = [],
   translationWords = [],

@@ -80,6 +80,11 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     [onStatusChange],
   );
 
+  /**
+   * Set the session start time when the recorder status becomes "recording" and no start time exists.
+   *
+   * @param newStatus - The updated recorder status; if equal to `"recording"` and there is no current session start time, this function records the current time as the session start.
+   */
   function onStatusChange(newStatus: string) {
     if (newStatus === "recording" && !sessionStartTime) {
       setSessionStartTime(new Date());
@@ -199,6 +204,13 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     setTranscriptWords([]);
   }, []);
 
+  /**
+   * Attach a message handler to an AudioWorkletNode that forwards resampled PCM audio to the WebSocket in fixed-size chunks.
+   *
+   * Registers a handler on the worklet's message port which resamples incoming Float32 audio to 16 kHz, converts it to 16-bit PCM, accumulates the resulting bytes in internal buffers, and sends merged buffers over an open WebSocket once the accumulated size reaches the send threshold (~1800 bytes).
+   *
+   * @param workletNode - The AudioWorkletNode whose port will emit audio frames to be processed and forwarded
+   */
   function handleWorkletSendingMessages(workletNode: AudioWorkletNode) {
     workletNode.port.onmessage = async (event) => {
       if (
@@ -240,6 +252,18 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }
 
+  /**
+   * Installs a WebSocket message handler that processes realtime recorder responses.
+   *
+   * When a WebSocket is available, the handler parses incoming messages and:
+   * - sets the assembly-ready flag when a ready response is received,
+   * - appends incoming transcription words (preserving previously finalized words),
+   * - appends incoming translation strings,
+   * - logs unknown response types and JSON parse errors.
+   *
+   * This function has the side effect of updating `isAssemblyReady.current`, `transcriptWords`,
+   * and `translateWords` and requires `wsRef.current` to be defined before calling.
+   */
   function handleWorkletRecivedMessages() {
     if (!wsRef.current) {
       log.info("ws has been closed already");
@@ -292,6 +316,11 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     };
   }
 
+  /**
+   * Creates a WAV Blob from the accumulated audio buffer, if any data is available.
+   *
+   * @returns A `Blob` containing the encoded WAV audio when the internal buffer contains audio data, `undefined` if there is no buffer or the buffer is empty.
+   */
   function updateAudioBlobAfterRecording() {
     if (!audioBufferRef.current) {
       log.warn("No audio buffer to process");
