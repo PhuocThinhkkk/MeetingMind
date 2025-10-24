@@ -36,3 +36,7 @@ jest.mock("/lib/logger", () => ({
   },
 }));
 
+import { Blob } from "buffer";
+global.Blob = Blob;
+
+
