@@ -1,5 +1,6 @@
 'use client';
 
+import { log } from "@/lib/logger";
 import { useState, useEffect } from 'react';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,6 @@ import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { 
   FileText, 
-  MessageSquare, 
   Calendar, 
   Download, 
   Share,
@@ -18,7 +18,6 @@ import {
   User,
   Send,
   CheckCircle,
-  AlertCircle,
   Loader2
 } from 'lucide-react';
 import { supabase } from '@/lib/supabase';
@@ -28,6 +27,13 @@ interface TranscriptionViewProps {
   onClose: () => void;
 }
 
+/**
+ * Display a dialog that loads and shows a file's transcript, AI summary, extracted events, and Q&A history, and allows asking questions that are persisted as QA logs.
+ *
+ * @param file - Audio/file metadata used to fetch and render transcript, summary, events, and Q&A entries (expects fields like `id`, `name`, `duration`, `created_at`, and `transcription_status`).
+ * @param onClose - Callback invoked when the dialog is closed.
+ * @returns The component's rendered JSX element.
+ */
 export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
   const [question, setQuestion] = useState('');
   const [qaHistory, setQaHistory] = useState<any[]>([]);
@@ -43,27 +49,23 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
 
   const fetchTranscriptionData = async () => {
     try {
-      // Fetch transcript
       const { data: transcriptData } = await supabase
         .from('transcripts')
         .select('*')
         .eq('audio_id', file.id)
         .single();
 
-      // Fetch summary
       const { data: summaryData } = await supabase
         .from('summaries')
         .select('*')
         .eq('audio_id', file.id)
         .single();
 
-      // Fetch events
       const { data: eventsData } = await supabase
         .from('events')
         .select('*')
         .eq('audio_id', file.id);
 
-      // Fetch Q&A history
       const { data: qaData } = await supabase
         .from('qa_logs')
         .select('*')
@@ -75,7 +77,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
       setEvents(eventsData || []);
       setQaHistory(qaData || []);
     } catch (error) {
-      console.error('Error fetching transcription data:', error);
+      log.error('Error fetching transcription data:', error);
     } finally {
       setLoading(false);
     }
@@ -86,7 +88,6 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
 
     setAskingQuestion(true);
     try {
-      // Simulate AI response (replace with actual AI integration)
       const simulatedAnswer = "Based on the meeting transcript, I can provide you with relevant information. This is a simulated AI response that would analyze the content and provide accurate answers.";
 
       const { data, error } = await supabase
@@ -108,7 +109,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
       }
       setQuestion('');
     } catch (error) {
-      console.error('Error asking question:', error);
+      log.error('Error asking question:', error);
     } finally {
       setAskingQuestion(false);
     }

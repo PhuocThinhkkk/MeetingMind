@@ -1,7 +1,7 @@
 "use client";
 
 import { CompactAudioCard } from "@/components/compact-audio-card";
-import { AudioFile } from "@/types/transcription";
+import { AudioFile } from "@/types/transcription.db";
 
 type AudioHistoryListProps = {
   audioHistory: AudioFile[];

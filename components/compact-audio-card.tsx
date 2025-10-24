@@ -5,10 +5,11 @@ import { useState } from "react";
 import { StatusBadge } from "@/components/status-badge";
 import { useRouter } from "next/navigation";
 import TimeDisplay from "@/components/time-display";
-import { AudioFile } from "@/types/transcription";
+import { AudioFile } from "@/types/transcription.db";
 import { formatDuration, formatFileSize } from "@/lib/utils";
 import { FileAudio, Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { log } from "@/lib/logger";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -30,7 +31,7 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useAudio } from "@/components/context/audios-list-context";
-import { deleteAudioById, updateAudioName } from "@/lib/query/audio";
+import { deleteAudioById, updateAudioName } from "@/lib/query/audio-operations";
 import { toast } from "sonner";
 
 type CompactAudioCardProps = {
@@ -152,6 +153,11 @@ function ConfirmDeletingDialog({
   audio: AudioFile;
 }) {
   const { audios, setAudios } = useAudio();
+  /**
+   * Confirm and perform deletion of the provided audio file.
+   *
+   * Performs an optimistic removal of the audio from local state, closes the delete dialog, logs the action, and then attempts to delete the audio on the server. If the audio cannot be found locally, shows an error toast and aborts. If the server deletion fails, restores the removed audio to local state and shows an error toast.
+   */
   async function confirmDelete() {
     const target = audios.find((a) => a.id === audio.id);
     try {
@@ -160,7 +166,7 @@ function ConfirmDeletingDialog({
         return;
       }
       setAudios((prev) => prev.filter((a) => a.id !== audio.id));
-      console.log("Delete audio:", audio.id);
+      log.info("Delete audio:", audio.id);
       setShowDeleteDialog(false);
       await deleteAudioById(audio.id);
     } catch (e) {
@@ -216,6 +222,11 @@ function RenameInputDialog({
   const { setAudios } = useAudio();
   const [newName, setNewName] = useState(audio.name);
 
+  /**
+   * Perform an optimistic rename for the provided audio: update local state, close the rename dialog, and persist the new name to the backend.
+   *
+   * If the backend update fails, shows an error toast, logs the error, and restores the previous name in local state when available.
+   */
   async function confirmRename() {
     let oldName: string = "";
     try {
@@ -230,13 +241,13 @@ function RenameInputDialog({
         }),
       );
 
-      console.log("Rename audio:", audio.id, "New name:", newName);
+      log.info("Rename audio:", audio.id, "New name:", newName);
       setShowRenameDialog(false);
       await updateAudioName(audio.id, newName);
     } catch (e) {
       toast.error(`Can not rename the ${audio.name} audio`);
       if (oldName === "") {
-        console.error("There some error when selecting the audio, pls try again");
+        log.error("There some error when selecting the audio, pls try again");
         return;
       }
       setAudios((prev) =>

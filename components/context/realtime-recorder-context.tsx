@@ -1,3 +1,12 @@
+import { log } from "@/lib/logger";
+import {
+  requestMicrophoneAudio,
+  requestSystemAudio,
+  mixAudioStreams,
+  setupAudioWorklet,
+  initAudioContext,
+} from "@/lib/audioWorkletUtils";
+import { encodeWAV, mergeChunks } from "@/lib/transcriptionUtils";
 import {
   useState,
   useRef,
@@ -8,27 +17,29 @@ import {
 } from "react";
 
 import {
-  TranscriptionWord,
+  RealtimeTranscriptionWord,
   RealtimeTranscriptChunk,
-  AudioChunk,
   RealtimeTranslateResponse,
-} from "@/types/transcription";
+} from "@/types/transcription.ws";
 
-import { encodeWAV, mergeChunks } from "@/lib/utils";
-import { saveAudioFile } from "@/lib/query/audio";
-import { saveTranscript } from "@/lib/query/transcription";
-import { User } from "@supabase/supabase-js";
-import { useAuth } from "@/hooks/use-auth";
-import { saveTranscriptWords } from "@/lib/query/transcript-words";
+import { resampleTo16kHz, float32ToInt16 } from "@/lib/transcriptionUtils";
+
+const SAMPLE_RATE = 16000;
+const CHUNK_MS = 128;
+const CHUNK_SIZE = (SAMPLE_RATE * 2 * CHUNK_MS) / 1000;
+
+type ResponseType = "ready" | "transcript" | "translate";
+const READY_RESPONSE: ResponseType = "ready";
+const TRANSCRIPT_RESPONSE: ResponseType = "transcript";
+const TRANSLATE_RESPONSE: ResponseType = "translate";
 
 type RecorderContextType = {
   isRecording: boolean;
   startRecording: () => Promise<void>;
-  stopRecording: () => void;
+  stopRecording: () => Blob | undefined;
   clearTranscript: () => void;
-  audioBlob: Blob | null;
   status: string;
-  transcriptWords: TranscriptionWord[];
+  transcriptWords: RealtimeTranscriptionWord[];
   translateWords: string[];
   sessionStartTime: Date | null;
   setSessionStartTime: React.Dispatch<React.SetStateAction<Date | null>>;
@@ -42,109 +53,14 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => {
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null);
-
-  const {
-    isRecording,
-    status,
-    transcriptWords,
-    translateWords,
-    startRecording,
-    stopRecording,
-    clearTranscript,
-    audioBlob,
-  } = useRealtimeTranscription({
-    onError: (error: string) => {
-      console.error("Transcription error:", error);
-    },
-
-    onStatusChange: (newStatus: string) => {
-      if (newStatus === "recording" && !sessionStartTime) {
-        setSessionStartTime(new Date());
-      }
-    },
-  });
-
-  useEffect(() => {
-    return () => {
-      if (isRecording) {
-        stopRecording();
-      }
-    };
-  }, []);
-
-  return (
-    <RecorderContext.Provider
-      value={{
-        isRecording,
-        startRecording,
-        stopRecording,
-        audioBlob,
-        status,
-        clearTranscript,
-        transcriptWords,
-        translateWords,
-        sessionStartTime,
-        setSessionStartTime,
-      }}
-    >
-      {children}
-    </RecorderContext.Provider>
-  );
-};
-
-export const useRecorder = (): RecorderContextType => {
-  const context = useContext(RecorderContext);
-  if (!context) {
-    throw new Error("useRecorder must be used within a RecorderProvider");
-  }
-  return context;
-};
-
-const SAMPLE_RATE = 16000;
-const CHUNK_MS = 128;
-const CHUNK_SIZE = (SAMPLE_RATE * 2 * CHUNK_MS) / 1000;
-
-type ResponseType = "ready" | "transcript" | "translate";
-const READY_RESPONSE: ResponseType = "ready";
-const TRANSCRIPT_RESPONSE: ResponseType = "transcript";
-const TRANSLATE_RESPONSE: ResponseType = "translate";
-
-interface UseRealtimeTranscriptionProps {
-  onError?: (error: string) => void;
-  onStatusChange?: (
-    status: "idle" | "connecting" | "recording" | "processing" | "error",
-  ) => void;
-}
-
-/**
- * Manage real-time audio capture, streaming to a transcription service, and transcript/translation state.
- *
- * @param onError - Optional callback invoked with a user-facing error message when an operational error occurs
- * @param onStatusChange - Optional callback invoked when the internal recording status changes
- *
- * @returns An object exposing the recorder state and controls:
- *  - isRecording: `true` when audio capture and streaming are active, `false` otherwise
- *  - status: Current lifecycle status: `"idle" | "connecting" | "recording" | "processing" | "error"`
- *  - transcriptWords: Array of `TranscriptionWord` representing the current transcript (partial and final words)
- *  - translateWords: Array of translated strings received from the service
- *  - startRecording: Begins audio capture, prepares the audio pipeline and WebSocket connection
- *  - stopRecording: Stops capture and streaming, finalizes any pending audio, and marks transcript words as final
- *  - clearTranscript: Clears the in-memory transcriptWords
- *  - audioBlob: Recorded audio as a WAV `Blob` when available, or `null` otherwise
- */
-export function useRealtimeTranscription({
-  onError,
-  onStatusChange,
-}: UseRealtimeTranscriptionProps = {}) {
   const [isRecording, setIsRecording] = useState(false);
   const [status, setStatus] = useState<
     "idle" | "connecting" | "recording" | "processing" | "error"
   >("idle");
-  const [transcriptWords, setTranscriptWords] = useState<TranscriptionWord[]>(
-    [],
-  );
+  const [transcriptWords, setTranscriptWords] = useState<
+    RealtimeTranscriptionWord[]
+  >([]);
   const [translateWords, setTranslateWords] = useState<string[]>([]);
-  const { user } = useAuth();
 
   const wsRef = useRef<WebSocket | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -153,16 +69,27 @@ export function useRealtimeTranscription({
   const workletNodeRef = useRef<AudioWorkletNode | null>(null);
   const currentAudioBufferRef = useRef<Uint8Array[]>([]);
   const audioBufferRef = useRef<Uint8Array[]>([]);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const totalByteLengthRef = useRef<number>(0);
+
   const updateStatus = useCallback(
     (newStatus: typeof status) => {
-      console.log("status change!", newStatus);
+      log.info("status change!", newStatus);
       setStatus(newStatus);
       onStatusChange?.(newStatus);
     },
     [onStatusChange],
   );
+
+  /**
+   * Set the session start time when the recorder status becomes "recording" and no start time exists.
+   *
+   * @param newStatus - The updated recorder status; if equal to `"recording"` and there is no current session start time, this function records the current time as the session start.
+   */
+  function onStatusChange(newStatus: string) {
+    if (newStatus === "recording" && !sessionStartTime) {
+      setSessionStartTime(new Date());
+    }
+  }
 
   const connectWebSocket = useCallback(() => {
     const wsUrl =
@@ -171,191 +98,78 @@ export function useRealtimeTranscription({
       wsRef.current = new WebSocket(`${wsUrl}/ws`);
 
       if (!wsRef?.current) {
-        console.log("no ws current yet.");
+        log.info("no ws current yet.");
         return;
       }
+
+      handleWorkletRecivedMessages();
+
       wsRef.current.onopen = () => {
-        console.log("WebSocket connected");
+        log.info("WebSocket connected");
         updateStatus("recording");
       };
 
-      wsRef.current.onmessage = (event) => {
-        try {
-          const res = JSON.parse(event.data);
-          if (res.type === READY_RESPONSE) {
-            console.log("Assembly is ready!");
-            isAssemblyReady.current = true;
-          } else if (res.type === TRANSCRIPT_RESPONSE) {
-            const data: RealtimeTranscriptChunk = res;
-            if (data.words.length === 0) {
-              console.warn("No words in transcription response");
-              return;
-            }
-            const newWords: TranscriptionWord[] = data.words.map(
-              (word, index) => ({
-                text: word.text,
-                word_is_final: word.word_is_final,
-                start: word.start,
-                end: word.end,
-                confidence: word.confidence,
-              }),
-            );
-
-            // TODO: handle end of turn later
-            setTranscriptWords((prev) => {
-              const stableCount = prev.filter((w) => w.word_is_final).length;
-              const updatedWords = [...prev.slice(0, stableCount), ...newWords];
-              return updatedWords;
-            });
-          } else if (res.type === TRANSLATE_RESPONSE) {
-            console.log("Received translation response:", res);
-            const data: RealtimeTranslateResponse = res;
-            if (data.words === "") {
-              console.warn("No words in translation response");
-              return;
-            }
-            const newWord = data.words;
-            setTranslateWords((prev) => [...prev, newWord]);
-          } else {
-            console.error("Unknown response :", res);
-          }
-        } catch (error) {
-          console.error("Error parsing WebSocket message:", error);
-          onError?.("Failed to parse real time data");
-        }
-      };
-
       wsRef.current.onerror = (error) => {
-        console.error("WebSocket error:", error);
+        log.error("WebSocket error:", error);
         updateStatus("error");
-        onError?.("WebSocket connection failed");
       };
 
       wsRef.current.onclose = (e) => {
-        console.log("WebSocket disconnected", e.reason, e.code);
+        log.info(`WebSocket disconnected ${e.reason}`, e.code);
         if (status === "recording") {
           updateStatus("idle");
         }
       };
     } catch (error) {
-      console.error("Failed to connect WebSocket:", error);
+      log.error("Failed to connect WebSocket:", error);
       updateStatus("error");
-      onError?.("Failed to connect to transcription service");
     }
-  }, [status, updateStatus, onError]);
+  }, [status, updateStatus]);
 
   const startRecording = useCallback(async () => {
     clearTranscript();
     updateStatus("connecting");
     connectWebSocket();
 
-    const AudioContextClass =
-      window.AudioContext || (window as any).webkitAudioContext;
-    const audioContext = new AudioContextClass();
+    const audioContext = initAudioContext();
     audioContextRef.current = audioContext;
 
-    let systemStream: MediaStream | null = null;
-    let micStream: MediaStream | null = null;
-
-    try {
-      systemStream = await navigator.mediaDevices.getDisplayMedia({
-        video: true,
-        audio: true,
-      });
-    } catch (err) {
-      console.error("System audio permission denied:", err);
-    }
-
-    try {
-      micStream = await navigator.mediaDevices.getUserMedia({ audio: true });
-    } catch (err) {
-      console.error("Microphone permission denied:", err);
-    }
+    const micStream = await requestMicrophoneAudio();
+    const systemStream = await requestSystemAudio();
 
     if (!systemStream && !micStream) {
-      onError?.("Please allow at least microphone or system audio.");
+      log.error("No audio streams available");
+      updateStatus("error");
       return;
     }
-    const destination = audioContext.createMediaStreamDestination();
+    const mixedStream = await mixAudioStreams(
+      audioContext,
+      systemStream,
+      micStream,
+    );
 
-    let systemSource: MediaStreamAudioSourceNode;
-    if (systemStream) {
-      systemSource = audioContext.createMediaStreamSource(systemStream);
-      systemSource.connect(destination);
-    }
-
-    let micSource: MediaStreamAudioSourceNode;
-    if (micStream) {
-      micSource = audioContext.createMediaStreamSource(micStream);
-      micSource.connect(destination);
-    }
-
-    const mixedStream = destination.stream;
     streamRef.current = mixedStream;
 
-    await audioContext.audioWorklet.addModule("/worklet-processor.js");
-
-    const source = audioContext.createMediaStreamSource(mixedStream);
-    const workletNode = new AudioWorkletNode(audioContext, "pcm-processor");
-
-    workletNode.port.onmessage = async (event) => {
-      if (
-        event.data &&
-        wsRef.current?.readyState === WebSocket.OPEN &&
-        isAssemblyReady.current
-      ) {
-        const resampled = await resampleTo16kHz(event.data);
-        const pcmData = float32ToInt16(resampled);
-
-        const chunk = new Uint8Array(pcmData.buffer);
-        currentAudioBufferRef.current.push(chunk);
-        audioBufferRef.current.push(chunk);
-        totalByteLengthRef.current += chunk.byteLength;
-
-        if (totalByteLengthRef.current >= 1800) {
-          const merged = new Uint8Array(totalByteLengthRef.current);
-          let offset = 0;
-          for (const part of currentAudioBufferRef.current) {
-            if (offset + part.length <= merged.length) {
-              merged.set(part, offset);
-              offset += part.length;
-            } else {
-              console.warn("Audio chunk too large, skipping overflow data");
-            }
-          }
-          if (!wsRef.current) {
-            console.log("ws have been closed already");
-            return;
-          }
-
-          wsRef.current.send(merged.buffer);
-          console.log("Sent audio chunk of size:", merged.byteLength);
-          currentAudioBufferRef.current = [];
-          totalByteLengthRef.current = 0;
-        }
-      }
-    };
-
-    source.connect(workletNode).connect(audioContext.destination);
+    const workletNode = await setupAudioWorklet(audioContext, mixedStream);
+    handleWorkletSendingMessages(workletNode);
     workletNodeRef.current = workletNode;
 
     setIsRecording(true);
-  }, [connectWebSocket, updateStatus, onError]);
+  }, [connectWebSocket, updateStatus]);
 
   const stopRecording = useCallback(() => {
     console.trace("🔥 stopRecording() called");
     setIsRecording(false);
     updateStatus("processing");
-    console.log("stop recording");
+    log.info("stop recording");
 
     isAssemblyReady.current = false;
-    if (audioBufferRef.current.length !== 0) {
-      const merged = mergeChunks(audioBufferRef.current);
-      const pcm = new Int16Array(merged.buffer);
-      const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
-      setAudioBlob(wavBlob);
-      handlingSaveAudioAndTranscript(user as User, wavBlob, transcriptWords);
+
+    const blob = updateAudioBlobAfterRecording();
+    if (audioBufferRef.current) {
+      audioBufferRef.current = [];
     }
+
     if (streamRef.current) {
       streamRef.current.getTracks().forEach((track) => track.stop());
       streamRef.current = null;
@@ -382,111 +196,184 @@ export function useRealtimeTranscription({
       );
       updateStatus("idle");
     }, 1000);
+
+    return blob
   }, [updateStatus]);
 
   const clearTranscript = useCallback(() => {
     setTranscriptWords([]);
   }, []);
 
+  /**
+   * Attach a message handler to an AudioWorkletNode that forwards resampled PCM audio to the WebSocket in fixed-size chunks.
+   *
+   * Registers a handler on the worklet's message port which resamples incoming Float32 audio to 16 kHz, converts it to 16-bit PCM, accumulates the resulting bytes in internal buffers, and sends merged buffers over an open WebSocket once the accumulated size reaches the send threshold (~1800 bytes).
+   *
+   * @param workletNode - The AudioWorkletNode whose port will emit audio frames to be processed and forwarded
+   */
+  function handleWorkletSendingMessages(workletNode: AudioWorkletNode) {
+    workletNode.port.onmessage = async (event) => {
+      if (
+        event.data &&
+        wsRef.current?.readyState === WebSocket.OPEN &&
+        isAssemblyReady.current
+      ) {
+        const resampled = await resampleTo16kHz(event.data);
+        const pcmData = float32ToInt16(resampled);
+
+        const chunk = new Uint8Array(pcmData.buffer);
+        currentAudioBufferRef.current.push(chunk);
+        audioBufferRef.current.push(chunk);
+        totalByteLengthRef.current += chunk.byteLength;
+
+        if (totalByteLengthRef.current >= 1800) {
+          const merged = new Uint8Array(totalByteLengthRef.current);
+          let offset = 0;
+          for (const part of currentAudioBufferRef.current) {
+            if (offset + part.length <= merged.length) {
+              merged.set(part, offset);
+              offset += part.length;
+            } else {
+              log.warn("Audio chunk too large, skipping overflow data");
+            }
+          }
+
+          if (!wsRef.current) {
+            log.info("ws has been closed already");
+            return;
+          }
+
+          wsRef.current.send(merged.buffer);
+          log.info("Sent audio chunk of size:", merged.byteLength);
+          currentAudioBufferRef.current = [];
+          totalByteLengthRef.current = 0;
+        }
+      }
+    };
+  }
+
+  /**
+   * Installs a WebSocket message handler that processes realtime recorder responses.
+   *
+   * When a WebSocket is available, the handler parses incoming messages and:
+   * - sets the assembly-ready flag when a ready response is received,
+   * - appends incoming transcription words (preserving previously finalized words),
+   * - appends incoming translation strings,
+   * - logs unknown response types and JSON parse errors.
+   *
+   * This function has the side effect of updating `isAssemblyReady.current`, `transcriptWords`,
+   * and `translateWords` and requires `wsRef.current` to be defined before calling.
+   */
+  function handleWorkletRecivedMessages() {
+    if (!wsRef.current) {
+      log.info("ws has been closed already");
+      return;
+    }
+
+    wsRef.current.onmessage = (event) => {
+      try {
+        const res = JSON.parse(event.data);
+        if (res.type === READY_RESPONSE) {
+          log.info("Assembly is ready!");
+          isAssemblyReady.current = true;
+        } else if (res.type === TRANSCRIPT_RESPONSE) {
+          const data: RealtimeTranscriptChunk = res;
+          if (data.words.length === 0) {
+            log.warn("No words in transcription response");
+            return;
+          }
+          const newWords: RealtimeTranscriptionWord[] = data.words.map(
+            (word, index) => ({
+              text: word.text,
+              word_is_final: word.word_is_final,
+              start: word.start,
+              end: word.end,
+              confidence: word.confidence,
+            }),
+          );
+
+          // TODO: handle end of turn later
+          setTranscriptWords((prev) => {
+            const stableCount = prev.filter((w) => w.word_is_final).length;
+            const updatedWords = [...prev.slice(0, stableCount), ...newWords];
+            return updatedWords;
+          });
+        } else if (res.type === TRANSLATE_RESPONSE) {
+          log.info("Received translation response:", res);
+          const data: RealtimeTranslateResponse = res;
+          if (data.words === "") {
+            log.warn("No words in translation response");
+            return;
+          }
+          const newWord = data.words;
+          setTranslateWords((prev) => [...prev, newWord]);
+        } else {
+          log.error("Unknown response :", res);
+        }
+      } catch (error) {
+        log.error("Error parsing WebSocket message:", error);
+      }
+    };
+  }
+
+  /**
+   * Creates a WAV Blob from the accumulated audio buffer, if any data is available.
+   *
+   * @returns A `Blob` containing the encoded WAV audio when the internal buffer contains audio data, `undefined` if there is no buffer or the buffer is empty.
+   */
+  function updateAudioBlobAfterRecording() {
+    if (!audioBufferRef.current) {
+      log.warn("No audio buffer to process");
+      return;
+    }
+
+    if (audioBufferRef.current.length === 0) {
+      log.warn("Audio buffer is empty, skipping blob creation");
+      return;
+    }
+
+    if (audioBufferRef.current.length !== 0) {
+      const merged = mergeChunks(audioBufferRef.current);
+      const pcm = new Int16Array(merged.buffer);
+      const wavBlob = encodeWAV(pcm, SAMPLE_RATE);
+      log.info("Created WAV blob of size:", wavBlob.size);
+      return wavBlob;
+    }
+  }
+
   useEffect(() => {
     return () => {
+      log.info("Cleaning up recorder on unmount");
       if (isRecording) {
-        console.log("curpit");
+        log.info("stopping recording due to unmount");
         stopRecording();
       }
     };
   }, []);
 
-  return {
-    isRecording,
-    status,
-    transcriptWords,
-    translateWords,
-    startRecording,
-    stopRecording,
-    clearTranscript,
-    audioBlob,
-  };
-}
+  return (
+    <RecorderContext.Provider
+      value={{
+        isRecording,
+        startRecording,
+        stopRecording,
+        status,
+        clearTranscript,
+        transcriptWords,
+        translateWords,
+        sessionStartTime,
+        setSessionStartTime,
+      }}
+    >
+      {children}
+    </RecorderContext.Provider>
+  );
+};
 
-// @ts-ignore
-export async function resampleTo16kHz(float32) {
-  const originalSampleRate = 48000;
-  const targetSampleRate = 16000;
-  const audioBuffer = new AudioBuffer({
-    length: float32.length,
-    numberOfChannels: 1,
-    sampleRate: originalSampleRate,
-  });
-
-  audioBuffer.copyToChannel(float32, 0, 0);
-
-  const offlineContext = new OfflineAudioContext({
-    numberOfChannels: 1,
-    length: Math.round(
-      (float32.length * targetSampleRate) / originalSampleRate,
-    ),
-    sampleRate: targetSampleRate,
-  });
-
-  const source = offlineContext.createBufferSource();
-  source.buffer = audioBuffer;
-  source.connect(offlineContext.destination);
-  source.start();
-
-  const rendered = await offlineContext.startRendering();
-  return rendered.getChannelData(0);
-}
-
-/**
- * Convert normalized 32-bit float PCM samples to signed 16-bit PCM samples.
- *
- * Clamps input samples to the range [-1, 1] and scales them to the signed 16-bit range.
- *
- * @param float32 - The input Float32Array of audio samples, typically in the range [-1, 1].
- * @returns An Int16Array containing the converted signed 16-bit PCM samples (approximately -32768 to 32767).
- */
-// @ts-ignore
-export function float32ToInt16(float32) {
-  const int16 = new Int16Array(float32.length);
-  for (let i = 0; i < float32.length; i++) {
-    const s = Math.max(-1, Math.min(1, float32[i]));
-    int16[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
+export const useRecorder = (): RecorderContextType => {
+  const context = useContext(RecorderContext);
+  if (!context) {
+    throw new Error("useRecorder must be used within a RecorderProvider");
   }
-  return int16;
-}
-
-/**
- * Persist an audio Blob and its associated transcript for the specified user.
- *
- * Attempts to save the audio file and then the transcript; any errors encountered are caught and logged.
- *
- * @param user - The owner of the recording
- * @param blob - The audio data to persist
- * @param transcriptWords - The transcript words associated with the audio
- */
-export async function handlingSaveAudioAndTranscript(
-  user: User,
-  blob: Blob,
-  transcriptWords: TranscriptionWord[],
-) {
-  try {
-    if (!user) {
-      throw new Error("pls sign in first to use our application");
-    }
-
-    if (!blob) {
-      throw new Error("The audio of the recording isnt found");
-    }
-    if (!transcriptWords || transcriptWords.length === 0) {
-      throw new Error("There is nothing in transcription");
-    }
-
-    const audio = await saveAudioFile(blob, user.id, "Unnamed");
-    const transcription = await saveTranscript(audio.id, transcriptWords);
-    await saveTranscriptWords(transcription.id, transcriptWords);
-  } catch (error) {
-    console.error("Error saving audio or transcript:", error);
-  }
-}
-
+  return context;
+};

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
+import { log } from "@/lib/logger";
 import { Badge } from "@/components/ui/badge";
 import {
   Mic,
@@ -13,27 +14,31 @@ import {
   Wifi,
   WifiOff,
 } from "lucide-react";
-import { TranscriptionData, TranscriptionWord } from "@/types/transcription";
 import RealTimeTranscriptionPage from "./realtime-view-transcription";
 import { useRecorder } from "@/components/context/realtime-recorder-context";
+import { SaveTranscriptInput } from "@/types/transcription.db";
+import { useAuth } from "@/hooks/use-auth";
+import { formatDuration } from "@/lib/utils";
 
 interface RealtimeRecorderProps {
-  onTranscriptionComplete: (data: TranscriptionData) => void;
+  onTranscriptionComplete: (
+    audioBlob: Blob,
+    transcription: SaveTranscriptInput,
+  ) => void;
 }
 
 /**
- * UI component that provides controls and a live transcription view for capturing realtime audio.
+ * Presents controls and a live transcription view for capturing realtime audio.
  *
- * Renders a card with status, start/stop controls, a live duration indicator while recording, and an embedded
- * RealTimeTranscriptionPage that becomes visible when recording starts.
- *
- * @param onTranscriptionComplete - Callback invoked when a realtime recording finishes and at least one transcript word exists. Receives a `TranscriptionData` object describing the recording (id, name, type, status, duration, created_at, and transcript with text, words, speakers_detected, and confidence_score).
- * @returns A React element rendering the realtime recorder user interface.
+ * @param onTranscriptionComplete - Callback invoked when a realtime recording finishes. Receives the recorded audio `Blob` and a `SaveTranscriptInput` representing the transcription (text, words, speakers, confidence, etc.).
+ * @returns The React element rendering the realtime recorder user interface.
  */
 export function RealtimeRecorder({
   onTranscriptionComplete,
 }: RealtimeRecorderProps) {
+  const { user } = useAuth();
   const [showTranscription, setShowTranscription] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
   const {
     transcriptWords,
     translateWords,
@@ -43,7 +48,6 @@ export function RealtimeRecorder({
     setSessionStartTime,
     isRecording,
     status,
-    audioBlob,
   } = useRecorder();
 
   const handleStartRecording = async () => {
@@ -52,34 +56,42 @@ export function RealtimeRecorder({
   };
 
   const handleStopRecording = () => {
-    stopRecording();
-
-    if (sessionStartTime && transcriptWords.length > 0) {
-      const duration = Math.floor(
-        (Date.now() - sessionStartTime.getTime()) / 1000,
-      );
-      const transcriptionData: TranscriptionData = {
-        id: `realtime-${Date.now()}`,
-        name: `Live Recording - ${sessionStartTime.toLocaleTimeString()}`,
-        type: "realtime",
-        status: "done",
-        duration,
-        created_at: sessionStartTime.toISOString(),
-        transcript: {
-          text: transcriptWords.map((w) => w.text).join(" "),
-          words: transcriptWords,
-          speakers_detected: 1,
-          confidence_score: 0.85,
-        },
-      };
-
-      onTranscriptionComplete(transcriptionData);
+    if (isStopping) {
+      log.warn("Already stopping the recording, please wait.");
+      return;
     }
-
+    setIsStopping(true);
+    if (!user) {
+      log.error("User not authenticated");
+      setIsStopping(false);
+      return;
+    }
+    const audioBlob = stopRecording();
+    if (!audioBlob) {
+      log.error("No audio blob available on stop recording");
+      setIsStopping(false);
+      return;
+    }
+    log.info(`${audioBlob}`);
+    const transcription = transcriptWords;
+    onTranscriptionComplete(audioBlob, transcription);
     setSessionStartTime(null);
+    setIsStopping(false);
   };
 
-  const getStatusColor = () => {
+  /**
+   * Selects the Tailwind CSS class string used for the status badge based on the current recorder status.
+   *
+   * @returns A string of Tailwind CSS classes for the badge's background, text, and border corresponding to the current status.
+   *
+   * Mappings:
+   * - "recording"  → "bg-red-100 text-red-800 border-red-200"
+   * - "connecting" → "bg-yellow-100 text-yellow-800 border-yellow-200"
+   * - "processing" → "bg-blue-100 text-blue-800 border-blue-200"
+   * - "error"      → "bg-red-100 text-red-800 border-red-200"
+   * - default      → "bg-gray-100 text-gray-800 border-gray-200"
+   */
+  function getStatusColor() {
     switch (status) {
       case "recording":
         return "bg-red-100 text-red-800 border-red-200";
@@ -92,7 +104,7 @@ export function RealtimeRecorder({
       default:
         return "bg-gray-100 text-gray-800 border-gray-200";
     }
-  };
+  }
 
   const getStatusIcon = () => {
     switch (status) {
@@ -108,16 +120,14 @@ export function RealtimeRecorder({
         return <MicOff className="w-4 h-4" />;
     }
   };
-
-  const formatDuration = () => {
-    if (!sessionStartTime) return "00:00";
-    const elapsed = Math.floor(
-      (Date.now() - sessionStartTime.getTime()) / 1000,
-    );
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-    return `${minutes.toString().padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`;
-  };
+  let duration = 0;
+  const now = Date.now() / 1000;
+  if (!sessionStartTime) {
+    duration = 0;
+  } else {
+    const startTimeSeconds = sessionStartTime.getTime() / 1000;
+    duration = now - startTimeSeconds;
+  }
 
   return (
     <>
@@ -135,7 +145,7 @@ export function RealtimeRecorder({
               {status === "recording" && (
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                  <span>{formatDuration()}</span>
+                  <span>{formatDuration(duration)}</span>
                 </div>
               )}
             </div>
@@ -224,11 +234,11 @@ export function RealtimeRecorder({
           transcriptionWords={transcriptWords}
           isVisible={showTranscription}
           onExit={() => {
-            stopRecording();
+            handleStopRecording();
             setShowTranscription(false);
           }}
           onStopRecording={() => {
-            stopRecording();
+            handleStopRecording();
             setShowTranscription(false);
           }}
         />

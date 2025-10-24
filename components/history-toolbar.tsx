@@ -18,13 +18,13 @@ export interface HistoryToolbarProps {
 }
 
 /**
- * Render a history toolbar containing a controlled search input and a status filter dropdown.
+ * Renders a toolbar with a controlled search input and a status filter dropdown.
  *
- * @param selectedStatus - The currently selected status label shown in the dropdown
- * @param setSelectedStatus - Callback to update the selected status when a dropdown item is chosen
- * @param searchQuery - The current text value of the search input
- * @param setSearchQuery - Callback to update the search query as the user types
- * @returns The toolbar JSX element containing the search input (with leading icon) and a status dropdown with items: All, Done, Processing, Error, Unknown
+ * @param selectedStatus - Label currently shown on the dropdown trigger
+ * @param setSelectedStatus - Callback invoked with the new status when a dropdown item is selected
+ * @param searchQuery - Current value of the search input
+ * @param setSearchQuery - Callback invoked with the updated search text as the user types
+ * @returns The toolbar JSX element containing the search input (with leading search icon) and a status dropdown with items: All, Done, Processing, Error, Unknown
  */
 export function HistoryToolbar({
   selectedStatus,

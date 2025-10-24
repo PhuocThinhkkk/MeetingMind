@@ -1,6 +1,7 @@
+import { log } from "@/lib/logger";
 import { Badge } from "@/components/ui/badge";
 import { Calendar } from "lucide-react";
-import { Transcript } from "@/types/transcription";
+import { Transcript } from "@/types/transcription.db";
 import { formatDate } from "@/lib/utils";
 
 type TranscriptDetailsProps = {
@@ -9,12 +10,13 @@ type TranscriptDetailsProps = {
 };
 
 /**
- * Renders transcript metadata and content with a trimmed ID badge and formatted date.
+ * Render transcript metadata and the transcript text with a truncated ID badge and active-word highlighting.
  *
- * Displays the transcribed date, a header containing a truncated transcript ID (first 8 characters followed by "..." or "N/A" when absent), and the transcript text. If `transcript.id` is undefined, an error is logged to the console.
+ * Displays the transcribed date, a header with a truncated transcript ID (first 8 characters followed by "..." or `"N/A"` when absent), and the transcript text. If `transcript.id` is undefined, an error is logged via `log.error`. When `transcript.words` is present, words near `currentTimeSeconds` are visually highlighted.
  *
- * @param transcript - The transcript object to display (expected to include `id`, `created_at`, and `text`).
- * @returns A React element showing the transcript's date, ID badge, and text content.
+ * @param transcript - Transcript object (expected to include `id`, `created_at`, and either `text` or `words`)
+ * @param currentTimeSeconds - Current playback time in seconds used to determine which words are highlighted
+ * @returns A React element containing the transcript's date, ID badge, and text content (with optional per-word highlighting)
  */
 export function TranscriptDetails({
   transcript,
@@ -26,7 +28,7 @@ export function TranscriptDetails({
     : "N/A";
 
   if (!transcript.id) {
-    console.error("Transcript ID is undefined", transcript);
+    log.error("Transcript ID is undefined", transcript);
   }
 
   const windowBefore = 300; 
@@ -82,4 +84,3 @@ export function TranscriptDetails({
     </div>
   );
 }
-

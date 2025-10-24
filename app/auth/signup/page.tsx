@@ -191,6 +191,12 @@ export default function SignupPage() {
   );
 }
 
+/**
+ * Displays a post-signup screen instructing the user to check their email for a verification link.
+ *
+ * @param email - The email address that received the verification link
+ * @returns The verification message UI with instructions and a button to return to the sign-in page
+ */
 function VerificationMessage({ email }: { email: string }) {
   const router = useRouter();
 

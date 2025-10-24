@@ -1,5 +1,6 @@
 "use client"
 import type * as React from "react"
+import { log } from "@/lib/logger";
 import { usePathname } from "next/navigation"
 import { useAuth } from "@/hooks/use-auth"
 import { useState, useEffect } from "react"
@@ -50,7 +51,7 @@ const navItems = [
       .single();
   
     if (error) {
-      console.error('Error fetching user profile:', error);
+      log.error('Error fetching user profile:', error);
       return null;
     }
   
@@ -71,9 +72,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         loadUserProfile();
     }, [auth.user]);
 
+    /**
+     * Load the authenticated user's profile into component state or clear it when unauthenticated.
+     *
+     * When an authenticated user is present, fetches that user's profile data and stores it in the local `user` state; when no authenticated user exists, sets `user` to `null`.
+     */
     async function loadUserProfile() {
         if (auth.user) {
-            console.log("fetching user profile", auth.user.id);
+            log.info("fetching user profile", auth.user.id);
             const res = await fetchUserProfile(auth.user.id);
             setUser(res);
         } else {

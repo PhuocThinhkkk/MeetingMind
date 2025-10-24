@@ -28,3 +28,15 @@ global.WebSocket = jest.fn(() => ({
   onerror: null,
 }));
 
+jest.mock("/lib/logger", () => ({
+  log: {
+    info: jest.fn(),
+    warn: jest.fn(),
+    error: jest.fn(),
+  },
+}));
+
+import { Blob } from "buffer";
+global.Blob = Blob;
+
+

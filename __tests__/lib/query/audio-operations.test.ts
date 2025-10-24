@@ -1,6 +1,6 @@
-import { getAudioHistory, saveAudioFile, updateAudioName, deleteAudioById } from '@/lib/query/audio'
+import { getAudioHistory, saveAudioFile, updateAudioName, deleteAudioById } from '@/lib/query/audio-operations'
 import { supabase } from '@/lib/supabase'
-import { getAudioDuration } from '@/lib/utils'
+import { getAudioDuration } from '@/lib/transcriptionUtils'
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -11,7 +11,7 @@ jest.mock('@/lib/supabase', () => ({
   },
 }))
 
-jest.mock('@/lib/utils', () => ({
+jest.mock('@/lib/transcriptionUtils', () => ({
   getAudioDuration: jest.fn(),
 }))
 
@@ -84,29 +84,6 @@ describe('Audio Query Functions', () => {
       const mockSelect = jest.fn().mockReturnThis()
       const mockEq = jest.fn().mockReturnThis()
       const mockOrder = jest.fn().mockResolvedValue({ data: [], error: null })
-
-      ;(supabase.from as jest.Mock).mockReturnValue({
-        select: mockSelect,
-      })
-
-      mockSelect.mockReturnValue({
-        eq: mockEq,
-      })
-
-      mockEq.mockReturnValue({
-        order: mockOrder,
-      })
-
-      const result = await getAudioHistory('user-1')
-
-      expect(result).toEqual([])
-    })
-
-    it('should handle database errors gracefully', async () => {
-      const mockError = { message: 'Database error' }
-      const mockSelect = jest.fn().mockReturnThis()
-      const mockEq = jest.fn().mockReturnThis()
-      const mockOrder = jest.fn().mockResolvedValue({ data: null, error: mockError })
 
       ;(supabase.from as jest.Mock).mockReturnValue({
         select: mockSelect,

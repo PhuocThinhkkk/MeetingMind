@@ -1,5 +1,6 @@
 'use client';
 
+import { log } from "@/lib/logger";
 import { useState, useCallback } from 'react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -9,6 +10,15 @@ interface AudioUploadProps {
   onUpload: (file: File) => void;
 }
 
+/**
+ * UI component that lets the user select or drag-and-drop an audio file and upload it.
+ *
+ * Renders a drop area and file picker, displays the selected file with size, and provides an upload action.
+ *
+ * @param onUpload - Callback invoked with the selected audio `File` to perform the upload/transcription.
+ *                   On successful completion the selected file is cleared; failures are logged and the component resets its uploading state.
+ * @returns The AudioUpload React element.
+ */
 export function AudioUpload({ onUpload }: AudioUploadProps) {
   const [dragActive, setDragActive] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -53,7 +63,7 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
         await onUpload(selectedFile);
         setSelectedFile(null);
       } catch (error) {
-        console.error('Upload failed:', error);
+        log.error('Upload failed:', error);
       } finally {
         setUploading(false);
       }

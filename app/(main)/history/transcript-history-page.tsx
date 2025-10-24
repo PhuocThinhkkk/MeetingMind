@@ -1,13 +1,13 @@
 "use client";
 import { AudioHistoryList } from "@/components/audio-history-list";
+import { log } from "@/lib/logger";
 import { useAuth } from "@/hooks/use-auth";
 import { HistoryToolbar } from "@/components/history-toolbar";
 import { TranscriptModal } from "@/components/transcript-modal";
-import { getAudioHistory } from "@/lib/query/audio";
+import { getAudioHistory } from "@/lib/query/audio-operations";
 import React from "react";
 import { useSearchParams } from "next/navigation";
 import { useAudio } from "@/components/context/audios-list-context";
-import { SelectionState } from "react-day-picker";
 
 /**
  * Renders the transcript history page showing the current user's audio recordings and opens a transcript modal when an audio is selected via the URL.
@@ -23,28 +23,33 @@ export default function TranscriptHistoryPage() {
   React.useEffect(() => {
     let cancelled = false;
     /**
-     * Fetches the authenticated user's audio history and updates the audios state.
+     * Initialize and populate the audios state with the authenticated user's audio history.
      *
-     * If there is no authenticated user or the fetched list is empty, clears the audios state.
-     * If the operation is cancelled after the fetch completes, it does not modify state.
+     * If there is no authenticated user or the fetched history is empty, clears the audios state.
+     * If the fetch completes after the operation is cancelled, no state is modified.
+     * On successful fetch with results, logs the retrieval and updates the audios state with the fetched list.
      */
     async function initializeAudiosFetch() {
-      if (!user) {
+      try {
+        if (!user) {
+          setAudios([]);
+          return;
+        }
+        const audios = await getAudioHistory(user.id);
+        if (cancelled) {
+          return;
+        }
+        if (audios.length === 0) {
+          setAudios([]);
+          return;
+        }
+        log.info(`Fetched audio history for user ${user.id}`, audios);
+        setAudios(audios);
+      } catch (error) {
+        log.error("Error fetching audio history:", error);
         setAudios([]);
-        return;
       }
-      const audios = await getAudioHistory(user.id);
-      if (cancelled) {
-        return;
-      }
-      if (audios.length === 0) {
-        setAudios([]);
-        return;
-      }
-      console.log("Fetched audio history for user", user.id, audios);
-      setAudios(audios);
     }
-
     initializeAudiosFetch();
     return () => {
       cancelled = true;
@@ -100,3 +105,4 @@ export default function TranscriptHistoryPage() {
     </>
   );
 }
+
