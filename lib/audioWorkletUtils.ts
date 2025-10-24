@@ -59,6 +59,9 @@ export async function mixAudioStreams(
   micStream: MediaStream | null,
 ): Promise<MediaStream> {
   try {
+    if (!systemStream && !micStream) {
+      throw new Error("No audio streams provided for mixing.");
+    }
     const destination = audioContext.createMediaStreamDestination();
 
     if (systemStream) {
