@@ -38,7 +38,7 @@ export function RealtimeRecorder({
 }: RealtimeRecorderProps) {
   const { user } = useAuth();
   const [showTranscription, setShowTranscription] = useState(false);
-  const [isStoping, setIsStopping] = useState(false);
+  const [isStopping, setIsStopping] = useState(false);
   const {
     transcriptWords,
     translateWords,
@@ -56,7 +56,7 @@ export function RealtimeRecorder({
   };
 
   const handleStopRecording = () => {
-    if (isStoping) {
+    if (isStopping) {
       log.warn("Already stopping the recording, please wait.");
       return;
     }
