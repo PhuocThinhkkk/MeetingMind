@@ -71,25 +71,17 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   const audioBufferRef = useRef<Uint8Array[]>([]);
   const totalByteLengthRef = useRef<number>(0);
 
+
   const updateStatus = useCallback(
     (newStatus: typeof status) => {
       log.info("status change!", newStatus);
       setStatus(newStatus);
-      onStatusChange?.(newStatus);
+      if (newStatus === "recording" && !sessionStartTime) {
+        setSessionStartTime(new Date());
+      }
     },
-    [onStatusChange],
+    [sessionStartTime],
   );
-
-  /**
-   * Set the session start time when the recorder status becomes "recording" and no start time exists.
-   *
-   * @param newStatus - The updated recorder status; if equal to `"recording"` and there is no current session start time, this function records the current time as the session start.
-   */
-  function onStatusChange(newStatus: string) {
-    if (newStatus === "recording" && !sessionStartTime) {
-      setSessionStartTime(new Date());
-    }
-  }
 
   const connectWebSocket = useCallback(() => {
     const wsUrl =
@@ -197,7 +189,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
       updateStatus("idle");
     }, 1000);
 
-    return blob
+    return blob;
   }, [updateStatus]);
 
   const clearTranscript = useCallback(() => {
@@ -377,3 +369,4 @@ export const useRecorder = (): RecorderContextType => {
   }
   return context;
 };
+
