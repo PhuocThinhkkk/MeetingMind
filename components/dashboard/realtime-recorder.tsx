@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect} from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { log } from "@/lib/logger";
@@ -49,13 +49,28 @@ export function RealtimeRecorder({
     isRecording,
     status,
   } = useRecorder();
+  const [duration, setDuration] = useState(0);
 
-  const handleStartRecording = async () => {
+  useEffect(() => {
+    if (!sessionStartTime || !isRecording) {
+      setDuration(0);
+      return;
+    }
+    const id = setInterval(() => {
+      setDuration(
+        Math.max(0, Date.now() / 1000 - sessionStartTime.getTime() / 1000),
+      );
+    }, 1000);
+    return () => clearInterval(id);
+  }, [sessionStartTime, isRecording]);
+
+  async function handleStartRecording() {
     await startRecording();
     setShowTranscription(true);
   };
 
-  const handleStopRecording = () => {
+  function handleStopRecording() {
+
     if (isStopping) {
       log.warn("Already stopping the recording, please wait.");
       return;
@@ -106,7 +121,7 @@ export function RealtimeRecorder({
     }
   }
 
-  const getStatusIcon = () => {
+  function getStatusIcon() {
     switch (status) {
       case "recording":
         return <Mic className="w-4 h-4" />;
@@ -120,14 +135,6 @@ export function RealtimeRecorder({
         return <MicOff className="w-4 h-4" />;
     }
   };
-  let duration = 0;
-  const now = Date.now() / 1000;
-  if (!sessionStartTime) {
-    duration = 0;
-  } else {
-    const startTimeSeconds = sessionStartTime.getTime() / 1000;
-    duration = now - startTimeSeconds;
-  }
 
   return (
     <>
