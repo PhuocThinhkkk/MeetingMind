@@ -71,7 +71,6 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   const audioBufferRef = useRef<Uint8Array[]>([]);
   const totalByteLengthRef = useRef<number>(0);
 
-
   const updateStatus = useCallback(
     (newStatus: typeof status) => {
       log.info("status change!", newStatus);
@@ -84,10 +83,15 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   );
 
   const connectWebSocket = useCallback(() => {
-    const wsUrl =
-      process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost:9090";
+    let wsDomain = process.env.NEXT_PUBLIC_WS_SERVER_URL || "localhost:9090";
+
+    wsDomain = wsDomain.replace(/^wss?:\/\//, "");
+
+    const protocol = location.protocol === "https:" ? "wss" : "ws";
+    const wsUrl = `${protocol}://${wsDomain}/ws`;
+
     try {
-      wsRef.current = new WebSocket(`${wsUrl}/ws`);
+      wsRef.current = new WebSocket(wsUrl);
 
       if (!wsRef?.current) {
         log.info("no ws current yet.");
@@ -369,4 +373,3 @@ export const useRecorder = (): RecorderContextType => {
   }
   return context;
 };
-
