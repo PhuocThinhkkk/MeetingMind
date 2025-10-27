@@ -1,15 +1,25 @@
-'use client';
+"use client";
 
 import { log } from "@/lib/logger";
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  ReactNode,
+} from "react";
+import { User, Session } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 
 interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
+  signUp: (
+    email: string,
+    password: string,
+    name: string,
+  ) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
@@ -19,7 +29,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
@@ -57,7 +67,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      if (event === 'SIGNED_UP' && session?.user) {
+      if (event === "SIGNED_IN" && session?.user) {
         await createUserProfile(session.user);
       }
     });
@@ -67,22 +77,31 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const createUserProfile = async (user: User) => {
     try {
-      const { error } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: user.id,
-            email: user.email!,
-            name: user.user_metadata?.name || '',
-            settings: {},
-          },
-        ]);
-      
+
+      const { data: existing } = await supabase
+        .from("users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (existing) {
+        return;
+      }
+
+      const { error } = await supabase.from("users").insert([
+        {
+          id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.name || "",
+          settings: {},
+        },
+      ]);
+
       if (error) {
-        log.error('Error creating user profile:', error);
+        log.error("Error creating user profile:", error);
       }
     } catch (error) {
-      log.error('Error creating user profile:', error);
+      log.error("Error creating user profile:", error);
     }
   };
 
