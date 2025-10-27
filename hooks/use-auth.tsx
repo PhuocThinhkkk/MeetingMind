@@ -1,17 +1,28 @@
-'use client';
+"use client";
 
 import { log } from "@/lib/logger";
-import { useState, useEffect, createContext, useContext, ReactNode } from 'react';
-import { User, Session } from '@supabase/supabase-js';
-import { supabase } from '@/lib/supabase';
+import {
+  useState,
+  useEffect,
+  createContext,
+  useContext,
+  ReactNode,
+} from "react";
+import { User, Session } from "@supabase/supabase-js";
+import { supabase } from "@/lib/supabase";
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
-  signUp: (email: string, password: string, name: string) => Promise<{ error: any }>;
+  signUp: (
+    email: string,
+    password: string,
+    name: string,
+  ) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -19,7 +30,7 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export function useAuth() {
   const context = useContext(AuthContext);
   if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider');
+    throw new Error("useAuth must be used within an AuthProvider");
   }
   return context;
 }
@@ -57,7 +68,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       setUser(session?.user ?? null);
       setLoading(false);
 
-      if (event === 'SIGNED_UP' && session?.user) {
+      if (event === "SIGNED_IN" && session?.user) {
         await createUserProfile(session.user);
       }
     });
@@ -67,26 +78,35 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const createUserProfile = async (user: User) => {
     try {
-      const { error } = await supabase
-        .from('users')
-        .insert([
-          {
-            id: user.id,
-            email: user.email!,
-            name: user.user_metadata?.name || '',
-            settings: {},
-          },
-        ]);
-      
+
+      const { data: existing } = await supabase
+        .from("users")
+        .select("id")
+        .eq("id", user.id)
+        .maybeSingle();
+
+      if (existing) {
+        return;
+      }
+
+      const { error } = await supabase.from("users").insert([
+        {
+          id: user.id,
+          email: user.email!,
+          name: user.user_metadata?.name || "",
+          settings: {},
+        },
+      ]);
+
       if (error) {
-        log.error('Error creating user profile:', error);
+        log.error("Error creating user profile:", error);
       }
     } catch (error) {
-      log.error('Error creating user profile:', error);
+      log.error("Error creating user profile:", error);
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  async function signUp(email: string, password: string, name: string) {
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -99,7 +119,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
+  async function signIn(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -107,7 +127,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error };
   };
 
-  const signOut = async () => {
+  async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+    });
+    return { error };
+  }
+
+  async function signOut() {
     await supabase.auth.signOut();
   };
 
@@ -118,6 +145,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signUp,
     signIn,
     signOut,
+    signInWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
