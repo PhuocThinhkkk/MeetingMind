@@ -1,7 +1,6 @@
 "use client";
 
-import { log } from "@/lib/logger";
-import { useState, useEffect } from "react";
+import { useState, } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -17,6 +16,7 @@ import {
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { Loader2, Mail, Lock, ArrowRight, Mic } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import GoogleSignInButton from "@/components/google-btn-sign-in";
 
 /**
  * Renders the sign-in page and manages the authentication flow.
@@ -32,14 +32,7 @@ export default function LoginPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const router = useRouter();
-  const { signIn, user } = useAuth();
-
-  useEffect(() => {
-    if (user) {
-      log.info("User already logged in, redirecting to dashboard", user);
-     router.push("/dashboard");
-    }
-  }, [user, router]);
+  const { signIn } = useAuth();
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -51,7 +44,7 @@ export default function LoginPage() {
       if (error) {
         setError(error.message);
       } else {
-        router.push("/dashboard");
+        router.push("/");
       }
     } catch (err) {
       setError("An unexpected error occurred");
@@ -124,7 +117,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                className="w-full hover:cursor-pointer bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
                 disabled={loading}
               >
                 {loading ? (
@@ -135,10 +128,12 @@ export default function LoginPage() {
                 {loading ? "Signing in..." : "Sign in"}
               </Button>
             </form>
+            <GoogleSignInButton />
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{" "}                <Link
+                Don't have an account?{" "}
+                <Link
                   href="/auth/signup"
                   className="text-blue-600 hover:text-blue-700 font-medium transition-colors hover:underline"
                 >

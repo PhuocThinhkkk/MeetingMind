@@ -11,7 +11,7 @@ import {
 import { User, Session } from "@supabase/supabase-js";
 import { supabase } from "@/lib/supabase";
 
-interface AuthContextType {
+export interface AuthContextType {
   user: User | null;
   session: Session | null;
   loading: boolean;
@@ -22,6 +22,7 @@ interface AuthContextType {
   ) => Promise<{ error: any }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
+  signInWithGoogle: () => Promise<{ error: any }>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -105,7 +106,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   };
 
-  const signUp = async (email: string, password: string, name: string) => {
+  async function signUp(email: string, password: string, name: string) {
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -118,7 +119,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error };
   };
 
-  const signIn = async (email: string, password: string) => {
+  async function signIn(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({
       email,
       password,
@@ -126,7 +127,14 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error };
   };
 
-  const signOut = async () => {
+  async function signInWithGoogle() {
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+    });
+    return { error };
+  }
+
+  async function signOut() {
     await supabase.auth.signOut();
   };
 
@@ -137,6 +145,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
     signUp,
     signIn,
     signOut,
+    signInWithGoogle,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
