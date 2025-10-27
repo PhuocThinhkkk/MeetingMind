@@ -1,19 +1,41 @@
-'use client';
+"use client";
 
-import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
-import { useAuth } from '@/hooks/use-auth';
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/hooks/use-auth";
 
 export default function Home() {
   const router = useRouter();
   const { user, loading } = useAuth();
 
   useEffect(() => {
+    const serverCheck = async () => {
+      try {
+
+        let wsDomain =
+          process.env.NEXT_PUBLIC_WEBSOCKET_URL || "localhost:9090";
+        wsDomain = wsDomain.replace(/^wss?:\/\//, "");
+        const protocol = location.protocol;
+        const wsUrl = `${protocol}://${wsDomain}`;
+
+        const res = await fetch(`${wsUrl}`);
+        if (!res.ok) {
+          throw new Error(`Server responded with status ${res.status}`);
+        }
+      } catch (error) {
+        console.error("Server is not reachable:", error);
+      }
+
+    };
+    serverCheck();
+  }, []);
+
+  useEffect(() => {
     if (!loading) {
       if (user) {
-        router.push('/home');
+        router.push("/home");
       } else {
-        router.push('/auth/login');
+        router.push("/auth/login");
       }
     }
   }, [user, loading, router]);
@@ -24,3 +46,4 @@ export default function Home() {
     </div>
   );
 }
+
