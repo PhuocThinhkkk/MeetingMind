@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { log } from "@/lib/logger";
@@ -67,10 +67,9 @@ export function RealtimeRecorder({
   async function handleStartRecording() {
     await startRecording();
     setShowTranscription(true);
-  };
+  }
 
   async function handleStopRecording() {
-
     if (isStopping) {
       log.warn("Already stopping the recording, please wait.");
       return;
@@ -92,7 +91,7 @@ export function RealtimeRecorder({
     await onTranscriptionComplete(audioBlob, transcription);
     setSessionStartTime(null);
     setIsStopping(false);
-  };
+  }
 
   /**
    * Selects the Tailwind CSS class string used for the status badge based on the current recorder status.
@@ -134,7 +133,7 @@ export function RealtimeRecorder({
       default:
         return <MicOff className="w-4 h-4" />;
     }
-  };
+  }
 
   return (
     <>
@@ -241,11 +240,19 @@ export function RealtimeRecorder({
           transcriptionWords={transcriptWords}
           isVisible={showTranscription}
           onExit={async () => {
-            await handleStopRecording();
+            try {
+              await handleStopRecording();
+            } catch (error) {
+              log.error("Error stopping recording on exit:", error);
+            }
             setShowTranscription(false);
           }}
-          onStopRecording={async() => {
-            await handleStopRecording();
+          onStopRecording={async () => {
+            try {
+              await handleStopRecording();
+            } catch (error) {
+              log.error("Error stopping recording:", error);
+            }
             setShowTranscription(false);
           }}
         />

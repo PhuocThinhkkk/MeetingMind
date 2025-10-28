@@ -17,8 +17,8 @@ interface RealTimeTranscriptionPageProps {
   transcriptionWords?: RealtimeTranscriptionWord[];
   translationWords?: string[];
   isVisible?: boolean;
-  onExit?: () => void;
-  onStopRecording?: () => void;
+  onExit?: () => void | Promise<void>;
+  onStopRecording?: () => void | Promise<void>;
 }
 
 /**
