@@ -84,6 +84,12 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
   const mimeType = blob.type;
   const fileSize = blob.size;
 
+  if (!mimeType || mimeType.length === 0) {
+    throw new Error("Blob must have a valid MIME type");
+  }
+  if (!fileSize || fileSize <= 0) {
+    throw new Error("Blob must have a valid file size");
+  }
   const filePath = `recordings/${userId}/${Date.now()}-${name}.wav`;
 
   const { error: uploadError } = await supabase.storage
@@ -131,6 +137,7 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
     log.error("DB insert error:", error);
     throw error;
   }
+  log.info("✅ Audio file saved:", data);
 
   return data as AudioFile;
 }

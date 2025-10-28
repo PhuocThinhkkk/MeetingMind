@@ -35,8 +35,8 @@ export default function RealTimeTranscriptionPage({
   transcriptionWords: words = [],
   translationWords = [],
   isVisible = true,
-  onExit = () => {},
-  onStopRecording = () => {},
+  onExit = async () => {},
+  onStopRecording = async () => {},
 }: RealTimeTranscriptionPageProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [highlightedWords, setHighlightedWords] = useState<Set<number>>(

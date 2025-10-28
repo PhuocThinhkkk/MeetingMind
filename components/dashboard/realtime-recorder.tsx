@@ -24,7 +24,7 @@ interface RealtimeRecorderProps {
   onTranscriptionComplete: (
     audioBlob: Blob,
     transcription: SaveTranscriptInput,
-  ) => void;
+  ) => Promise<void>;
 }
 
 /**
@@ -69,7 +69,7 @@ export function RealtimeRecorder({
     setShowTranscription(true);
   };
 
-  function handleStopRecording() {
+  async function handleStopRecording() {
 
     if (isStopping) {
       log.warn("Already stopping the recording, please wait.");
@@ -89,7 +89,7 @@ export function RealtimeRecorder({
     }
     log.info(`${audioBlob}`);
     const transcription = transcriptWords;
-    onTranscriptionComplete(audioBlob, transcription);
+    await onTranscriptionComplete(audioBlob, transcription);
     setSessionStartTime(null);
     setIsStopping(false);
   };
@@ -240,12 +240,12 @@ export function RealtimeRecorder({
           translationWords={translateWords}
           transcriptionWords={transcriptWords}
           isVisible={showTranscription}
-          onExit={() => {
-            handleStopRecording();
+          onExit={async () => {
+            await handleStopRecording();
             setShowTranscription(false);
           }}
-          onStopRecording={() => {
-            handleStopRecording();
+          onStopRecording={async() => {
+            await handleStopRecording();
             setShowTranscription(false);
           }}
         />
