@@ -63,13 +63,18 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
     const {
       data: { subscription },
-    } = supabase.auth.onAuthStateChange(async (event, session) => {
+    } = supabase.auth.onAuthStateChange((event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
       setLoading(false);
 
+      log.info("Auth event:", event);
+      log.info("Current session:", session);
+
       if (event === "SIGNED_IN" && session?.user) {
-        await createUserProfile(session.user);
+        setTimeout(async () => {
+          await createUserProfile(session.user);
+        }, 0);
       }
     });
 
@@ -78,7 +83,6 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   const createUserProfile = async (user: User) => {
     try {
-
       const { data: existing } = await supabase
         .from("users")
         .select("id")
@@ -117,7 +121,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       },
     });
     return { error };
-  };
+  }
 
   async function signIn(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({
@@ -125,7 +129,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
       password,
     });
     return { error };
-  };
+  }
 
   async function signInWithGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
@@ -136,7 +140,7 @@ export function AuthProvider({ children }: AuthProviderProps) {
 
   async function signOut() {
     await supabase.auth.signOut();
-  };
+  }
 
   const value = {
     user,
