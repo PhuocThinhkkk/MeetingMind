@@ -11,7 +11,8 @@ import {
   Sparkles,
   Languages,
 } from "lucide-react";
-import { RealtimeTranscriptionWord } from "@/types/transcription.ws"
+import { RealtimeTranscriptionWord } from "@/types/transcription.ws";
+import { FeatureLockWrapper } from "../coming-soon-wrapper";
 
 interface RealTimeTranscriptionPageProps {
   transcriptionWords?: RealtimeTranscriptionWord[];
@@ -156,39 +157,47 @@ export default function RealTimeTranscriptionPage({
         <div className="px-6 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 px-3 bg-transparent"
-              >
-                <Highlighter className="w-3 h-3 mr-1" />
-                Highlight
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 px-3 bg-transparent"
-              >
-                <FileText className="w-3 h-3 mr-1" />
-                Summary
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-8 px-3 bg-transparent"
-              >
-                <Calendar className="w-3 h-3 mr-1" />
-                Note to Calendar
-              </Button>
+              <FeatureLockWrapper>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 bg-transparent"
+                >
+                  <Highlighter className="w-3 h-3 mr-1" />
+                  Highlight
+                </Button>
+              </FeatureLockWrapper>
+              <FeatureLockWrapper>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 bg-transparent"
+                >
+                  <FileText className="w-3 h-3 mr-1" />
+                  Summary
+                </Button>
+              </FeatureLockWrapper>
+              <FeatureLockWrapper>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="h-8 px-3 bg-transparent"
+                >
+                  <Calendar className="w-3 h-3 mr-1" />
+                  Note to Calendar
+                </Button>
+              </FeatureLockWrapper>
             </div>
-            <Button
-              variant="default"
-              size="sm"
-              className="h-9 px-4 bg-blue-600 hover:bg-blue-700"
-            >
-              <Sparkles className="w-4 h-4 mr-2" />
-              Ask AI
-            </Button>
+            <FeatureLockWrapper>
+              <Button
+                variant="default"
+                size="sm"
+                className="h-9 px-4 bg-blue-600 hover:bg-blue-700"
+              >
+                <Sparkles className="w-4 h-4 mr-2" />
+                Ask AI
+              </Button>
+            </FeatureLockWrapper>
           </div>
         </div>
 
@@ -319,9 +328,9 @@ export default function RealTimeTranscriptionPage({
                   </div>
                 ) : (
                   <div className="text-lg leading-relaxed text-gray-800">
-                    { translationWords.length > 0 
+                    {translationWords.length > 0
                       ? translationWords.join(" ")
-                      : " Translating..." }
+                      : " Translating..."}
                   </div>
                 )}
               </div>

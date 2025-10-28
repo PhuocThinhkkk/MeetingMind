@@ -22,6 +22,7 @@ import { saveTranscript } from "@/lib/query/transcription-operations";
 import { saveTranscriptWords } from "@/lib/query/transcription-operations";
 import { SaveTranscriptInput } from "@/types/transcription.db";
 import { formatDuration } from "@/lib/utils";
+import { FeatureLockWrapper } from "@/components/coming-soon-wrapper";
 
 /**
  * Dashboard page for uploading, recording, and browsing audio meeting transcriptions.
@@ -149,7 +150,9 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <AudioUpload onUpload={handleFileUpload} />
+              <FeatureLockWrapper isLocked={true} >
+                <AudioUpload onUpload={handleFileUpload} />
+              </FeatureLockWrapper>
               <RealtimeRecorder
                 onTranscriptionComplete={handleRealtimeTranscriptionComplete}
               />
