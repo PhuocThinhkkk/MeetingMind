@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect} from "react";
+import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { log } from "@/lib/logger";
@@ -24,7 +24,7 @@ interface RealtimeRecorderProps {
   onTranscriptionComplete: (
     audioBlob: Blob,
     transcription: SaveTranscriptInput,
-  ) => void;
+  ) => Promise<void>;
 }
 
 /**
@@ -67,10 +67,9 @@ export function RealtimeRecorder({
   async function handleStartRecording() {
     await startRecording();
     setShowTranscription(true);
-  };
+  }
 
-  function handleStopRecording() {
-
+  async function handleStopRecording() {
     if (isStopping) {
       log.warn("Already stopping the recording, please wait.");
       return;
@@ -89,10 +88,10 @@ export function RealtimeRecorder({
     }
     log.info(`${audioBlob}`);
     const transcription = transcriptWords;
-    onTranscriptionComplete(audioBlob, transcription);
+    await onTranscriptionComplete(audioBlob, transcription);
     setSessionStartTime(null);
     setIsStopping(false);
-  };
+  }
 
   /**
    * Selects the Tailwind CSS class string used for the status badge based on the current recorder status.
@@ -134,7 +133,7 @@ export function RealtimeRecorder({
       default:
         return <MicOff className="w-4 h-4" />;
     }
-  };
+  }
 
   return (
     <>
@@ -240,12 +239,20 @@ export function RealtimeRecorder({
           translationWords={translateWords}
           transcriptionWords={transcriptWords}
           isVisible={showTranscription}
-          onExit={() => {
-            handleStopRecording();
+          onExit={async () => {
+            try {
+              await handleStopRecording();
+            } catch (error) {
+              log.error("Error stopping recording on exit:", error);
+            }
             setShowTranscription(false);
           }}
-          onStopRecording={() => {
-            handleStopRecording();
+          onStopRecording={async () => {
+            try {
+              await handleStopRecording();
+            } catch (error) {
+              log.error("Error stopping recording:", error);
+            }
             setShowTranscription(false);
           }}
         />

@@ -17,8 +17,8 @@ interface RealTimeTranscriptionPageProps {
   transcriptionWords?: RealtimeTranscriptionWord[];
   translationWords?: string[];
   isVisible?: boolean;
-  onExit?: () => void;
-  onStopRecording?: () => void;
+  onExit?: () => void | Promise<void>;
+  onStopRecording?: () => void | Promise<void>;
 }
 
 /**
@@ -35,8 +35,8 @@ export default function RealTimeTranscriptionPage({
   transcriptionWords: words = [],
   translationWords = [],
   isVisible = true,
-  onExit = () => {},
-  onStopRecording = () => {},
+  onExit = async () => {},
+  onStopRecording = async () => {},
 }: RealTimeTranscriptionPageProps) {
   const [isAnimating, setIsAnimating] = useState(false);
   const [highlightedWords, setHighlightedWords] = useState<Set<number>>(

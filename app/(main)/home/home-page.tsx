@@ -257,7 +257,13 @@ export async function handlingSaveAudioAndTranscript(
   }
 
   const audio = await saveAudioFile(blob, userId, "Unnamed");
+  if (audio) {
+    log.info("Audio file saved with ID:", audio);
+  }
   const transcription = await saveTranscript(audio.id, transcriptWords);
+  if (transcription) {
+    log.info("Transcript saved with ID:", transcription);
+  }
   const words = await saveTranscriptWords(transcription.id, transcriptWords);
   const completedAudioFile: AudioFile = {
     ...audio,
