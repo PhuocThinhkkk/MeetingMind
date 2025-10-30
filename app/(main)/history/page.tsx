@@ -1,6 +1,7 @@
 import { AudioProvider } from "@/components/context/audios-list-context";
 import TranscriptHistoryPage from "./transcript-history-page";
 import { Suspense } from "react";
+import SideBarHeader from "@/components/side-bar-header";
 
 /**
  * Render the History Recording page layout.
@@ -14,10 +15,8 @@ export default function HistoryPage() {
     <main className="min-h-screen w-full bg-background">
       <div className="container mx-auto px-4 py-6 max-w-6xl">
         {" "}
-        <div className="mb-6 border-b pb-3">
-          <h1 className="text-xl font-semibold text-foreground">
-            History Recording
-          </h1>
+        <div className="mb-6 pb-3">
+        <SideBarHeader header="Transcription History" />
         </div>
         <Suspense fallback={<div>Loading...</div>}>
           <AudioProvider>

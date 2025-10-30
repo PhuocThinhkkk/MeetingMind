@@ -17,8 +17,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from "@/components/ui/sidebar";
-import { Lock } from "lucide-react";
-import { Home, Calendar, History, Sparkles } from "lucide-react";
+import { Home, Calendar, History, AudioLines } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { FeatureLockWrapper } from "./coming-soon-wrapper";
 
@@ -95,7 +94,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="flex items-center gap-3 px-2 py-4">
           <Avatar className="h-10 w-10">
             <AvatarImage
-              src={user?.avatar || "/placeholder.svg"}
+              src={auth?.user?.user_metadata?.avatar_url || "/placeholder.svg"}
               alt={user?.name}
             />
             <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
@@ -109,7 +108,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {user?.name}
             </span>
             <span className="text-xs text-sidebar-foreground/70">
-              {user?.email}
+              {!user?.email ?
+                  "" :
+                  user.email.length < 26
+                ? user.email
+                : user.email?.slice(0, 22) + "..."}
             </span>
           </div>
         </div>
@@ -122,16 +125,16 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {navItems.map((item) =>
                 item.url === "#" ? (
                   <SidebarMenuItem key={item.title}>
-                  <FeatureLockWrapper>
-                    <SidebarMenuButton
-                      asChild
-                      className="h-12 px-3 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground "
-                    >
-                      <a className="flex items-center gap-3">
-                        <item.icon className="h-5 w-5" />
-                        <span className="font-medium">{item.title}</span>
-                      </a>
-                    </SidebarMenuButton>
+                    <FeatureLockWrapper>
+                      <SidebarMenuButton
+                        asChild
+                        className="h-12 px-3 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground "
+                      >
+                        <a className="flex items-center gap-3">
+                          <item.icon className="h-5 w-5" />
+                          <span className="font-medium">{item.title}</span>
+                        </a>
+                      </SidebarMenuButton>
                     </FeatureLockWrapper>
                   </SidebarMenuItem>
                 ) : (
@@ -156,14 +159,14 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarFooter className="border-t border-sidebar-border">
         <div className="flex items-center gap-3 px-4 py-4">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-purple-500 to-pink-500">
-            <Sparkles className="h-4 w-4 text-white" />
+          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-blue-600">
+            <AudioLines className="h-4 w-4 text-white" />
           </div>
           <div className="flex flex-col">
             <span className="text-sm font-semibold text-sidebar-foreground">
-              MyProduct
+              MeetingMind
             </span>
-            <span className="text-xs text-sidebar-foreground/70">v2.0.1</span>
+            <span className="text-xs text-sidebar-foreground/70">v1.0</span>
           </div>
         </div>
       </SidebarFooter>
@@ -172,4 +175,3 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
     </Sidebar>
   );
 }
-

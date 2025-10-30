@@ -150,7 +150,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <FeatureLockWrapper isLocked={true} >
+              <FeatureLockWrapper isLocked={true}>
                 <AudioUpload onUpload={handleFileUpload} />
               </FeatureLockWrapper>
               <RealtimeRecorder
@@ -179,7 +179,7 @@ export default function HomePage() {
                   </div>
                 ) : (
                   <div className="space-y-4">
-                    {audioFiles.map((file, index) => (
+                    {audioFiles.slice(0, 5).map((file, index) => (
                       <div
                         key={file.id}
                         className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer animate-fade-in hover-lift"
