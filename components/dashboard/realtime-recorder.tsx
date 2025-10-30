@@ -186,7 +186,7 @@ export function RealtimeRecorder({
                   <Button
                     onClick={handleStartRecording}
                     disabled={status === "connecting"}
-                    className="w-full bg-red-600 hover:bg-red-700 transition-all hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                    className="hover:cursor-pointer w-full bg-red-600 hover:bg-red-700 transition-all hover:scale-[1.02] shadow-lg hover:shadow-xl"
                   >
                     {status === "connecting" ? (
                       <>

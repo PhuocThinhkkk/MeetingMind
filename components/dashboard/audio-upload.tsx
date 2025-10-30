@@ -71,7 +71,7 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
   };
 
   return (
-    <Card className={`group hover:shadow-lg transition-all duration-300 border-dashed border-2 animate-slide-up hover-lift ${
+    <Card className={`h-full group hover:shadow-lg transition-all duration-300 border-dashed border-2 animate-slide-up hover-lift ${
       dragActive ? 'border-blue-400 bg-blue-50' : 'border-gray-300 hover:border-blue-400'
     }`}>
       <CardContent className="p-8">

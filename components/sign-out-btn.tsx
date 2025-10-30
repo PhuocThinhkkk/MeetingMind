@@ -19,7 +19,7 @@ export function SignOutBtn() {
     router.push("/auth/login");
   }
   return (
-    <Button variant="ghost" size="sm" onClick={handleSignOut}>
+    <Button className="hover:cursor-pointer" variant="ghost" size="sm" onClick={handleSignOut}>
       <LogOut className="w-4 h-4 mr-2" />
       Sign Out
     </Button>
