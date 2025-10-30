@@ -54,12 +54,7 @@ export default function Home() {
                   title=""
                   className="flex rounded outline-none focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
                 >
-                  {/* Logo Image 
-                  <img
-                    className="w-auto h-8"
-                    alt=""
-                  />
-                    */}
+                  <span className="text-3xl italic font-bold w-auto h-8">MeetingMind</span>
                 </a>
               </div>
 
@@ -115,7 +110,7 @@ export default function Home() {
                 <div className="w-px h-5 bg-gray-300"></div>
 
                 <a
-                  href="#"
+                  href="/auth/login"
                   title=""
                   className="text-base font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
                 >
@@ -124,7 +119,7 @@ export default function Home() {
                 </a>
 
                 <a
-                  href="#"
+                  href="/auth/signup"
                   title=""
                   className="px-5 py-2 text-base font-semibold leading-7 text-gray-900 transition-all duration-200 bg-transparent border border-gray-900 rounded-xl font-pj focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 hover:bg-gray-900 hover:text-white focus:bg-gray-900 focus:text-white"
                   role="button"
@@ -178,14 +173,14 @@ export default function Home() {
 
                 <div className="mt-8 sm:flex sm:items-center sm:justify-center lg:justify-start sm:space-x-5 lg:mt-12">
                   <a
-                    href="#"
+                    href="/home"
                     title=""
-                    className="inline-flex items-center px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-gray-900 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 font-pj justif-center hover:bg-gray-600"
+                    className="inline-flex items-center px-8 py-4 text-lg font-bold text-white transition-all duration-200 bg-blue-600 border border-transparent rounded-xl focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-900 font-pj justif-center hover:bg-blue-800"
                     role="button"
                   >
-                    Get feedback
+                    Get started free
                   </a>
-
+                  {/*
                   <a
                     href="#"
                     title=""
@@ -208,13 +203,14 @@ export default function Home() {
                     </svg>
                     Download iOS App
                   </a>
+                  */}
                 </div>
               </div>
 
               <div className="xl:col-span-3">
                 <img
                   className="w-full mx-auto scale-110"
-                  src="https://d33wubrfki0l68.cloudfront.net/29c501c64b21014b3f2e225abe02fe31fd8f3a5c/f866d/images/hero/3/illustration.png"
+                  src="images/mockup-image.png"
                   alt=""
                 />
               </div>
