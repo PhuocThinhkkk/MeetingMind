@@ -20,15 +20,16 @@ export interface TranscriptionData {
   file_url?: string;
 }
 
-export type RealtimeTranscriptionWord= {
+export type RealtimeTranscriptionWord = {
   text: string;
   confidence: number;
   start: number;
   end: number;
   word_is_final: boolean;
-}
+};
 
-export interface RealtimeTranscriptChunk{
+export interface RealtimeTranscriptResponse{
+  type: "transcript";
   isEndOfTurn: boolean;
   words: RealtimeTranscriptionWord[];
 }
