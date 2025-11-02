@@ -95,7 +95,7 @@ type AssemblyResponseWord struct {
 }
 ```
 
-### AssemblyRessponseTurn
+### AssemblyResponseTurn
 ```go
 type AssemblyRessponseTurn struct {
     TurnOrder           int                    `json:"turn_order"`
