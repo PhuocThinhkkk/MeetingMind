@@ -91,8 +91,7 @@ Sent when the transcription session starts.
 ```typescript
 {
   "type": "translate",
-  "language": string,
-  "text": string
+  "words": string
 }
 ```
 
