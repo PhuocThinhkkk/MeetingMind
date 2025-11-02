@@ -14,7 +14,7 @@
    ```
 2. Create a `.env` file in the root directory: 
    ```env
-    NEXT_PUBLIC_SOCKET_SERVER_URL=http://localhost:9090
+    NEXT_PUBLIC_WS_SERVER_URL=http://localhost:9090
     NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
     NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key
     ```
@@ -46,7 +46,7 @@
         docker run --env-file .env -p 9090:9090 transcript-socket-server
         ```
 6. Migrate database
-    - Use Supabase CLI to set up the database schema as per the provided SQL scripts in the `database/` directory.
+    - Use Supabase CLI to set up the database schema as per the provided SQL scripts in the `supabase/migrations/` directory.
     ```bash
     npx supabase link --project-ref your_project_ref
     npx supabase db push

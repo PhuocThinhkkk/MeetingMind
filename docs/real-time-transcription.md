@@ -32,7 +32,7 @@ Why 1800 bytes?
 ---
 
 ## 2. Sending audio chunks on the Client Side
-[components/context/real-time-transcription.ts](./components/context/real-time-transcription.ts)
+[components/context/realtime-recorder-context.tsx](../components/context/realtime-recorder-context.tsx)
 
 1. The browser records audio chunks via `AudioWorklet`.
 2. When we call `startTranscription()`, it gonna start connecting to the Websocket server, the server then send us a begin msg if it was good
@@ -41,7 +41,7 @@ Why 1800 bytes?
 5. The `handleWorkletSendingMessage` function will format the audio chunks into int16 PCM and send the chunks if it was greater than 1800 bytes.
 - first checking if the websocket server was good and the AssemblyAI ( The ws server will send us an begin msg on the `handleWorkletReceivingMessage` and then we can update the state to know if it was ready )
 -  use `resampleTo16kHz` function and `float32ToInt16` function to format the audio chunks.
--  convert it to Uint8Array (for beter binary transmission over WebSocket).
+-  convert it to Uint8Array (for better binary transmission over WebSocket).
 ````
 const chunk = new Uint8Array(int16Array.buffer)
 // pcmData = Int16Array [32768, 100, 2500]
@@ -67,12 +67,12 @@ merged = [
 ---
 ## 3. Go server for handling sending audio to AssemblyAI
 
-Will implement latter
+Will implement later
 
 ---
 ## 4. Receiving data on Client from Go ws server
 
-[types/transcription.ws.ts](./types/transcription.ws.ts)
+[types/transcription.ws.ts](../types/transcription.ws.ts)
 ````ts
 export interface RealtimeBeginMsg {
   type: "ready";
