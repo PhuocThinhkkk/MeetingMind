@@ -67,9 +67,10 @@ merged = [
 ---
 ## 3. Go server for handling sending audio to AssemblyAI
 
+Will implement latter
 
 ---
-## 4. Receiving data from Go ws server
+## 4. Receiving data on Client from Go ws server
 
 [types/transcription.ws.ts](./types/transcription.ws.ts)
 ````ts
@@ -96,7 +97,7 @@ export type RealtimeTranscriptionWord= {
   word_is_final: boolean;
 }
 ````
-in `RealtimeTranscriptResponse` : `isEndOfTurn = true` if the current sentence is fully done
+in `RealtimeTranscriptResponse` : `isEndOfTurn = true` if the current sentence is fully done\
 in `RealtimeTranscriptionWord`:
 - `word_is_final=true` if the word is fully transcript
 - `start` is the start time of that word (ms)

@@ -10,7 +10,7 @@
 ## Steps
 1. Install dependencies
    ```bash
-   npm install --legacy-peer-deps
+   npm ci 
    ```
 2. Create a `.env` file in the root directory: 
    ```env
