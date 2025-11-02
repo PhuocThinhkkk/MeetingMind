@@ -18,7 +18,7 @@ import {
 
 import {
   RealtimeTranscriptionWord,
-  RealtimeTranscriptChunk,
+  RealtimeTranscriptResponse,
   RealtimeTranslateResponse,
 } from "@/types/transcription.ws";
 
@@ -98,7 +98,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
         return;
       }
 
-      handleWorkletRecivedMessages();
+      handleWorkletReceivingMessages();
 
       wsRef.current.onopen = () => {
         log.info("WebSocket connected");
@@ -260,7 +260,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
    * This function has the side effect of updating `isAssemblyReady.current`, `transcriptWords`,
    * and `translateWords` and requires `wsRef.current` to be defined before calling.
    */
-  function handleWorkletRecivedMessages() {
+  function handleWorkletReceivingMessages() {
     if (!wsRef.current) {
       log.info("ws has been closed already");
       return;
@@ -273,7 +273,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
           log.info("Assembly is ready!");
           isAssemblyReady.current = true;
         } else if (res.type === TRANSCRIPT_RESPONSE) {
-          const data: RealtimeTranscriptChunk = res;
+          const data: RealtimeTranscriptResponse = res;
           if (data.words.length === 0) {
             log.warn("No words in transcription response");
             return;
