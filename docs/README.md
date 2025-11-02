@@ -10,6 +10,5 @@ Welcome to the MeetingMind developer documentation.
 - [Database & Supabase](./database.md)
 - [Real-time Transcription](./real-time-transcription.md)
 - [API Reference](./api.md)
-- [Deployment Guide](./deployment.md)
 - [Troubleshooting](./troubleshooting.md)
 

@@ -43,4 +43,12 @@ MeetingMind/
    - Interfaces with AssemblyAI for transcription services.
    - Sends transcribed text back to the Next.js app via WebSocket.
 
+## Architecture
+
+```
+
+Client (Browser) (binary chunk)→     Go Server     (binary chunk)→   AssemblyAI WebSocket
+          <-(transcript words)      (process a bit)         <-(transcript words)   
+  
+```
 
