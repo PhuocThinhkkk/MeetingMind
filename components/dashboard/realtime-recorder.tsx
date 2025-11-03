@@ -1,5 +1,3 @@
-"use client";
-
 import { useState, useEffect } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -19,6 +17,8 @@ import { useRecorder } from "@/components/context/realtime-recorder-context";
 import { SaveTranscriptInput } from "@/types/transcription.db";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDuration } from "@/lib/utils";
+import { useToast } from "@/hooks/use-toast";
+import { LoadingOverlay } from "../loading-overlay";
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (
@@ -70,27 +70,33 @@ export function RealtimeRecorder({
   }
 
   async function handleStopRecording() {
-    if (isStopping) {
-      log.warn("Already stopping the recording, please wait.");
-      return;
-    }
-    setIsStopping(true);
-    if (!user) {
-      log.error("User not authenticated");
+    try {
+      if (isStopping) {
+        log.warn("Already stopping the recording, please wait.");
+        return;
+      }
+      setIsStopping(true);
+      if (!user) {
+        log.error("User not authenticated");
+        setIsStopping(false);
+        return;
+      }
+      const audioBlob = stopRecording();
+      if (!audioBlob) {
+        log.error("No audio blob available on stop recording");
+        setIsStopping(false);
+        return;
+      }
+      log.info(`${audioBlob}`);
+      const transcription = transcriptWords;
+      await onTranscriptionComplete(audioBlob, transcription);
+      setSessionStartTime(null);
       setIsStopping(false);
-      return;
+    } catch (e) {
+        log.error(`${e}`)
+        setIsStopping(false)
     }
-    const audioBlob = stopRecording();
-    if (!audioBlob) {
-      log.error("No audio blob available on stop recording");
-      setIsStopping(false);
-      return;
-    }
-    log.info(`${audioBlob}`);
-    const transcription = transcriptWords;
-    await onTranscriptionComplete(audioBlob, transcription);
-    setSessionStartTime(null);
-    setIsStopping(false);
+    setShowTranscription(false);
   }
 
   /**
@@ -239,24 +245,11 @@ export function RealtimeRecorder({
           translationWords={translateWords}
           transcriptionWords={transcriptWords}
           isVisible={showTranscription}
-          onExit={async () => {
-            try {
-              await handleStopRecording();
-            } catch (error) {
-              log.error("Error stopping recording on exit:", error);
-            }
-            setShowTranscription(false);
-          }}
-          onStopRecording={async () => {
-            try {
-              await handleStopRecording();
-            } catch (error) {
-              log.error("Error stopping recording:", error);
-            }
-            setShowTranscription(false);
-          }}
+          onExit={handleStopRecording}
+          onStopRecording={handleStopRecording}
         />
       </Card>
+      <LoadingOverlay isLoading={isStopping} message="We are uploading your audio pls wait for a bit." />
     </>
   );
 }
