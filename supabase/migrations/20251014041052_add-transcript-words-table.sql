@@ -2,10 +2,6 @@
 -- 1. Create transcription_words Table
 -- =============================================
 
-drop policy if exists "Users can read their own transcription words" on transcription_words;
-drop policy if exists "Users can insert their own transcription words" on transcription_words;
-drop policy if exists "Users can update their own transcription words" on transcription_words;
-drop policy if exists "Users can delete their own transcription words" on transcription_words;
 drop table if exists transcription_words cascade;
 
 create table if not exists transcription_words (
@@ -22,6 +18,10 @@ create table if not exists transcription_words (
 -- 2. Enable Row Level Security
 -- =============================================
 alter table transcription_words enable row level security;
+drop policy if exists "Users can read their own transcription words" on transcription_words;
+drop policy if exists "Users can insert their own transcription words" on transcription_words;
+drop policy if exists "Users can update their own transcription words" on transcription_words;
+drop policy if exists "Users can delete their own transcription words" on transcription_words;
 
 -- =============================================
 -- 3. Create RLS Policies
