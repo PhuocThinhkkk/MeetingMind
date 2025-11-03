@@ -1,6 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
+import { createPortal } from "react-dom"
 import { cn } from "@/lib/utils"
 
 interface LoadingOverlayProps {
@@ -10,6 +11,11 @@ interface LoadingOverlayProps {
 
 export function LoadingOverlay({ isLoading, message }: LoadingOverlayProps) {
   const [show, setShow] = useState(isLoading)
+  const [mounted, setMounted] = useState(false)
+
+  useEffect(() => {
+    setMounted(true)
+  }, [])
 
   useEffect(() => {
     if (isLoading) {
@@ -21,9 +27,9 @@ export function LoadingOverlay({ isLoading, message }: LoadingOverlayProps) {
     }
   }, [isLoading])
 
-  if (!show) return null
+  if (!mounted || !show) return null
 
-  return (
+  return createPortal(
     <>
       <div
         className={cn(
@@ -49,7 +55,8 @@ export function LoadingOverlay({ isLoading, message }: LoadingOverlayProps) {
           <p className="text-base text-slate-700 font-medium text-balance">{message}</p>
         </div>
       </div>
-    </>
+    </>,
+    document.body,
   )
 }
 
