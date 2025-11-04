@@ -33,14 +33,14 @@ export function LoadingOverlay({ isLoading, message }: LoadingOverlayProps) {
     <>
       <div
         className={cn(
-          "fixed inset-0 bg-white/80 backdrop-blur-sm z-40 transition-opacity duration-300",
+          "fixed inset-0 bg-white/80 backdrop-blur-sm z-[9998] transition-opacity duration-300",
           isLoading ? "opacity-100" : "opacity-0",
         )}
       />
 
       <div
         className={cn(
-          "fixed inset-0 flex items-center justify-center z-50 transition-opacity duration-300",
+          "fixed inset-0 flex items-center justify-center z-[9999] transition-opacity duration-300",
           isLoading ? "opacity-100" : "opacity-0",
         )}
       >
