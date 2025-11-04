@@ -90,9 +90,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
         .maybeSingle();
 
       if (existing) {
+        log.info("User already signed up");
         return;
       }
 
+      log.info("New user")
       const { error } = await supabase.from("users").insert([
         {
           id: user.id,
