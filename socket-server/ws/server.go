@@ -9,12 +9,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var testing = true
+var testing = os.Getenv("IS_USING_CLIENT_TEST")
 
 var upgrader = websocket.Upgrader{
 
 	CheckOrigin: func(r *http.Request) bool {
-		if testing {
+		if testing == "true"{
 			return true
 		}
 		frontendUrl := os.Getenv("FRONTEND_URL")

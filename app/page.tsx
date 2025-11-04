@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
+import { log } from "@/lib/logger"
 
 export default function Home() {
   const router = useRouter();
@@ -12,11 +13,12 @@ export default function Home() {
     const serverCheck = async () => {
       try {
         let wsDomain =
-          process.env.NEXT_PUBLIC_WEBSOCKET_URL || "localhost:9090";
+          process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost:9090";
         wsDomain = wsDomain.replace(/^wss?:\/\//, "");
-        const protocol = location.protocol;
+        const protocol = location.protocol.replace(":", ""); 
         const wsUrl = `${protocol}://${wsDomain}`;
 
+        log.info(wsUrl);
         const res = await fetch(`${wsUrl}`);
         if (!res.ok) {
           throw new Error(`Server responded with status ${res.status}`);
@@ -54,7 +56,9 @@ export default function Home() {
                   title=""
                   className="flex rounded outline-none focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
                 >
-                  <span className="text-3xl italic font-bold w-auto h-8">MeetingMind</span>
+                  <span className="text-3xl italic font-bold w-auto h-8">
+                    MeetingMind
+                  </span>
                 </a>
               </div>
 
