@@ -17,7 +17,7 @@ import { useRecorder } from "@/components/context/realtime-recorder-context";
 import { SaveTranscriptInput } from "@/types/transcription.db";
 import { useAuth } from "@/hooks/use-auth";
 import { formatDuration } from "@/lib/utils";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { LoadingOverlay } from "../loading-overlay";
 
 interface RealtimeRecorderProps {
@@ -39,6 +39,7 @@ export function RealtimeRecorder({
   const { user } = useAuth();
   const [showTranscription, setShowTranscription] = useState(false);
   const [isStopping, setIsStopping] = useState(false);
+  const [audioBlobBackUp, setAudioBlobBackUp] = useState<Blob | null>(null);
   const {
     transcriptWords,
     translateWords,
@@ -50,6 +51,7 @@ export function RealtimeRecorder({
     status,
   } = useRecorder();
   const [duration, setDuration] = useState(0);
+  const [isRetry, setIsRetry] = useState(false);
 
   useEffect(() => {
     if (!sessionStartTime || !isRecording) {
@@ -81,23 +83,73 @@ export function RealtimeRecorder({
         setIsStopping(false);
         return;
       }
-      const audioBlob = stopRecording();
+
+      let audioBlob = stopRecording();
+      if (audioBlob) {
+        setAudioBlobBackUp(audioBlob);
+      }
+
       if (!audioBlob) {
         log.error("No audio blob available on stop recording");
         setIsStopping(false);
         return;
       }
+
       log.info(`${audioBlob}`);
       const transcription = transcriptWords;
       await onTranscriptionComplete(audioBlob, transcription);
+      handleCloseAll()
+      toast.success("Upload your audio successfully, you can check out the history page")
+    } catch (e) {
+      log.error(`${e}`);
+      toast.error("Can not upload your audio");
+      setIsStopping(false);
+      setIsRetry(true);
+    }
+  }
+
+  function handleCloseAll(){
+      setIsRetry(false)
+      setAudioBlobBackUp(null)
+      setShowTranscription(false)
       setSessionStartTime(null);
       setIsStopping(false);
-    } catch (e) {
-        log.error(`${e}`)
-        setIsStopping(false)
-    }
-    setShowTranscription(false);
+      setShowTranscription(false);
   }
+
+  async function handleRetry() {
+    try {
+      if (isStopping) {
+        log.warn("Already stopping the recording, please wait.");
+        return;
+      }
+      setIsStopping(true);
+      if (!user) {
+        log.error("User not authenticated");
+        setIsStopping(false);
+        return;
+      }
+
+      if (!audioBlobBackUp) {
+        log.error("No audio blob available on stop recording");
+        setIsRetry(true);
+        setIsStopping(false)
+        return;
+      }
+
+      log.info(`${audioBlobBackUp}`);
+      const transcription = transcriptWords;
+      await onTranscriptionComplete(audioBlobBackUp, transcription);
+      handleCloseAll()
+      toast.success("Upload your audio successfully, you can check out the history page")
+    } catch (e) {
+      log.error(`${e}`);
+      toast.error("Can not upload your audio");
+      setIsStopping(false);
+      setIsRetry(true);
+    }
+  }
+
 
   /**
    * Selects the Tailwind CSS class string used for the status badge based on the current recorder status.
@@ -249,7 +301,14 @@ export function RealtimeRecorder({
           onStopRecording={handleStopRecording}
         />
       </Card>
-      <LoadingOverlay isLoading={isStopping} message="We are uploading your audio pls wait for a bit." />
+      <LoadingOverlay
+        isLoading={isStopping}
+        message="We are uploading your audio pls wait for a bit."
+        isRetry={isRetry}
+        retryMessage="There was something wrong when uploading your audio, please try again."
+        onRetry={handleRetry}
+        onDismiss={handleCloseAll}
+      />
     </>
   );
 }

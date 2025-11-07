@@ -23,6 +23,7 @@ import { saveTranscriptWords } from "@/lib/query/transcription-operations";
 import { SaveTranscriptInput } from "@/types/transcription.db";
 import { formatDuration } from "@/lib/utils";
 import { FeatureLockWrapper } from "@/components/coming-soon-wrapper";
+import { toast } from "sonner";
 
 /**
  * Dashboard page for uploading, recording, and browsing audio meeting transcriptions.
@@ -79,6 +80,7 @@ export default function HomePage() {
 
   /**
    * Saves a completed real-time transcription and prepends the resulting audio record to the recent meetings list.
+   * Will throw error if the query failed
    *
    * @param blob - The recorded audio Blob to persist.
    * @param transcript - The transcript data (words and metadata) to save alongside the audio.
@@ -89,20 +91,20 @@ export default function HomePage() {
   ) {
     if (!user) {
       log.info("User not authenticated. Cannot save transcription.");
+      toast.error("User not authenticated. Cannot save transcription.");
       return;
     }
-    try {
-      const data = await handlingSaveAudioAndTranscript(
-        user.id,
-        blob,
-        transcript,
-      );
-      if (!data) return;
-      setAudioFiles((prev) => [data, ...prev]);
-      setSelectedTranscription(data);
-    } catch (error) {
-      log.error("Error uploading file:", error);
+    const data = await handlingSaveAudioAndTranscript(
+      user.id,
+      blob,
+      transcript,
+    );
+    if (!data) {
+      log.warn("No data");
+      return;
     }
+    setAudioFiles((prev) => [data, ...prev]);
+    setSelectedTranscription(data);
   }
 
   const handleFileTranscriptionView = (file: AudioFile) => {
@@ -240,7 +242,7 @@ export default function HomePage() {
  * @returns The saved AudioFile with its `transcript` property populated and including `words`
  * @throws If `userId` is falsy
  * @throws If `blob` is falsy
- * @throws If `transcriptWords` is falsy or an empty array
+ * @log a warning If `transcriptWords` is falsy or an empty array
  */
 export async function handlingSaveAudioAndTranscript(
   userId: string,
@@ -256,7 +258,7 @@ export async function handlingSaveAudioAndTranscript(
   }
 
   if (!transcriptWords || transcriptWords.length === 0) {
-    throw new Error("There is nothing in transcription");
+    log.warn("There is nothing in transcription");
   }
 
   const audio = await saveAudioFile(blob, userId, "Unnamed");
