@@ -44,10 +44,10 @@ The app is live and available to try <a href="https://meeting-mind-nu.vercel.app
 
 
 * [![Next][Next.js]][Next-url]
-* [![Go][Golang]][Go-url]
+* [![Go][Go]][Go-url]
 * [![Supabase][Supabase]][Supabase-url]
 
 
 ## Getting Started
-    Reading the setup document right [here](./docs/setup.md)
+Reading the setup document right [here](./docs/setup.md)
 
