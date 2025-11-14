@@ -14,22 +14,28 @@ import { AudioFile } from "@/types/transcription.db";
  * @returns An array of `AudioFile` records where each `transcript` is the first related transcript object containing a `words` array
  */
 export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
+  // Check if Supabase is configured
+  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+    console.error("❌ Supabase not configured! Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local");
+    return [];
+  }
+
+  // Fetch audio files with transcripts only (no nested words)
   const { data, error } = await supabase
     .from("audio_files")
-    .select(
-      `
-      *,
-      transcript:transcripts(
-        *,
-        words:transcription_words!fk_transcript(*)
-      )
-    `,
-    )
+    .select("*, transcripts(*)")
     .eq("user_id", userId)
     .order("created_at", { ascending: false });
 
   if (error) {
-    log.error("Error fetching audio history:", error);
+    console.error("Supabase Error Details:", JSON.stringify(error, null, 2));
+    log.error("Error fetching audio history from Supabase:", {
+      error,
+      message: error.message,
+      details: error.details,
+      hint: error.hint,
+      code: error.code,
+    });
     throw error;
   }
 
@@ -39,30 +45,28 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
   }
 
   try {
-    const audiosFormatted = data.map((audio) => {
-      let transcript: any = { words: [] };
+    // For each audio file, fetch the transcript words separately
+    const audiosWithWords = await Promise.all(
+      data.map(async (audio) => {
+        let transcript: any = { words: [] };
 
-      if (
-        audio.transcript &&
-        audio.transcript.length > 0 &&
-        audio.transcript[0]
-      ) {
-        transcript = audio.transcript[0];
+        if (audio.transcripts && audio.transcripts.length > 0) {
+          transcript = audio.transcripts[0];
 
-        if (!transcript.words) {
-          transcript.words = [];
+          // Fetch words for this transcript separately
+          const { data: words } = await supabase
+            .from("transcription_words")
+            .select("*")
+            .eq("transcript_id", transcript.id);
+
+          transcript.words = words || [];
         }
-      }
 
-      const formattedTranscript = {
-        ...transcript,
-        words: transcript.words,
-      };
+        return { ...audio, transcript };
+      })
+    );
 
-      return { ...audio, transcript: formattedTranscript };
-    }) as AudioFile[];
-
-    return audiosFormatted;
+    return audiosWithWords as AudioFile[];
   } catch (e) {
     throw new Error(`can not format audio: ${e}`);
   }

@@ -23,7 +23,7 @@ import { saveTranscriptWords } from "@/lib/query/transcription-operations";
 import { SaveTranscriptInput } from "@/types/transcription.db";
 import { formatDuration } from "@/lib/utils";
 import { FeatureLockWrapper } from "@/components/coming-soon-wrapper";
-import { toast } from "sonner";
+import { TranscriptionView } from "@/components/dashboard/transcription-view";
 
 /**
  * Dashboard page for uploading, recording, and browsing audio meeting transcriptions.
@@ -39,6 +39,7 @@ export default function HomePage() {
   const [selectedTranscription, setSelectedTranscription] =
     useState<AudioFile | null>(null);
   const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -59,28 +60,65 @@ export default function HomePage() {
       setAudioFiles(data || []);
     } catch (error) {
       log.error("Error fetching audio files:", error);
+      // Set empty array on error to allow the app to continue
+      setAudioFiles([]);
     } finally {
       setLoading(false);
     }
   };
 
   /**
-   * Initiates the file upload flow for the current authenticated user.
+   * Handles file upload to Supabase storage.
    *
-   * If there is no authenticated user, the function exits without performing any action.
-   * Any errors raised during the upload process are caught and logged.
+   * @param file - The audio file to upload
    */
-  async function handleFileUpload() {
-    if (!user) return;
+  async function handleFileUpload(file: File) {
+    if (!user) {
+      log.error("User not authenticated");
+      return;
+    }
+
+    setUploading(true);
     try {
+      log.info("Starting file upload:", file.name);
+
+      // Convert File to Blob
+      const blob = new Blob([file], { type: file.type });
+
+      // Create placeholder transcript
+      const transcriptData = createPlaceholderTranscript();
+
+      // Sanitize filename: remove extension and invalid characters
+      const sanitizedName = file.name
+        .replace(/\.[^/.]+$/, "") // Remove file extension
+        .replace(/['"]/g, "") // Remove quotes
+        .replace(/[^\w\s-]/g, "") // Remove special characters except spaces and hyphens
+        .trim();
+
+      // Save audio and transcript
+      const audioFile = await handlingSaveAudioAndTranscript(
+        user.id,
+        blob,
+        transcriptData,
+        sanitizedName || "Untitled"
+      );
+
+      if (audioFile) {
+        // Add to the list
+        setAudioFiles((prev) => [audioFile, ...prev]);
+        // Set as selected
+        setSelectedTranscription(audioFile);
+        log.info("Audio file saved successfully");
+      }
     } catch (error) {
       log.error("Error uploading file:", error);
+    } finally {
+      setUploading(false);
     }
   }
 
   /**
    * Saves a completed real-time transcription and prepends the resulting audio record to the recent meetings list.
-   * Will throw error if the query failed
    *
    * @param blob - The recorded audio Blob to persist.
    * @param transcript - The transcript data (words and metadata) to save alongside the audio.
@@ -91,20 +129,20 @@ export default function HomePage() {
   ) {
     if (!user) {
       log.info("User not authenticated. Cannot save transcription.");
-      toast.error("User not authenticated. Cannot save transcription.");
       return;
     }
-    const data = await handlingSaveAudioAndTranscript(
-      user.id,
-      blob,
-      transcript,
-    );
-    if (!data) {
-      log.warn("No data");
-      return;
+    try {
+      const data = await handlingSaveAudioAndTranscript(
+        user.id,
+        blob,
+        transcript,
+      );
+      if (!data) return;
+      setAudioFiles((prev) => [data, ...prev]);
+      setSelectedTranscription(data);
+    } catch (error) {
+      log.error("Error uploading file:", error);
     }
-    setAudioFiles((prev) => [data, ...prev]);
-    setSelectedTranscription(data);
   }
 
   const handleFileTranscriptionView = (file: AudioFile) => {
@@ -152,7 +190,7 @@ export default function HomePage() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-              <FeatureLockWrapper isLocked={true}>
+              <FeatureLockWrapper isLocked={false}>
                 <AudioUpload onUpload={handleFileUpload} />
               </FeatureLockWrapper>
               <RealtimeRecorder
@@ -230,6 +268,14 @@ export default function HomePage() {
           </div>
         </div>
       </div>
+
+      {/* Transcription View Modal */}
+      {selectedTranscription && (
+        <TranscriptionView
+          file={selectedTranscription}
+          onClose={() => setSelectedTranscription(null)}
+        />
+      )}
     </div>
   );
 }
@@ -239,15 +285,17 @@ export default function HomePage() {
  * @param userId - The ID of the user who owns the recording
  * @param blob - The audio data to save
  * @param transcriptWords - The word-level transcript to associate with the audio; must contain at least one entry
+ * @param fileName - Optional custom name for the audio file (defaults to "Unnamed")
  * @returns The saved AudioFile with its `transcript` property populated and including `words`
  * @throws If `userId` is falsy
  * @throws If `blob` is falsy
- * @log a warning If `transcriptWords` is falsy or an empty array
+ * @throws If `transcriptWords` is falsy or an empty array
  */
 export async function handlingSaveAudioAndTranscript(
   userId: string,
   blob: Blob,
   transcriptWords: SaveTranscriptInput,
+  fileName: string = "Unnamed"
 ) {
   if (!userId) {
     throw new Error("pls sign in first to use our application");
@@ -258,10 +306,10 @@ export async function handlingSaveAudioAndTranscript(
   }
 
   if (!transcriptWords || transcriptWords.length === 0) {
-    log.warn("There is nothing in transcription");
+    throw new Error("There is nothing in transcription");
   }
 
-  const audio = await saveAudioFile(blob, userId, "Unnamed");
+  const audio = await saveAudioFile(blob, userId, fileName);
   if (audio) {
     log.info("Audio file saved with ID:", audio);
   }
@@ -275,4 +323,28 @@ export async function handlingSaveAudioAndTranscript(
     transcript: { ...transcription, words: words },
   };
   return completedAudioFile;
+}
+
+/**
+ * Creates a placeholder transcript when the transcription service is unavailable.
+ * 
+ * @returns A minimal transcript with a placeholder message
+ */
+function createPlaceholderTranscript(): SaveTranscriptInput {
+  return [
+    {
+      text: "Transcription",
+      start: 0,
+      end: 0.5,
+      confidence: 1,
+      word_is_final: true,
+    },
+    {
+      text: "pending",
+      start: 0.5,
+      end: 1,
+      confidence: 1,
+      word_is_final: true,
+    },
+  ];
 }
