@@ -6,6 +6,19 @@
     Transcription your meeting in real-time from browser
     <br />
     <br />
+    <!-- Version Badges -->
+    <a href="https://nextjs.org/">
+      <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js 15 Badge"/>
+    </a>
+    <a href="https://golang.org/">
+      <img src="https://img.shields.io/badge/Go-1.21-blue?style=for-the-badge&logo=go&logoColor=white" alt="Go 1.21 Badge"/>
+    </a>
+    <a href="https://supabase.com/">
+      <img src="https://img.shields.io/badge/Supabase-latest-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase Badge"/>
+    </a>
+    <a href="https://vercel.com/">
+      <img src="https://img.shields.io/badge/Vercel-latest-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel Badge"/>
+    </a>
   </p>
 </div>
 The app is live and available to try <a href="https://meeting-mind-nu.vercel.app">here</a> <br>
