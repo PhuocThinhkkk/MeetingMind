@@ -7,10 +7,15 @@
     <br />
     <br />
   </p>
+
 </div>
 
+<div align="center">
+
 [![][vercel-shield]][vercel-link]
-[![CodeRabbit Pull Request Reviews][coderabbit-shield]](coderabbit-link)
+[![CodeRabbit Pull Request Reviews][coderabbit-shield]][coderabbit-link]
+
+</div>
 
 The app is live and available to try <a href="https://meeting-mind-nu.vercel.app">here</a> <br>
 (sometime the websocket server not working well cause i use free tier when deploying on Render)
