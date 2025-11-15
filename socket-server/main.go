@@ -3,43 +3,21 @@ package main
 import (
 	"fmt"
 	"log"
-	"meetingmind-socket/ws"
+	"meetingmind-socket/internal/config"
+	"meetingmind-socket/internal/handler"
+	"meetingmind-socket/internal/ws"
 	"net/http"
 	"os"
-
-	"github.com/joho/godotenv"
 )
 
 func main() {
+	config.CheckingAllEnvVars()
 
-	port := os.Getenv("PORT")
-	if port == "" {
-		err := godotenv.Load()
-		if err != nil {
-			log.Fatal("env var didnt load successfully")
-		}
-		port = os.Getenv("PORT")
-	}
-
-	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		frontendURL := os.Getenv("FRONTEND_URL")
-		if frontendURL == "" {
-			log.Println("havent set FRONTEND_URL in env, using http://localhost as defaule")
-			frontendURL = "http://localhost:3000" 
-		}
-		w.Header().Set("Access-Control-Allow-Origin", frontendURL)
-		w.Header().Set("Access-Control-Allow-Methods", "GET, POST, OPTIONS")
-		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
-
-		if r.Method == "OPTIONS" {
-			w.WriteHeader(http.StatusOK)
-			return
-		}
-
-		fmt.Fprint(w, "server is good")
-	})
+	http.HandleFunc("/", handler.HealthCheck())
 	http.HandleFunc("/ws", ws.RunServer)
 
+
+	port := os.Getenv("PORT")
 	fmt.Println("WebSocket server started on :", port)
 	Is_Prod := os.Getenv("IS_PROD")
 	var BIND_ADDR string
