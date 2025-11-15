@@ -27,6 +27,7 @@ The app is live and available to try <a href="https://meeting-mind-nu.vercel.app
     <li>
       <a href="#about-the-project">About The Project</a>
       <ul>
+        <li><a href="#demo">Demo </a></li>
         <li><a href="#built-with">Built With</a></li>
       </ul>
     </li>
@@ -39,8 +40,17 @@ The app is live and available to try <a href="https://meeting-mind-nu.vercel.app
 
 ## About The Project
 
-[product-screenshot]: ./assets/landingpage.png
-[![Product Name Screen Shot][product-screenshot]](./assets/landingpage.png)
+[product-screenshot]: ./assets/mockup-image.png
+[![Product Name Screen Shot][product-screenshot]](./assets/mockup-image.png)
+
+### Demo
+<div align="center">
+
+![demo-video-clip](./assets/demo-gif.gif)
+
+</div>
+
+
 
 ### Built With
 * [![Next][Next.js]][Next-url]
