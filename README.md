@@ -1,6 +1,10 @@
 <a id="readme-top"></a>
 <div align="center">
-  <h1 align="center">MeetingMind</h3>
+  <h1 align="center">MeetingMind</h1>
+
+[product-screenshot]: ./assets/mockup-image.png
+[![Product Name Screen Shot][product-screenshot]](./assets/mockup-image.png)
+
 
   <p align="center">
     Transcription your meeting in real-time from browser
@@ -39,10 +43,6 @@ The app is live and available to try <a href="https://meeting-mind-nu.vercel.app
 
 
 ## About The Project
-
-[product-screenshot]: ./assets/mockup-image.png
-[![Product Name Screen Shot][product-screenshot]](./assets/mockup-image.png)
-
 ### Demo
 <div align="center">
 
