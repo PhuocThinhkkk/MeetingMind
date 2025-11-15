@@ -6,21 +6,12 @@
     Transcription your meeting in real-time from browser
     <br />
     <br />
-    <!-- Version Badges -->
-    <a href="https://nextjs.org/">
-      <img src="https://img.shields.io/badge/Next.js-15-black?style=for-the-badge&logo=next.js&logoColor=white" alt="Next.js 15 Badge"/>
-    </a>
-    <a href="https://golang.org/">
-      <img src="https://img.shields.io/badge/Go-1.21-blue?style=for-the-badge&logo=go&logoColor=white" alt="Go 1.21 Badge"/>
-    </a>
-    <a href="https://supabase.com/">
-      <img src="https://img.shields.io/badge/Supabase-latest-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white" alt="Supabase Badge"/>
-    </a>
-    <a href="https://vercel.com/">
-      <img src="https://img.shields.io/badge/Vercel-latest-000000?style=for-the-badge&logo=vercel&logoColor=white" alt="Vercel Badge"/>
-    </a>
   </p>
 </div>
+
+[![][vercel-shield]][vercel-link]
+[![CodeRabbit Pull Request Reviews][coderabbit-shield]](coderabbit-link)
+
 The app is live and available to try <a href="https://meeting-mind-nu.vercel.app">here</a> <br>
 (sometime the websocket server not working well cause i use free tier when deploying on Render)
 
@@ -47,15 +38,6 @@ The app is live and available to try <a href="https://meeting-mind-nu.vercel.app
 [![Product Name Screen Shot][product-screenshot]](./assets/landingpage.png)
 
 ### Built With
-[Next.js]: https://img.shields.io/badge/Next.js-black?style=for-the-badge&logo=next.js
-[Next-url]: https://nextjs.org/
-[Go]: https://img.shields.io/badge/Go-00ADD8?style=for-the-badge&logo=go&logoColor=white
-[Go-url]: https://golang.org/
-[Supabase]: https://img.shields.io/badge/Supabase-3ECF8E?style=for-the-badge&logo=supabase&logoColor=white
-[Supabase-url]: https://supabase.com/
-
-
-
 * [![Next][Next.js]][Next-url]
 * [![Go][Go]][Go-url]
 * [![Supabase][Supabase]][Supabase-url]
@@ -63,4 +45,15 @@ The app is live and available to try <a href="https://meeting-mind-nu.vercel.app
 
 ## Getting Started
 Reading the setup document right [here](./docs/setup.md)
+
+[vercel-link]: https://meeting-mind-nu.vercel.app
+[vercel-shield]: https://img.shields.io/badge/vercel-online-55b467?labelColor=black&logo=vercel&style=flat-square
+[coderabbit-shield]: https://img.shields.io/coderabbit/prs/github/PhuocThinhkkk/MeetingMind?utm_source=oss&utm_medium=github&utm_campaign=PhuocThinhkkk%2FMeetingMind&labelColor=171717&color=FF570A&link=https%3A%2F%2Fcoderabbit.ai&label=CodeRabbit+Reviews
+[coderabbit-link]: https://coderabbit.ai
+[Next.js]: https://img.shields.io/badge/Next.js-15-black?style=flat-square&logo=next.js&logoColor=white
+[Next-url]: https://nextjs.org/
+[Go]: https://img.shields.io/badge/Go-1.21+-00ADD8?style=flat-square&logo=go&logoColor=white
+[Go-url]: https://golang.org/
+[Supabase]: https://img.shields.io/badge/Supabase-latest-3ECF8E?style=flat-square&logo=supabase&logoColor=white
+[Supabase-url]: https://supabase.com/
 
