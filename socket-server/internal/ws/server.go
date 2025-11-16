@@ -3,6 +3,7 @@ package ws
 import (
 	"fmt"
 	"log"
+	"meetingmind-socket/internal/validation"
 	"net/http"
 	"os"
 
@@ -25,24 +26,35 @@ var upgrader = websocket.Upgrader{
 
 func RunServer(w http.ResponseWriter, r *http.Request) {
 	log.Println("Incoming request:", r.Method, r.URL.Path)
+
+	token := r.URL.Query().Get("token")
+    if token == "" {
+        http.Error(w, "missing token", 401)
+        return
+    }
+
+    userId, err := validation.ValidateSupabaseJWT(token, os.Getenv("SUPABASE_JWT_SECRET"))
+    if err != nil {
+        http.Error(w, "invalid token", 401)
+        return
+    }
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Upgrade error:", err)
+        http.Error(w, "Invalid origin", 401)
 		return
 	}
-	fmt.Println("new user connect to server")
 
 	assemblyAIKey := os.Getenv("ASSEMBLYAI_API_KEY")
-	if assemblyAIKey == "" {
-		log.Fatal("must have assembly api key")
-	}
 	assemblyConn, res, err := ConnectToAssemblyAI(assemblyAIKey)
 	if err != nil {
 		log.Println("AssemblyRes : ", res)
-		log.Fatal("WebSocket dial error:", err)
+        http.Error(w, "Server can't transcript right now", 500)
+		return
 	}
 
-	client := NewClient(conn, assemblyConn)
+	client := NewClient(userId, conn, assemblyConn)
 
 	RegisterClient(client)
 }

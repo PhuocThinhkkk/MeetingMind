@@ -7,6 +7,7 @@ import (
 )
 
 type Client struct {
+	UserId         string
 	Conn           *websocket.Conn
 	AssemblyConn   *websocket.Conn
 	Done           chan struct{}
@@ -16,8 +17,9 @@ type Client struct {
 	Mu             sync.Mutex
 }
 
-func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
+func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
 	return &Client{
+		UserId:         UserId,
 		Conn:           Conn,
 		AssemblyConn:   AssemblyConn,
 		Done:           make(chan struct{}),

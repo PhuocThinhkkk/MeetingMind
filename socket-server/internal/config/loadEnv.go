@@ -18,6 +18,8 @@ func CheckingAllEnvVars() {
 	}
 	frontendUrl := os.Getenv("FRONTEND_URL")
 	assemblyApiKey := os.Getenv("ASSEMBLYAI_API_KEY")
+	supabaseJwtKey := os.Getenv("SUPABASE_JWT_KEY")
+	databaseConnection := os.Getenv("DATABASE_URL")
 
 	if port == "" {
 		log.Fatal("fail to load PORT in env")
@@ -27,6 +29,12 @@ func CheckingAllEnvVars() {
 	}
 	if assemblyApiKey == "" {
 		log.Fatal("fail to load ASSEMBLYAI_API_KEY in env")
+	}
+	if supabaseJwtKey == "" {
+		log.Fatal("fail to load SUPABASE_JWT_KEY in env")
+	}
+	if databaseConnection == "" {
+		log.Fatal("fail to load DATABASE_URL in env")
 	}
 
 }

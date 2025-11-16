@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"meetingmind-socket/internal/config"
+	"meetingmind-socket/internal/database"
 	"meetingmind-socket/internal/handler"
 	"meetingmind-socket/internal/ws"
 	"net/http"
@@ -12,9 +13,17 @@ import (
 
 func main() {
 	config.CheckingAllEnvVars()
+	database.Init()
+	postgres, err := database.DB.DB()
+	if err != nil {
+		panic(err)
+	}
+	defer postgres.Close()
 
-	http.HandleFunc("/", handler.HealthCheck())
-	http.HandleFunc("/ws", ws.RunServer)
+	mux := http.NewServeMux()
+
+	mux.Handle("/", handler.HealthCheck())
+	mux.Handle("/ws", http.HandlerFunc(ws.RunServer))
 
 
 	port := os.Getenv("PORT")
@@ -28,5 +37,5 @@ func main() {
 	} else {
 		BIND_ADDR = "0.0.0.0:"
 	}
-	log.Fatal(http.ListenAndServe(BIND_ADDR+port, nil))
+	log.Fatal(http.ListenAndServe(BIND_ADDR+port, mux))
 }
