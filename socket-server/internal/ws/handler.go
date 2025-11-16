@@ -3,11 +3,10 @@ package ws
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/gorilla/websocket"
 	"log"
 	"strings"
-	"github.com/gorilla/websocket"
 )
-
 
 func (c *Client) processClientAudio() {
 	errCount := 0
@@ -27,11 +26,20 @@ func (c *Client) processClientAudio() {
 				return
 			}
 
+			if c.Expired() {
+				c.Mu.Lock()
+				c.Conn.WriteJSON(map[string]any{
+					"type":    "error",
+					"message": "Your 20-minute session has expired",
+				})
+				c.Mu.Unlock()
+				return
+			}
+
 			msgType, audio, err := c.Conn.ReadMessage()
 			if err != nil {
 				log.Println("err read message :", err)
-				c.Conn.Close()
-				return
+				continue
 			}
 
 			if msgType != websocket.BinaryMessage {
@@ -99,20 +107,20 @@ func (c *Client) processMsgTranscript() {
 				return
 			}
 			if parsed["type"] == "Turn" {
-				log.Println("hello", len(msg)," length of bytes")
+				log.Println("hello", len(msg), " length of bytes")
 
 				err = c.updateStateTranscript(msg)
 				if err != nil {
 					log.Println("err when update transcript: ", err)
 					return
 				}
-				log.Println("[INFOR] Recived ", len(msg)," length of bytes")
+				log.Println("[INFOR] Recived ", len(msg), " length of bytes")
 
 			}
 		}
 	}
 }
- 
+
 func (c *Client) readTranslate() {
 	defer func() {
 		UnregisterClient(c)
@@ -196,4 +204,8 @@ func (c *Client) sendMsgTranslate() {
 			}
 		}
 	}
+}
+
+func (c *Client) Expired() bool {
+	return time.Now().After(c.ExpiresAt)
 }

@@ -2,6 +2,7 @@ package ws
 
 import (
 	"sync"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -15,6 +16,8 @@ type Client struct {
 	TranscriptWord chan (*TranscriptWriter)
 	TranslateWord  chan (*TranslateWriter)
 	Mu             sync.Mutex
+	StartTime      time.Time
+	ExpiresAt      time.Time
 }
 
 func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
@@ -27,6 +30,8 @@ func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn
 		TranscriptWord: make(chan *TranscriptWriter),
 		TranslateWord:  make(chan *TranslateWriter),
 		Mu:             sync.Mutex{},
+		StartTime:      time.Now(),
+		ExpiresAt:      time.Now().Add(20 * time.Minute), 
 	}
 }
 

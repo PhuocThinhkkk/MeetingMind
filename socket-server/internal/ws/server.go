@@ -1,7 +1,6 @@
 package ws
 
 import (
-	"fmt"
 	"log"
 	"meetingmind-socket/internal/validation"
 	"net/http"
