@@ -79,9 +79,9 @@ func (c *Client) processMsgTranscript() {
 
 			msgType, msg, err := c.AssemblyConn.ReadMessage()
 			if err != nil {
-				log.Println("AssemblyAI dropped connection immediately:", err)
-				c.AssemblyConn.Close()
-				return
+				log.Println("AssemblyAI return an error:", err)
+				errCount++
+				continue
 			}
 			if msgType != websocket.TextMessage {
 				fmt.Println("from assembly, this is not a text message")

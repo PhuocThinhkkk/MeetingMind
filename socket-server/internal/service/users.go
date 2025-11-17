@@ -13,7 +13,7 @@ func GetUserById(ctx context.Context, userId string) (models.User, error) {
 
     result := database.DB.WithContext(ctx).Where("id = ?", userId).First(&user)
     if result.Error != nil {
-        return user, result.Error
+        return models.User{}, result.Error
     }
 	return user, nil
 

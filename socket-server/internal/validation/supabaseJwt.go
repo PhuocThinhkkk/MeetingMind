@@ -23,11 +23,11 @@ func ValidateSupabaseJWT(tokenString string, secret string) (string, error) {
         return "", errors.New("invalid claims")
     }
 
-    subabaseUserId, ok := claims["sub"].(string)
+    supabaseUserId, ok := claims["sub"].(string)
     if !ok {
         return "", errors.New("no sub in token")
     }
 
-    return subabaseUserId, nil
+    return supabaseUserId, nil
 }
 
