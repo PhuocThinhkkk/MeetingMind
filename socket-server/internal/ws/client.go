@@ -2,11 +2,14 @@ package ws
 
 import (
 	"sync"
+	"time"
+	"log"
 
 	"github.com/gorilla/websocket"
 )
 
 type Client struct {
+	UserId         string
 	Conn           *websocket.Conn
 	AssemblyConn   *websocket.Conn
 	Done           chan struct{}
@@ -14,10 +17,13 @@ type Client struct {
 	TranscriptWord chan (*TranscriptWriter)
 	TranslateWord  chan (*TranslateWriter)
 	Mu             sync.Mutex
+	StartTime      time.Time
+	ExpiresAt      time.Time
 }
 
-func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
+func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
 	return &Client{
+		UserId:         UserId,
 		Conn:           Conn,
 		AssemblyConn:   AssemblyConn,
 		Done:           make(chan struct{}),
@@ -25,10 +31,13 @@ func NewClient(Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
 		TranscriptWord: make(chan *TranscriptWriter),
 		TranslateWord:  make(chan *TranslateWriter),
 		Mu:             sync.Mutex{},
+		StartTime:      time.Now(),
+		ExpiresAt:      time.Now().Add(20 * time.Minute), 
 	}
 }
 
 func RegisterClient(client *Client) {
+	log.Println("Registering new client: ", client.UserId)
 
 	go client.processClientAudio()
 	go client.processMsgTranscript()
@@ -45,4 +54,5 @@ func UnregisterClient(c *Client) {
 	if ok {
 		close(c.Done)
 	}
+	log.Println("Unregistered client: ", c.UserId)
 }

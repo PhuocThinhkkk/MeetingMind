@@ -23,6 +23,7 @@ import {
 } from "@/types/transcription.ws";
 
 import { resampleTo16kHz, float32ToInt16 } from "@/lib/transcriptionUtils";
+import { useAuth } from "@/hooks/use-auth";
 
 const SAMPLE_RATE = 16000;
 const CHUNK_MS = 128;
@@ -70,6 +71,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   const currentAudioBufferRef = useRef<Uint8Array[]>([]);
   const audioBufferRef = useRef<Uint8Array[]>([]);
   const totalByteLengthRef = useRef<number>(0);
+  const { session } = useAuth()
 
   const updateStatus = useCallback(
     (newStatus: typeof status) => {
@@ -88,7 +90,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     wsDomain = wsDomain.replace(/^wss?:\/\//, "");
 
     const protocol = location.protocol === "https:" ? "wss" : "ws";
-    const wsUrl = `${protocol}://${wsDomain}/ws`;
+    const wsUrl = `${protocol}://${wsDomain}/ws?token=${session?.access_token}`;
 
     try {
       wsRef.current = new WebSocket(wsUrl);

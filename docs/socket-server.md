@@ -21,21 +21,41 @@ The socket server is written in Go and acts as a bridge between the Next.js fron
 
 ```
 socket-server/
-├── main.go                    # Entry point
-├── ws/                        # WebSocket package
-│   ├── server.go              # WebSocket server setup
-│   ├── handler.go             # WebSocket message handling
-│   ├── client.go              # Client connection management
-│   ├── assemblyConn.go        # AssemblyAI connection
-│   ├── models.go              # Data models
-│   ├── transcript.go          # Transcript processing
-│   └── translate.go           # Translation handling
-├── client/                    # Test client
+├── client/                     # Test client
+│   ├── hello.pcm
+│   ├── hello.wav
 │   └── main.go
-├── Dockerfile                 # Container configuration
-├── .env.example               # Environment template
-├── go.mod                     # Go dependencies
-└── go.sum                     # Dependency checksums
+├── Dockerfile                  # Container configuration
+├── go.mod                      # Go dependencies
+├── go.sum                      # Dependency checksums
+├── internal/
+│   ├── config/
+│   │   └── loadEnv.go          # Environment variable loader
+│   ├── database/
+│   │   └── init.go             # Database initialization
+│   ├── handler/
+│   │   └── healthCheck.go      # Health check handler
+│   ├── middleware/
+│   │   ├── authenticated.go    # JWT authentication middleware
+│   │   ├── log.go              # Request logging
+│   │   └── rate-limit.go       # Rate limiting
+│   ├── models/
+│   │   └── user.go             # User model
+│   ├── service/
+│   │   └── users.go            # User query logic
+│   ├── validation/
+│   │   └── supabaseJwt.go      # Supabase JWT validation
+│   └── ws/                     # WebSocket package
+│       ├── assemblyConn.go     # AssemblyAI connection
+│       ├── client.go           # WebSocket client connection management
+│       ├── handler.go          # WebSocket message handling
+│       ├── models.go           # WS-related data models
+│       ├── server.go           # WS server setup
+│       ├── transcript.go       # Transcript processing
+│       └── translate.go        # Translation handling
+├── main.go                     # Server entry point
+└── Readme.md                   # Project documentation
+
 ```
 
 ## Server Setup (`main.go`)
@@ -43,17 +63,23 @@ socket-server/
 The main server initializes on a configurable port and provides two endpoints:
 
 ```go
-http.HandleFunc("/", healthCheck)      // Health check endpoint
-http.HandleFunc("/ws", ws.RunServer)   // WebSocket endpoint
+mux.Handle("/", handler.HealthCheck())        // Health check endpoint
+mux.Handle("/ws", http.HandlerFunc(ws.RunServer)) // WebSocket endpoint
+
 ```
 
 ### Configuration
+Environment variables are loaded from `.env`:
 
-Environment variables are loaded from `.env` file:
-- `PORT` - Server port (default: 9090)
-- `FRONTEND_URL` - Allowed CORS origin
-- `ASSEMBLYAI_API_KEY` - AssemblyAI API key (required)
-- `IS_PROD` - Production mode flag
+| Variable             | Description                        | Required |
+|----------------------|------------------------------------|----------|
+| PORT                 | Server port                        | Yes      |
+| FRONTEND_URL         | Allowed CORS origin                | Yes      |
+| ASSEMBLYAI_API_KEY   | API key for AssemblyAI             | Yes      |
+| SUPABASE_JWT_KEY     | Supabase JWT secret key            | Yes      |
+| DATABASE_URL         | Database connection URL            | Yes      |
+| IS_PROD              | Production mode flag (`true`/empty)| No       |
+
 
 ### Binding Address
 - Development (`IS_PROD` empty or not "true"): Binds to `0.0.0.0:PORT`
@@ -69,7 +95,7 @@ Response: "server is good"
 
 ### WebSocket Connection
 ```
-WS /ws
+WS /ws?token=<jwt_token>
 ```
 
 Establishes a bidirectional WebSocket connection for audio streaming and transcription.
@@ -160,6 +186,8 @@ Create a `.env` file in the `socket-server/` directory:
 PORT=9090
 FRONTEND_URL=http://localhost:3000
 ASSEMBLYAI_API_KEY=your_assemblyai_api_key_here
+SUPABASE_JWT_KEY=your_supabase_jwt_key_here
+DATABASE_URL=your_database_url_here
 IS_PROD=false
 ```
 
@@ -172,22 +200,24 @@ Key dependencies (from `go.mod`):
 Install with:
 ```bash
 go mod download
+
 ```
 
-## Testing
+## Authentication
+WebSocket connections require a valid JWT token passed as a query parameter:
+```
+/ws?token=<jwt_token>
+The token is validated against the Supabase JWT secret.
+```
 
+## Rate Limiting
+- Limits 20 minutes of audio streaming per connection
+
+## Testing
 A test client is available in `client/main.go` for debugging the WebSocket connection.
 
-## Production Deployment
-
-1. Set `IS_PROD=true` in environment
-2. Configure `FRONTEND_URL` to your production domain
-3. Use proper process manager (systemd, Docker, etc.)
-4. Implement proper logging and monitoring
-5. Use reverse proxy (nginx, Caddy) for SSL termination
 
 ## Performance Considerations
-
 - Each client maintains two WebSocket connections (client ↔ server, server ↔ AssemblyAI)
 - Audio chunks are buffered in memory
 - Connection cleanup on errors or disconnection
