@@ -62,7 +62,7 @@ jobs:
           PORT: 9090
           FRONTEND_URL: http://localhost:3000
           ASSEMBLYAI_API_KEY: ${{ secrets.ASSEMBLYAI_API_KEY || 'fake-key' }}
-          SUPABASE_JWT_KEY: ${{ secrets.SUPABASE_JWT_KEY || ' fake-key' }}
+          SUPABASE_JWT_KEY: ${{ secrets.SUPABASE_JWT_KEY || 'fake-key' }}
           DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://user:password@localhost:5432/dbname' }}
 
         run: |
