@@ -69,10 +69,6 @@ mux.Handle("/ws", http.HandlerFunc(ws.RunServer)) // WebSocket endpoint
 ```
 
 ### Configuration
-
-Environment variables are loaded from `.env` file:
-### Configuration
-
 Environment variables are loaded from `.env`:
 
 | Variable             | Description                        | Required |
