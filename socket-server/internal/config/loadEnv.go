@@ -7,6 +7,16 @@ import (
 	"github.com/joho/godotenv"
 )
 
+type AppEnvVars struct {
+	Port              string
+	FrontendUrl       string
+	AssemblyApiKey    string
+	SupabaseJwtKey    string
+	DatabaseConnection string
+}
+
+var EnvVars *AppEnvVars
+
 func CheckingAllEnvVars() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -35,6 +45,14 @@ func CheckingAllEnvVars() {
 	}
 	if databaseConnection == "" {
 		log.Fatal("fail to load DATABASE_URL in env")
+	}
+
+	envVars = &EnvVars{
+		Port:              port,
+		FrontendUrl:       frontendUrl,
+		AssemblyApiKey:    assemblyApiKey,
+		SupabaseJwtKey:    supabaseJwtKey,
+		DatabaseConnection: databaseConnection,
 	}
 
 }

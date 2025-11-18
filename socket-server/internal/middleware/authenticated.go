@@ -2,9 +2,9 @@ package middleware
 
 import (
 	"context"
+	"meetingmind-socket/internal/config"
 	"meetingmind-socket/internal/validation"
 	"net/http"
-	"os"
 	"strings"
 )
 
@@ -23,7 +23,7 @@ func AuthMiddleware(next http.Handler) http.Handler {
 
 		token := strings.TrimPrefix(authHeader, "Bearer ")
 
-		userID, err := validation.ValidateSupabaseJWT(token, os.Getenv("SUPABASE_JWT_KEY"))
+		userID, err := validation.ValidateSupabaseJWT(token, config.EnvVars.SupabaseJwtKey)
 		if err != nil {
 			http.Error(w, "Invalid token", http.StatusUnauthorized)
 			return
