@@ -11,8 +11,8 @@ export function FeatureLockWrapper({
   isLocked = true,
 }: FeatureLockWrapperProps) {
   return (
-    <div className={`relative ${isLocked ? "cursor-not-allowed" : ""}`}>
-      <div className={`h-full ${isLocked ? "pointer-events-none" : ""}`}>
+    <div className="relative cursor-not-allowed ">
+      <div className="h-full pointer-events-none">
         {children}
         {isLocked && (
           <div className="absolute inset-0 bg-black/10 rounded-lg pointer-events-none">

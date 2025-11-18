@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Upload, FileAudio, X } from 'lucide-react';
 
 interface AudioUploadProps {
-  onUpload: (file: File) => void | Promise<void>;
+  onUpload: (file: File) => void;
 }
 
 /**
