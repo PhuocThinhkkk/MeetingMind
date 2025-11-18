@@ -29,12 +29,14 @@ func RunServer(w http.ResponseWriter, r *http.Request) {
 	token := r.URL.Query().Get("token")
 	if token == "" {
 		http.Error(w, "missing token", 401)
+		log.Println("Missing token in request")
 		return
 	}
 
-	userId, err := validation.ValidateSupabaseJWT(token, os.Getenv("SUPABASE_JWT_SECRET"))
+	userId, err := validation.ValidateSupabaseJWT(token, os.Getenv("SUPABASE_JWT_KEY"))
 	if err != nil {
 		http.Error(w, "invalid token", 401)
+		log.Println("Invalid token:", err)
 		return
 	}
 

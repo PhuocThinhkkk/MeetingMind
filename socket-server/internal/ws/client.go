@@ -3,6 +3,7 @@ package ws
 import (
 	"sync"
 	"time"
+	"log"
 
 	"github.com/gorilla/websocket"
 )
@@ -36,6 +37,7 @@ func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn
 }
 
 func RegisterClient(client *Client) {
+	log.Println("Registering new client: ", client.UserId)
 
 	go client.processClientAudio()
 	go client.processMsgTranscript()
@@ -52,4 +54,5 @@ func UnregisterClient(c *Client) {
 	if ok {
 		close(c.Done)
 	}
+	log.Println("Unregistered client: ", c.UserId)
 }
