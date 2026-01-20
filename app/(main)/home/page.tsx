@@ -23,12 +23,10 @@ const RealtimeRecorderProvider = dynamic(
 export default function Page() {
   return (
     <RealtimeRecorderProvider>
-      <SidebarInset>
         <SideBarHeader header="Transcription" />
         <div className="flex flex-1 flex-col gap-4 p-4">
           <HomePage />
         </div>
-      </SidebarInset>
     </RealtimeRecorderProvider>
   );
 }

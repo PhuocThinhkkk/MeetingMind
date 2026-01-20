@@ -37,6 +37,11 @@ const navItems = [
     url: "history",
     icon: History,
   },
+  {
+    title: "Pricing",
+    url: "pricing",
+    icon: History,
+  },
 ];
 /**
  * Load a user profile from the `users` table for the given user ID.

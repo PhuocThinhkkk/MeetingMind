@@ -1,5 +1,6 @@
 import { AppSidebar } from "@/components/sidebar";
 import { SidebarProvider } from "@/components/ui/sidebar";
+import { SidebarInset } from "@/components/ui/sidebar";
 
 /**
  * Root layout component that wraps page content with the sidebar provider and renders the application sidebar.
@@ -15,7 +16,9 @@ export default function RootLayout({
   return (<>
     <SidebarProvider>
         <AppSidebar/>
+      <SidebarInset>
         {children}
+      </SidebarInset>
     </SidebarProvider>
     </> 
   );

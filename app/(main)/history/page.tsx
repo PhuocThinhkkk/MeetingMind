@@ -12,11 +12,11 @@ import SideBarHeader from "@/components/side-bar-header";
  */
 export default function HistoryPage() {
   return (
-    <main className="min-h-screen w-full bg-background">
-      <div className="container mx-auto px-4 py-6 max-w-6xl">
+    <>
+      <SideBarHeader header="Transcription History" />
+      <div className="container mx-auto px-4 py-2 max-w-6xl">
         {" "}
-        <div className="mb-6 pb-3">
-        <SideBarHeader header="Transcription History" />
+        <div className="mb-4">
         </div>
         <Suspense fallback={<div>Loading...</div>}>
           <AudioProvider>
@@ -24,6 +24,6 @@ export default function HistoryPage() {
           </AudioProvider>
         </Suspense>
       </div>
-    </main>
-  );
+  </>
+  )
 }
