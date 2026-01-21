@@ -51,6 +51,23 @@ export default function PricingSection() {
     },
   ]
 
+  async function fetchCheckoutSession(){
+    try{
+      const res = await fetch("/api/stripe/create-checkout", {
+        method: "POST",
+      })
+      if(!res.ok){
+        throw new Error("SHIT!")
+      }
+      const { url } = await res.json()
+      window.location.href = url
+
+    }catch(e){
+      console.error(e)
+    }
+
+  }
+
   return (
     <div className="w-full py-3 md:py-4">
       <div className="max-w-6xl mx-auto px-4">
@@ -129,6 +146,7 @@ export default function PricingSection() {
                 <Button
                   className="w-full mb-6"
                   variant={plan.featured ? "secondary" : "default"}
+                  onClick={fetchCheckoutSession}
                 >
                   {plan.cta}
                 </Button>
