@@ -13,7 +13,7 @@ npx supabase db push
 And then update the schema in `types/database.types.ts`\
 
 ```bash
-npx supabase gen types typescript --local > types/database.types.ts
+npx supabase gen types typescript --project-id <your_project_id> > types/database.types.ts
 ```
 
 ## Table
