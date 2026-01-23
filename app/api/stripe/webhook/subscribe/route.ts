@@ -41,7 +41,6 @@ export async function POST(req: Request) {
         }
 
         const subscription = await stripe.subscriptions.retrieve(session.subscription)
-        assertSubscriptionRuntime(subscription)
         await createStripeSubscription(userId, subscription)
         break
       }

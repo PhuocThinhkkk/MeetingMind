@@ -2,7 +2,7 @@ import { StripeInvoiceRuntime, StripeSubscriptionRuntime } from "@/services/stri
 import { supabaseAdmin } from "@/lib/supabase-init/supabase-server";
 import Stripe from "stripe";
 
-export async function createStripeSubscription(userId: string, subscription: StripeSubscriptionRuntime){
+export async function createStripeSubscription(userId: string, subscription: Stripe.Subscription){
   await supabaseAdmin
           .from("subscriptions")
           .upsert(
@@ -12,9 +12,6 @@ export async function createStripeSubscription(userId: string, subscription: Str
               stripe_subscription_id: subscription.id,
               status: subscription.status,
               price_id: subscription.items.data[0].price.id,
-              current_period_end: new Date(
-                subscription.current_period_end * 1000
-              ).toISOString(),
               cancel_at_period_end: subscription.cancel_at_period_end,
             },
             {
