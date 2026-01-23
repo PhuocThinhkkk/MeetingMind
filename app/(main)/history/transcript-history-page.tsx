@@ -4,7 +4,7 @@ import { log } from "@/lib/logger";
 import { useAuth } from "@/hooks/use-auth";
 import { HistoryToolbar } from "@/components/history-toolbar";
 import { TranscriptModal } from "@/components/transcript-modal";
-import { getAudioHistory } from "@/lib/query/audio-operations";
+import { getAudioHistory } from "@/lib/queries/browser/audio-operations";
 import React from "react";
 import { useSearchParams } from "next/navigation";
 import { useAudio } from "@/components/context/audios-list-context";

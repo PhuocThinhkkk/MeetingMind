@@ -1,7 +1,7 @@
 import React from "react";
 import { renderHook, act, waitFor } from "@testing-library/react";
 import { AuthProvider, useAuth } from "@/hooks/use-auth";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase-init/supabase-browser";
 
 jest.mock("@/lib/supabase", () => ({
   supabase: {

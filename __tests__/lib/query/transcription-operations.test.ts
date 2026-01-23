@@ -1,7 +1,7 @@
-import { saveTranscript } from '@/lib/query/transcription-operations'
-import { supabase } from '@/lib/supabase'
+import { saveTranscript } from '@/lib/queries/browser/transcription-operations'
+import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { RealtimeTranscriptionWord } from '@/types/transcription.ws'
-import { saveTranscriptWords } from '@/lib/query/transcription-operations'
+import { saveTranscriptWords } from '@/lib/queries/browser/transcription-operations'
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
