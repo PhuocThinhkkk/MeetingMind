@@ -55,6 +55,7 @@ export default function PricingSection() {
     try{
       const res = await fetch("/api/stripe/create-checkout", {
         method: "POST",
+        credentials: 'include',
       })
       if(!res.ok){
         throw new Error("SHIT!")
