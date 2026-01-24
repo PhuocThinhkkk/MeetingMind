@@ -2,6 +2,7 @@
 import SideBarHeader from "@/components/side-bar-header";
 import PricingSection from "./pricing-page";
 
+
 export default function Page() {
   return (
     <>
@@ -11,4 +12,3 @@ export default function Page() {
         </div></>
   );
 }
-

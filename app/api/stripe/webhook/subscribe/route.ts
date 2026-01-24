@@ -4,6 +4,13 @@ import type Stripe from "stripe"
 import { assertInvoiceRuntime, assertSubscriptionRuntime } from "@/services/stripe/assertion.stripe"
 import { createStripeSubscription, deleteStripeSubscription, invoiceStripeSubscription, updateStripeSubscription } from "@/lib/queries/server/stripe-subscription-operations"
 
+/**
+ * Handle incoming Stripe webhook POST requests, verify the signature, and route relevant events to subscription and invoice handlers.
+ *
+ * Processes events such as `checkout.session.completed`, `customer.subscription.created`, `customer.subscription.updated`, `customer.subscription.deleted`, and `invoice.payment_failed`. Logs unhandled event types.
+ *
+ * @returns A NextResponse: JSON `{ received: true }` on successful processing; a 400 response for missing or invalid Stripe signature; a 500 response if event handling fails.
+ */
 export async function POST(req: Request) {
   const body = await req.text()
   const sig = req.headers.get("stripe-signature")

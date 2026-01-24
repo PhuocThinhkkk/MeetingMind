@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button"
 import { CheckCircle2 } from "lucide-react"
 import Link from "next/link"
 
+/**
+ * Renders a payment confirmation page with a success icon, confirmation text, support contact link, and a button to navigate back to the home page.
+ *
+ * @returns The JSX element for the payment success page.
+ */
 export default function PaymentSuccessPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 px-4">
