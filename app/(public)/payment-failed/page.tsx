@@ -3,6 +3,11 @@ import { Button } from "@/components/ui/button"
 import { XCircle } from "lucide-react"
 import Link from "next/link"
 
+/**
+ * Render a centered "Payment Failed" page with a failure icon, explanatory text, contact link, and actions to return home or retry.
+ *
+ * @returns The JSX element representing the payment-failed UI page.
+ */
 export default function PaymentFailedPage() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-r from-rose-50 to-red-50 dark:from-gray-900 dark:to-gray-800 px-4">

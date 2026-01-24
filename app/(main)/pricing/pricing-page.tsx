@@ -5,6 +5,15 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
 
+/**
+ * Render a responsive pricing section with a monthly/annually toggle and plan cards.
+ *
+ * The UI displays three predefined plans with prices that update when the billing period is toggled,
+ * shows plan features, and exposes call-to-action buttons that initiate a checkout session and
+ * redirect the browser to the returned checkout URL.
+ *
+ * @returns A JSX element containing the pricing UI including the billing period toggle, plan cards with prices and features, and CTA buttons that start checkout and redirect to the checkout URL.
+ */
 export default function PricingSection() {
   const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annually">("annually")
 
