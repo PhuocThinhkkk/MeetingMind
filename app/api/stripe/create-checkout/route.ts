@@ -5,10 +5,10 @@ import { getSupabseAuthServer } from "@/lib/supabase-auth-server"
 export async function POST(req: Request) {
     const priceId = process.env.STRIPE_PRO_PLAN_PRICE_ID
     const supabaseAuth = await getSupabseAuthServer()
-    console.log(supabaseAuth)
     const { data: { user } } = await supabaseAuth.auth.getUser()
     if (!user){
       console.error("There was no user in the request auth!")
+      console.log("supbase auth: ",supabaseAuth)
       return NextResponse.json({error: "Please sign in to do this"}, { status: 400 })
     }
 

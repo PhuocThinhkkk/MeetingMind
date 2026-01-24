@@ -32,6 +32,7 @@ export async function POST(req: Request) {
           typeof session.subscription !== "string" ||
           typeof session.customer !== "string"
         ) {
+          console.log("checkout.session.completed: skipping non-subscription checkout session")
           break
         }
 
@@ -41,20 +42,30 @@ export async function POST(req: Request) {
         }
 
         const subscription = await stripe.subscriptions.retrieve(session.subscription)
+        console.log("CUSTOMER SESSION COMPLETED OBJECT: ", subscription)
         await createStripeSubscription(userId, subscription)
+        console.log("SESSION COMPLETED EVENT")
         break
       }
-
+      case "customer.subscription.created": {
+        const subscription = event.data.object 
+        assertSubscriptionRuntime(subscription)
+        await updateStripeSubscription(subscription)
+        console.log("CUSTOMER SUBSCRIPTION CREATED EVENT")
+        break
+      }
       case "customer.subscription.updated": {
         const subscription = event.data.object 
         assertSubscriptionRuntime(subscription)
         await updateStripeSubscription(subscription)
+        console.log("CUSTOMER UPDATED EVENT")
         break
       }
 
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription
         await deleteStripeSubscription(subscription)
+        console.log("CUSTOMER DELETE EVENT")
         break
       }
 
@@ -62,7 +73,7 @@ export async function POST(req: Request) {
         const invoice = event.data.object as Stripe.Invoice
         assertInvoiceRuntime(invoice)
         await invoiceStripeSubscription(invoice)
-
+        console.log("INVOICE PAYMENT FAILED EVENT")
         break
       }
 

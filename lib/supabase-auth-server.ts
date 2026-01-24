@@ -5,8 +5,6 @@ import { Database } from "@/types/database.types"
 
 export async function getSupabseAuthServer(){
   const cookieStore = await cookies()
-  console.log("cookies: ",cookieStore)
-
    return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,

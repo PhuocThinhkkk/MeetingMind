@@ -3,32 +3,36 @@ import { supabaseAdmin } from "@/lib/supabase-init/supabase-server";
 import Stripe from "stripe";
 
 export async function createStripeSubscription(userId: string, subscription: Stripe.Subscription){
-  await supabaseAdmin
-          .from("subscriptions")
-          .upsert(
-            {
+            const data = {
               user_id: userId,
               stripe_customer_id: subscription.customer as string,
               stripe_subscription_id: subscription.id,
               status: subscription.status,
               price_id: subscription.items.data[0].price.id,
+              current_period_end: new Date(subscription.items.data[0].current_period_end * 1000).toISOString(),
               cancel_at_period_end: subscription.cancel_at_period_end,
-            },
+            }
+            console.log("Update db with data: ", data)
+  
+  await supabaseAdmin
+          .from("subscriptions")
+          .upsert(data,
             {
-              onConflict: "stripe_subscription_id",
+              onConflict: "user_id",
             }
           )
 }
 
 
 export async function updateStripeSubscription(subscription: StripeSubscriptionRuntime){
+  const currEnd = subscription.items.data[0].current_period_end
         await supabaseAdmin
           .from("subscriptions")
           .update({
             status: subscription.status,
             price_id: subscription.items.data[0].price.id,
             current_period_end: new Date(
-              subscription.current_period_end * 1000
+              currEnd
             ).toISOString(),
             cancel_at_period_end: subscription.cancel_at_period_end,
           })
