@@ -3,13 +3,7 @@ import TranscriptHistoryPage from "./transcript-history-page";
 import { Suspense } from "react";
 import SideBarHeader from "@/components/side-bar-header";
 
-/**
- * Render the History Recording page layout.
- *
- * Includes a header and a centered container that provides audio context to the transcript history content.
- *
- * @returns A JSX element for the History Recording page containing the header and a content area wrapped with an audio provider context.
- */
+
 export default function HistoryPage() {
   return (
     <>

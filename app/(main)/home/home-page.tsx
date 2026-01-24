@@ -25,13 +25,7 @@ import { formatDuration } from "@/lib/utils";
 import { FeatureLockWrapper } from "@/components/coming-soon-wrapper";
 import { TranscriptionView } from "@/components/dashboard/transcription-view";
 
-/**
- * Dashboard page for uploading, recording, and browsing audio meeting transcriptions.
- *
- * Loads recent audio files for the signed-in user, redirects unauthenticated users to /auth/login, and provides handlers for file upload and realtime transcription completion while rendering upload/recorder controls and a recent meetings list.
- *
- * @returns The page element containing upload and recorder controls and the recent meetings list
- */
+
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth();
   const router = useRouter();

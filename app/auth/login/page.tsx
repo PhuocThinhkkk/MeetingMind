@@ -18,14 +18,7 @@ import { Loader2, Mail, Lock, ArrowRight, Mic } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
 import GoogleSignInButton from "@/components/google-btn-sign-in";
 
-/**
- * Renders the sign-in page and manages the authentication flow.
- *
- * Displays email and password inputs, shows loading and error states during sign-in,
- * redirects already-authenticated users to "/dashboard", and navigates to "/dashboard" on successful sign-in.
- *
- * @returns The React element for the login page.
- */
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
