@@ -9,44 +9,41 @@ import Stripe from "stripe";
   * @param subscription - The Stripe subscription object to persist
   * @throws The Supabase error returned when the upsert operation fails
   */
- /**
-  * Update an existing subscription record with the latest Stripe subscription data.
-  *
-  * @param subscription - The Stripe subscription runtime object containing updated fields; `current_period_end` is stored as an ISO timestamp
-  * @throws The Supabase error returned when the update operation fails
-  */
+
  export async function createStripeSubscription(userId: string, subscription: Stripe.Subscription){
-            const data = {
-              user_id: userId,
-              stripe_customer_id: subscription.customer as string,
-export async function createStripeSubscription(userId: string, subscription: Stripe.Subscription){
-  const { error } = await supabaseAdmin
-          .from("subscriptions")
-          .upsert(
-            {
+            const data =  {
               user_id: userId,
               stripe_customer_id: subscription.customer as string,
               stripe_subscription_id: subscription.id,
               status: subscription.status,
               price_id: subscription.items.data[0].price.id,
               cancel_at_period_end: subscription.cancel_at_period_end,
-            },
+            }
+
+  const { error } = await supabaseAdmin
+          .from("subscriptions")
+          .upsert(data,
             {
-              onConflict: "stripe_subscription_id",
+              onConflict: "user_id",
             }
           )
   if (error) throw error
 }
 
-
-export async function updateStripeSubscription(subscription: StripeSubscriptionRuntime){
+ /**
+  * Update an existing subscription record with the latest Stripe subscription data.
+  *
+  * @param subscription - The Stripe subscription runtime object containing updated fields; `current_period_end` is stored as an ISO timestamp
+  * @throws The Supabase error returned when the update operation fails
+  */
+export async function updateStripeSubscription(subscription: Stripe.Subscription){
         const { error } = await supabaseAdmin
           .from("subscriptions")
           .update({
             status: subscription.status,
             price_id: subscription.items.data[0].price.id,
             current_period_end: new Date(
-              subscription.current_period_end * 1000
+              subscription.items.data[0].current_period_end * 1000
             ).toISOString(),
             cancel_at_period_end: subscription.cancel_at_period_end,
           })
@@ -62,7 +59,7 @@ export async function updateStripeSubscription(subscription: StripeSubscriptionR
          * @param subscription - The Stripe subscription whose corresponding database record will be marked canceled
          * @throws The Supabase error returned when the update operation fails
          */
-        export async function deleteStripeSubscription(subscription: Stripe.Subscription){
+export async function deleteStripeSubscription(subscription: Stripe.Subscription){
         const { error } = await supabaseAdmin
           .from("subscriptions")
           .update({
