@@ -1,5 +1,5 @@
 -- I fk up the previous migration about this table and it didnt apply, so I create this one again
-create table public.subscriptions (
+create table if not exists public.subscriptions (
   id uuid primary key default gen_random_uuid(),
 
   user_id uuid not null unique
@@ -28,6 +28,7 @@ begin
 end;
 $$ language plpgsql;
 
+drop trigger if exists set_subscriptions_updated_at on public.subscriptions;
 create trigger set_subscriptions_updated_at
 before update on public.subscriptions
 for each row
@@ -35,6 +36,7 @@ execute procedure public.set_updated_at();
 
 alter table public.subscriptions enable row level security;
 
+drop policy if exists "Users can read own subscription" on public.subscriptions;
 create policy "Users can read own subscription"
 on public.subscriptions
 for select
