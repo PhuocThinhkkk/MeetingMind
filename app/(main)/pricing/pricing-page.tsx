@@ -1,185 +1,175 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Button } from "@/components/ui/button"
 import { Badge } from "@/components/ui/badge"
+import { Check, Sparkles } from "lucide-react"
+import { useAuth } from "@/hooks/use-auth"
+import { getUserSubscription } from "@/lib/queries/browser/subscriptions"
 
+type PlanKey = "free" | "pro"
 
 export default function PricingSection() {
-  const [billingPeriod, setBillingPeriod] = useState<"monthly" | "annually">("annually")
+  const { user } = useAuth()
+  const [currentPlan, setCurrentPlan] = useState<PlanKey>("free")
+  const [loading, setLoading] = useState(true)
 
   const plans = [
     {
-      name: "Starter",
-      description: "Perfect for individuals and small teams",
-      price: { monthly: 0, annually: 0 },
-      cta: "Start for free",
-      features: ["Up to 3 projects", "Basic tools", "Community support", "Standard templates", "Basic analytics"],
-    },
-    {
-      name: "Professional",
-      description: "Advanced features for growing teams",
-      price: { monthly: 20, annually: 16 },
+      key: "free" as PlanKey,
+      name: "Free",
+      description: "For trying things out",
+      price: 0,
+      features: [
+        "Up to 3 hours of transcription / month",
+        "Max 30 minutes per recording",
+        "Basic translation tools",
+        "Limited calendar usage",
+      ],
       cta: "Get started",
-      features: [
-        "Unlimited projects",
-        "Advanced tools",
-        "Priority support",
-        "Custom templates",
-        "Advanced analytics",
-        "Team collaboration",
-        "API access",
-        "Custom integrations",
-      ],
-      featured: true,
     },
     {
-      name: "Enterprise",
-      description: "Complete solution for large organizations",
-      price: { monthly: 200, annually: 160 },
-      cta: "Contact sales",
+      key: "pro" as PlanKey,
+      name: "Pro",
+      description: "Built for serious work",
+      price: 14.99,
       features: [
-        "Everything in Professional",
-        "Dedicated account manager",
-        "24/7 phone support",
-        "Custom onboarding",
-        "Advanced security",
-        "SSO integration",
-        "Custom contracts",
-        "White-label options",
+        "All features unlocked",
+        "50 hours of transcription / month",
+        "Unlimited recording length",
+        "Priority processing",
       ],
+      cta: "Upgrade to Pro",
+      featured: true,
     },
   ]
 
-  async function fetchCheckoutSession(){
-    try{
-      const res = await fetch("/api/stripe/create-checkout", {
-        method: "POST",
-        credentials: 'include',
-      })
-      if(!res.ok){
-        throw new Error("SHIT!")
+  useEffect(() => {
+    fetchUserPlan()
+  }, [user?.id])
+
+  async function fetchUserPlan() {
+    try {
+      if (!user) {
+        setCurrentPlan("free")
+        return
       }
-      const { url } = await res.json()
-      window.location.href = url
 
-    }catch(e){
+      const sub = await getUserSubscription(user.id)
+
+      if (sub?.status === "active") {
+        setCurrentPlan("pro")
+      } else {
+        setCurrentPlan("free")
+      }
+    } catch (e) {
       console.error(e)
+      setCurrentPlan("free")
+    } finally {
+      setLoading(false)
     }
-
   }
 
+  async function fetchCheckoutSession() {
+    const res = await fetch("/api/stripe/create-checkout", {
+      method: "POST",
+      credentials: "include",
+    })
+
+    const { url } = await res.json()
+    window.location.href = url
+  }
+
+  if (loading) return null
+
   return (
-    <div className="w-full py-3 md:py-4">
+    <section className="relative w-full py-16">
       <div className="max-w-6xl mx-auto px-4">
         {/* Header */}
-        <div className="text-center mb-12">
-          <Badge variant="outline" className="mb-4">Plans & Pricing</Badge>
-          <h2 className="text-3xl md:text-5xl font-bold tracking-tight mb-4">
-            Choose the perfect plan
+        <div className="text-center mb-14">
+          <Badge variant="outline" className="mb-4">
+            Pricing
+          </Badge>
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-4">
+            Simple, transparent pricing
           </h2>
-          <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
-            Scale your operations with flexible pricing that grows with your team. Start free, upgrade when ready.
+          <p className="text-muted-foreground max-w-2xl mx-auto">
+            Start free, upgrade when you need more power. No hidden fees.
           </p>
         </div>
 
-        {/* Billing Toggle */}
-        <div className="flex justify-center mb-12">
-          <div className="inline-flex rounded-lg border border-border bg-muted p-1">
-            <button
-              onClick={() => setBillingPeriod("annually")}
-              className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                billingPeriod === "annually"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Annually
-            </button>
-            <button
-              onClick={() => setBillingPeriod("monthly")}
-              className={`px-4 py-2 rounded-md font-medium transition-colors ${
-                billingPeriod === "monthly"
-                  ? "bg-primary text-primary-foreground"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              Monthly
-            </button>
-          </div>
-        </div>
+        {/* Cards */}
+        <div className="grid md:grid-cols-2 gap-8">
+          {plans.map((plan) => {
+            const isCurrentPlan = currentPlan === plan.key
+            const isFreePlan = plan.key === "free"
+            const isProPlan = plan.key === "pro"
 
-        {/* Pricing Cards */}
-        <div className="grid md:grid-cols-3 gap-6">
-          {plans.map((plan, index) => (
-            <Card
-              key={index}
-              className={`flex flex-col ${
-                plan.featured
-                  ? "md:scale-105 border-primary shadow-lg bg-primary text-primary-foreground"
-                  : ""
-              }`}
-            >
-              <CardHeader>
-                <CardTitle className={plan.featured ? "text-primary-foreground" : ""}>
-                  {plan.name}
-                </CardTitle>
-                <CardDescription
-                  className={plan.featured ? "text-primary-foreground/80" : ""}
-                >
-                  {plan.description}
-                </CardDescription>
-              </CardHeader>
-              <CardContent className="flex-1 flex flex-col">
-                <div className="mb-6">
-                  <div className="text-4xl font-bold mb-1">
-                    ${plan.price[billingPeriod]}
+            return (
+              <Card
+                key={plan.key}
+                className={`relative flex flex-col rounded-2xl border transition-all ${
+                  plan.featured ? "border-primary/50 shadow-lg" : "border-border"
+                } ${isCurrentPlan ? "ring-2 ring-primary" : ""}`}
+              >
+                {plan.featured && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
+                    <Badge className="gap-1">
+                      <Sparkles className="w-3 h-3" /> Most popular
+                    </Badge>
                   </div>
-                  <p
-                    className={`text-sm ${
-                      plan.featured ? "text-primary-foreground/70" : "text-muted-foreground"
-                    }`}
-                  >
-                    per {billingPeriod === "monthly" ? "month" : "year"}, per user
-                  </p>
-                </div>
+                )}
 
-                <Button
-                  className="w-full mb-6"
-                  variant={plan.featured ? "secondary" : "default"}
-                  onClick={fetchCheckoutSession}
-                >
-                  {plan.cta}
-                </Button>
+                <CardHeader className="text-center">
+                  <CardTitle className="text-2xl">{plan.name}</CardTitle>
+                  <CardDescription>{plan.description}</CardDescription>
+                </CardHeader>
 
-                <div className="space-y-3 flex-1">
-                  {plan.features.map((feature, i) => (
-                    <div key={i} className="flex items-start gap-3">
-                      <svg
-                        className="w-4 h-4 mt-0.5 flex-shrink-0"
-                        fill="currentColor"
-                        viewBox="0 0 12 12"
-                      >
-                        <path d="M10 3L4.5 8.5L2 6" stroke="currentColor" strokeWidth="2" fill="none" />
-                      </svg>
-                      <span
-                        className={`text-sm ${
-                          plan.featured
-                            ? "text-primary-foreground/90"
-                            : "text-muted-foreground"
-                        }`}
-                      >
-                        {feature}
-                      </span>
+                <CardContent className="flex flex-col flex-1">
+                  {/* Price */}
+                  <div className="text-center mb-6">
+                    <div className="text-4xl font-bold">
+                      ${plan.price}
                     </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-          ))}
+                    <p className="text-sm text-muted-foreground">
+                      per month
+                    </p>
+                  </div>
+
+                  {isCurrentPlan ? (
+                    <Button disabled variant="secondary" className="mb-6">
+                      Current plan
+                    </Button>
+                  ) : isFreePlan ? (
+                    <Button disabled variant="outline" className="mb-6">
+                      Included
+                    </Button>
+                  ) : (
+                    <Button
+                      onClick={fetchCheckoutSession}
+                      className="mb-6"
+                    >
+                      Upgrade to Pro
+                    </Button>
+                  )}
+
+                  <ul className="space-y-3 mt-auto">
+                    {plan.features.map((feature) => (
+                      <li key={feature} className="flex items-start gap-3">
+                        <Check className="w-4 h-4 text-primary mt-1" />
+                        <span className="text-sm text-muted-foreground">
+                          {feature}
+                        </span>
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )
+          })}
         </div>
       </div>
-    </div>
+    </section>
   )
 }

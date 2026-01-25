@@ -1,6 +1,8 @@
-import { StripeInvoiceRuntime, StripeSubscriptionRuntime } from "@/services/stripe/types";
+'server-only'
+import { StripeInvoiceRuntime, StripeSubscriptionRuntime, Subscription } from "@/services/stripe/types";
 import { supabaseAdmin } from "@/lib/supabase-init/supabase-server";
 import Stripe from "stripe";
+import { stripe } from "@/lib/stripe";
 
 /**
   * Create or upsert a subscription record for a user based on a Stripe subscription.
@@ -85,3 +87,26 @@ export async function deleteStripeSubscription(subscription: Stripe.Subscription
           .eq("stripe_subscription_id", invoice.subscription)
         if (error) throw error
         }
+
+export async function getUserSubscriptionServer(userId: string){
+  const { data, error } = await supabaseAdmin
+    .from("subscriptions")
+    .select("*")
+    .eq("user_id", userId)
+
+  if (error) {
+    console.error("Supabase Error Details:", JSON.stringify(error, null, 2));
+    throw error;
+  }
+  return data[0]
+}
+
+export async function updateCancelSupscription(userId: string, sub: Subscription){
+    const subscription = await stripe.subscriptions.update(
+      sub.stripe_subscription_id,
+      {
+        cancel_at_period_end: true,
+      }
+    )
+    return subscription
+}

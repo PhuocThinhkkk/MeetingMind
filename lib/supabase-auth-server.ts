@@ -27,3 +27,10 @@ export async function getSupabseAuthServer(){
     }
   )
 }
+
+
+export async function getUserAuthInSupabaseToken(){
+  const supabaseAuth = await getSupabseAuthServer()
+  const { data: { user } } = await supabaseAuth.auth.getUser()
+  return user
+}
