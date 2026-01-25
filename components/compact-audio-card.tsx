@@ -157,9 +157,9 @@ function ConfirmDeletingDialog({
 }) {
   const { audios, setAudios } = useAudio()
   /**
-   * Confirm and perform deletion of the provided audio file.
+   * Delete the provided audio file with an optimistic local update.
    *
-   * Performs an optimistic removal of the audio from local state, closes the delete dialog, logs the action, and then attempts to delete the audio on the server. If the audio cannot be found locally, shows an error toast and aborts. If the server deletion fails, restores the removed audio to local state and shows an error toast.
+   * Performs an optimistic removal of the audio from local state, closes the delete dialog, logs the deletion attempt, and then attempts to delete the audio on the server. If the audio is not found locally, shows an error toast and aborts. If the server deletion fails, restores the removed audio to local state and shows an error toast.
    */
   async function confirmDelete() {
     const target = audios.find(a => a.id === audio.id)
@@ -226,9 +226,9 @@ function RenameInputDialog({
   const [newName, setNewName] = useState(audio.name)
 
   /**
-   * Perform an optimistic rename for the provided audio: update local state, close the rename dialog, and persist the new name to the backend.
+   * Optimistically rename the audio: update local audios with `newName`, close the rename dialog, and persist the change to the backend.
    *
-   * If the backend update fails, shows an error toast, logs the error, and restores the previous name in local state when available.
+   * If persisting fails, show an error toast, log the error, and restore the previous name in local state when available.
    */
   async function confirmRename() {
     let oldName: string = ''

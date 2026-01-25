@@ -56,6 +56,14 @@ export default function PricingSection() {
     fetchUserPlan()
   }, [user?.id])
 
+  /**
+   * Fetches the current user's subscription and updates component state accordingly.
+   *
+   * If there is no authenticated user, sets the plan to 'free' and returns early. Otherwise,
+   * retrieves the user's subscription and sets the current plan to 'pro' when the subscription
+   * status is 'active', or to 'free' otherwise. On error, logs the failure and sets the plan to
+   * 'free'. Always marks loading as finished when complete.
+   */
   async function fetchUserPlan() {
     try {
       if (!user) {
@@ -78,6 +86,12 @@ export default function PricingSection() {
     }
   }
 
+  /**
+   * Initiates a Stripe checkout session and redirects the browser to the returned checkout URL.
+   *
+   * Sends a POST request to '/api/stripe/create-checkout' with credentials included, extracts the `url`
+   * field from the JSON response, and sets `window.location.href` to navigate to the checkout page.
+   */
   async function fetchCheckoutSession() {
     const res = await fetch('/api/stripe/create-checkout', {
       method: 'POST',

@@ -96,6 +96,13 @@ export async function invoiceStripeSubscription(invoice: StripeInvoiceRuntime) {
   if (error) throw error
 }
 
+/**
+ * Retrieve the subscription record for a specific user from the server-side database.
+ *
+ * @param userId - The user's ID to look up in the subscriptions table
+ * @returns The subscription row for the user, or `undefined` if no subscription exists
+ * @throws The Supabase error object if the database query fails
+ */
 export async function getUserSubscriptionServer(userId: string) {
   const { data, error } = await supabaseAdmin
     .from('subscriptions')
@@ -109,6 +116,12 @@ export async function getUserSubscriptionServer(userId: string) {
   return data[0]
 }
 
+/**
+ * Sets a subscription to cancel at the end of its current period in Stripe.
+ *
+ * @param sub - Local subscription record containing `stripe_subscription_id` used to identify the Stripe subscription to update.
+ * @returns The updated Stripe subscription object.
+ */
 export async function updateCancelSubscription(sub: Subscription) {
   const subscription = await stripe.subscriptions.update(
     sub.stripe_subscription_id,
@@ -118,6 +131,12 @@ export async function updateCancelSubscription(sub: Subscription) {
   )
   return subscription
 }
+/**
+ * Resume a Stripe subscription by unsetting its cancel-at-period-end flag.
+ *
+ * @param sub - Subscription record containing a valid `stripe_subscription_id` for the Stripe subscription to resume
+ * @returns The updated Stripe subscription object
+ */
 export async function updateResumeSubscription(sub: Subscription) {
   return stripe.subscriptions.update(sub.stripe_subscription_id, {
     cancel_at_period_end: false,

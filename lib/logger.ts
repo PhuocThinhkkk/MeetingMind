@@ -16,6 +16,13 @@ const browserStyles = {
   error: 'color: red;',
 }
 
+/**
+ * Formats and emits a console message at the specified log level using server ANSI colors or browser CSS styles depending on the runtime.
+ *
+ * @param level - Log level to use (`'info'`, `'warn'`, or `'error'`)
+ * @param msg - The textual message to log
+ * @param ctx - Optional additional context object or value to include alongside the message
+ */
 function logMessage(
   level: 'info' | 'warn' | 'error',
   msg: string,

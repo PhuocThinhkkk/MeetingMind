@@ -28,10 +28,9 @@ export function assertSubscriptionRuntime(
 }
 
 /**
- * Validate that a runtime value conforms to the expected Stripe invoice shape and narrow its type.
+ * Validate that a runtime value matches the expected Stripe invoice shape.
  *
- * @param invoice - The runtime value to validate as a Stripe invoice
- * @throws Error if `invoice` is not an object or does not have a string `subscription` property
+ * @throws Error if `invoice` is not an object with a string `subscription` property
  */
 export function assertInvoiceRuntime(
   invoice: unknown

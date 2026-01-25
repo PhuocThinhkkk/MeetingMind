@@ -64,9 +64,11 @@ export default function HomePage() {
   }
 
   /**
-   * Handles file upload to Supabase storage.
+   * Uploads an audio file, persists it with a placeholder transcript, and updates UI state.
    *
-   * @param file - The audio file to upload
+   * Persists the provided file and an initial placeholder transcript for the current user, prepends the resulting audio record to the local audio list, and marks it as the selected transcription. Manages the uploading state and logs progress and errors. If the file name contains an extension or invalid characters they will be sanitized before saving.
+   *
+   * @param file - The audio File object to upload and persist
    */
   async function handleFileUpload(file: File) {
     if (!user) {
@@ -114,10 +116,10 @@ export default function HomePage() {
   }
 
   /**
-   * Saves a completed real-time transcription and prepends the resulting audio record to the recent meetings list.
+   * Persist the provided real-time audio and its transcript, then add the saved record to the recent meetings list and select it.
    *
    * @param blob - The recorded audio Blob to persist.
-   * @param transcript - The transcript data (words and metadata) to save alongside the audio.
+   * @param transcript - Word- and timing-level transcript data to save alongside the audio.
    */
   async function handleRealtimeTranscriptionComplete(
     blob: Blob,
@@ -322,9 +324,11 @@ export async function handlingSaveAudioAndTranscript(
 }
 
 /**
- * Creates a placeholder transcript when the transcription service is unavailable.
+ * Create a minimal placeholder transcript used when no real transcription is available.
  *
- * @returns A minimal transcript with a placeholder message
+ * Contains two placeholder word entries with timestamps, full confidence, and `word_is_final: true`.
+ *
+ * @returns A `SaveTranscriptInput` consisting of two placeholder words (`'Transcription'` and `'pending'`)
  */
 function createPlaceholderTranscript(): SaveTranscriptInput {
   return [

@@ -107,7 +107,12 @@ export async function getAudioDuration(blob: Blob): Promise<number> {
  * @param float32 - Mono audio samples sampled at 48000 Hz.
  * @returns A Float32Array containing the resampled mono audio at 16000 Hz.
  */
-//@ts-ignore
+/**
+ * Resamples a mono Float32Array from 48000 Hz to 16000 Hz.
+ *
+ * @param float32 - Mono PCM samples sampled at 48000 Hz (normalized floats, typically in [-1, 1])
+ * @returns A Float32Array containing the resampled mono PCM samples at 16000 Hz
+ */
 export async function resampleTo16kHz(float32) {
   const originalSampleRate = 48000
   const targetSampleRate = 16000
@@ -150,7 +155,14 @@ export async function resampleTo16kHz(float32) {
  * @param float32 - Mono audio samples in the range [-1, 1]; values outside this range will be clamped.
  * @returns An Int16Array where negative inputs are scaled to the [-32768, -1] range and non-negative inputs to the [0, 32767] range.
  */
-//@ts-ignore
+/**
+ * Convert normalized 32-bit float PCM samples to signed 16-bit PCM samples.
+ *
+ * Samples are clamped to the range -1 to 1 before scaling.
+ *
+ * @param float32 - The input Float32Array (or array-like) of normalized PCM samples in the range -1 to 1
+ * @returns An Int16Array containing samples scaled to the signed 16-bit PCM range (-32768 to 32767)
+ */
 export function float32ToInt16(float32) {
   const int16 = new Int16Array(float32.length)
   for (let i = 0; i < float32.length; i++) {

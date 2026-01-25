@@ -71,6 +71,11 @@ export function RealtimeRecorder({
     setShowTranscription(true)
   }
 
+  /**
+   * Stops the active recording, uploads the captured audio with its transcription, and finalizes UI state.
+   *
+   * If an audio blob is produced it will be backed up and passed, along with the current transcription words, to `onTranscriptionComplete`. On successful upload the component state is reset and a success toast is shown. On failure the function logs the error, shows an error toast, leaves a retryable backup, and sets the retry state.
+   */
   async function handleStopRecording() {
     try {
       if (isStopping) {
@@ -110,6 +115,11 @@ export function RealtimeRecorder({
     }
   }
 
+  /**
+   * Reset recorder-related state to idle and hide any open transcription UI.
+   *
+   * Clears the retry flag and backed-up audio blob, hides the live transcription view, resets the session start time, and clears the stopping state.
+   */
   function handleCloseAll() {
     setIsRetry(false)
     setAudioBlobBackUp(null)
@@ -119,6 +129,20 @@ export function RealtimeRecorder({
     setShowTranscription(false)
   }
 
+  /**
+   * Retry uploading the most recently recorded audio and process its transcription.
+   *
+   * Attempts to resend a saved audio blob and its transcription; on success clears recorder state and shows a success notification, on failure sets the retry state and shows an error notification.
+   *
+   * Early exits:
+   * - If a stop/upload is already in progress, the retry is aborted.
+   * - If the user is not authenticated, the retry is aborted.
+   * - If there is no saved audio blob, the retry sets the retry state and is aborted.
+   *
+   * Side effects:
+   * - Toggles internal stopping and retry flags.
+   * - Triggers notifications for success or failure.
+   */
   async function handleRetry() {
     try {
       if (isStopping) {

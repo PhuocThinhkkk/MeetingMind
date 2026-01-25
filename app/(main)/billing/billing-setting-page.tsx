@@ -23,6 +23,13 @@ export default function SubscriptionPage() {
   useEffect(() => {
     fetchSubscription()
   }, [user])
+  /**
+   * Loads the current user's subscription and updates component state.
+   *
+   * Attempts to fetch the authenticated user's subscription and stores it in state.
+   * On start sets the loading flag and clears any previous error; if no user is present the function returns early.
+   * On failure stores the error message in state. The loading flag is reset when the operation completes.
+   */
   async function fetchSubscription() {
     try {
       setIsLoading(true)

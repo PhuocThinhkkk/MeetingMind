@@ -24,6 +24,11 @@ const actionTypes = {
 
 let count = 0
 
+/**
+ * Generate the next incremental identifier as a string.
+ *
+ * @returns A string containing the next numeric identifier; the internal counter is incremented and wraps to 0 after reaching Number.MAX_SAFE_INTEGER.
+ */
 function genId() {
   count = (count + 1) % Number.MAX_SAFE_INTEGER
   return count.toString()
@@ -130,6 +135,11 @@ const listeners: Array<(state: State) => void> = []
 
 let memoryState: State = { toasts: [] }
 
+/**
+ * Update the internal toast state using the provided action and notify all subscribed listeners with the new state.
+ *
+ * @param action - The action describing the state change to apply
+ */
 function dispatch(action: Action) {
   memoryState = reducer(memoryState, action)
   listeners.forEach(listener => {
@@ -139,6 +149,15 @@ function dispatch(action: Action) {
 
 type Toast = Omit<ToasterToast, 'id'>
 
+/**
+ * Creates and displays a new toast and returns controls for that toast.
+ *
+ * @param props - Initial toast properties (title, description, action, etc.)
+ * @returns An object with:
+ *  - `id`: the generated toast identifier
+ *  - `dismiss`: a function that closes the toast
+ *  - `update`: a function that updates the toast's properties
+ */
 function toast({ ...props }: Toast) {
   const id = genId()
 
@@ -168,6 +187,16 @@ function toast({ ...props }: Toast) {
   }
 }
 
+/**
+ * React hook that exposes the current toast state and control functions.
+ *
+ * Subscribes the component to the internal toast store so the component re-renders on toast state changes; unsubscribes automatically when unmounted.
+ *
+ * @returns An object containing the current toast state and control utilities:
+ * - `toasts`: the array of toasts in the store
+ * - `toast`: function to create a new toast
+ * - `dismiss(toastId?)`: closes a specific toast by `toastId`, or closes all toasts when `toastId` is omitted
+ */
 function useToast() {
   const [state, setState] = React.useState<State>(memoryState)
 
