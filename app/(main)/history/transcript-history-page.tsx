@@ -4,18 +4,12 @@ import { log } from "@/lib/logger";
 import { useAuth } from "@/hooks/use-auth";
 import { HistoryToolbar } from "@/components/history-toolbar";
 import { TranscriptModal } from "@/components/transcript-modal";
-import { getAudioHistory } from "@/lib/query/audio-operations";
+import { getAudioHistory } from "@/lib/queries/browser/audio-operations";
 import React from "react";
 import { useSearchParams } from "next/navigation";
 import { useAudio } from "@/components/context/audios-list-context";
 
-/**
- * Renders the transcript history page showing the current user's audio recordings and opens a transcript modal when an audio is selected via the URL.
- *
- * The component fetches the authenticated user's audio history and updates the audio context; if no user is present or the fetch returns an empty list, the audio list is cleared.
- *
- * @returns The page JSX containing the history toolbar, filtered audio history list, and an optional TranscriptModal for the selected audio.
- */
+
 export default function TranscriptHistoryPage() {
   const { audios, setAudios } = useAudio();
   const { user } = useAuth();

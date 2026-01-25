@@ -1,6 +1,6 @@
 import { log } from "@/lib/logger";
 import { SaveTranscriptInput, Transcript } from "@/types/transcription.db";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase-init/supabase-browser";
 import { RealtimeTranscriptionWord } from "@/types/transcription.ws";
 import { TranscriptionWord } from "@/types/transcription.db";
 

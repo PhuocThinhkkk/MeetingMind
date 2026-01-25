@@ -4,7 +4,7 @@ import { log } from "@/lib/logger";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/hooks/use-auth";
 import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase-init/supabase-browser";
 import {
   Sidebar,
   SidebarContent,
@@ -35,6 +35,11 @@ const navItems = [
   {
     title: "History",
     url: "history",
+    icon: History,
+  },
+  {
+    title: "Pricing",
+    url: "pricing",
     icon: History,
   },
 ];

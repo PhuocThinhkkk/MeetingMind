@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from "react";
 import { User, Session } from "@supabase/supabase-js";
-import { supabase } from "@/lib/supabase";
+import { supabase } from "@/lib/supabase-init/supabase-browser";
 
 export interface AuthContextType {
   user: User | null;

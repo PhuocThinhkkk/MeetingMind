@@ -6,7 +6,9 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "migration:push": "npx supabase db push",
+    "stripe:webhook": " stripe listen --forward-to localhost:3000/api/stripe/webhook/subscribe"
   },
   "dependencies": {
     "@alexanderolsen/libsamplerate-js": "^2.1.2",
@@ -38,6 +40,8 @@
     "@radix-ui/react-toggle": "^1.1.1",
     "@radix-ui/react-toggle-group": "^1.1.1",
     "@radix-ui/react-tooltip": "^1.2.7",
+    "@stripe/stripe-js": "^8.6.3",
+    "@supabase/auth-helpers-nextjs": "^0.15.0",
     "@supabase/supabase-js": "^2.76.1",
     "@tailwindcss/postcss": "^4.1.11",
     "@tailwindcss/vite": "^4.0.0-beta.5",
@@ -63,7 +67,9 @@
     "react-resizable-panels": "^2.1.7",
     "recharts": "^2.13.3",
     "recordrtc": "^5.6.2",
+    "server-only": "^0.0.1",
     "sonner": "^1.7.4",
+    "stripe": "^20.2.0",
     "tailwind-merge": "^2.5.5",
     "tailwindcss": "^4.1.11",
     "typescript": "^5.7.2",

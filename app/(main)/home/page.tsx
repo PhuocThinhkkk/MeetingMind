@@ -15,20 +15,14 @@ const RealtimeRecorderProvider = dynamic(
   },
 );
 
-/**
- * Renders the home page within the realtime recorder provider and sidebar layout.
- *
- * @returns A JSX element with `RealtimeRecorderProvider` wrapping `SidebarInset`, which includes `SideBarHeader` and the `HomePage` content.
- */
+
 export default function Page() {
   return (
     <RealtimeRecorderProvider>
-      <SidebarInset>
         <SideBarHeader header="Transcription" />
         <div className="flex flex-1 flex-col gap-4 p-4">
           <HomePage />
         </div>
-      </SidebarInset>
     </RealtimeRecorderProvider>
   );
 }

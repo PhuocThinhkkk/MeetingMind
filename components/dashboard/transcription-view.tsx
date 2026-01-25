@@ -20,7 +20,7 @@ import {
   CheckCircle,
   Loader2
 } from 'lucide-react';
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase-init/supabase-browser';
 
 interface TranscriptionViewProps {
   file: any;
