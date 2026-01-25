@@ -110,3 +110,8 @@ export async function updateCancelSupscription(userId: string, sub: Subscription
     )
     return subscription
 }
+export async function updateResumeSubscription(sub: Subscription){
+return stripe.subscriptions.update(sub.stripe_subscription_id, {
+    cancel_at_period_end: false,
+  })
+}

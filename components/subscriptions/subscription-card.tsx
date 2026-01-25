@@ -1,6 +1,6 @@
 "use client";
 
-import { Subscription } from "@/lib/subscription";
+import { Subscription } from "@/services/stripe/types";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 

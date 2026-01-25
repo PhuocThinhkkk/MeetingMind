@@ -8,6 +8,7 @@ import { getSubscriptionStatus, getUserSubscription } from "@/lib/queries/browse
 import { Subscription } from "@/services/stripe/types";
 import { Loader2 } from "lucide-react";
 import { useAuth } from "@/hooks/use-auth";
+import { ResumeSubscriptionButton } from "@/components/subscriptions/resume-subscription-button";
 
 export default function SubscriptionPage() {
   const [subscription, setSubscription] = useState<Subscription | null>(null);
@@ -40,6 +41,7 @@ export default function SubscriptionPage() {
 
   const subscriptionStatus = getSubscriptionStatus(subscription);
 
+  console.log(subscriptionStatus)
   return (
       <div className="container mx-auto px-4 ">
           <p className="py-4 text-muted-foreground">
@@ -76,13 +78,21 @@ export default function SubscriptionPage() {
             {/* Action Buttons */}
             {subscription && subscription.status === "active" && (
               <div className="flex flex-col gap-3 sm:flex-row">
+                {
+                !subscriptionStatus.isCanceled ? (
                 <CancelSubscriptionButton
                   subscriptionId={subscription.id}
                   onCancelSuccess={() => {
-                    // Refetch subscription data
                     window.location.reload();
                   }}
                 />
+                 ) : (<ResumeSubscriptionButton
+subscriptionId={subscription.id}
+onResumeSuccess={()=> {
+  window.location.reload()
+}}
+/>)
+}
               </div>
             )}
           </div>
