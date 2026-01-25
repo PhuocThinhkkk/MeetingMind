@@ -27,7 +27,7 @@ export type Transcript = {
 }
 
 export type TranscriptionWord = {
-  id: string
+  id: number
   start_time: number
   end_time: number
   text: string

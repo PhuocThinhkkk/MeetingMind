@@ -1,9 +1,9 @@
+import { log } from '@/lib/logger'
 import { NextResponse } from 'next/server'
-import { stripe } from '@/lib/stripe'
 import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
 import {
   getUserSubscriptionServer,
-  updateCancelSupscription,
+  updateCancelSubscription,
 } from '@/lib/queries/server/stripe-subscription-operations'
 
 export async function POST() {
@@ -14,7 +14,7 @@ export async function POST() {
     }
     const sub = await getUserSubscriptionServer(user.id)
 
-    await updateCancelSupscription(user.id, sub)
+    await updateCancelSubscription(sub)
 
     return NextResponse.json(
       {
@@ -23,7 +23,7 @@ export async function POST() {
       { status: 200 }
     )
   } catch (err) {
-    console.error('Cancel subscription error:', err)
+    log.error('Cancel subscription error:', err)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
 }

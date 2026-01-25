@@ -101,13 +101,14 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
     try {
       const simulatedAnswer =
         'Based on the meeting transcript, I can provide you with relevant information. This is a simulated AI response that would analyze the content and provide accurate answers.'
-
+      const userId = (await supabase.auth.getUser()).data.user?.id
+      if (!userId) return
       const { data, error } = await supabase
         .from('qa_logs')
         .insert([
           {
             audio_id: file.id,
-            user_id: (await supabase.auth.getUser()).data.user?.id,
+            user_id: userId,
             question,
             answer: simulatedAnswer,
             confidence_score: 0.85,
@@ -217,8 +218,8 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                         <div className="space-y-4 text-sm">
                           {mockTranscript
                             .split('\n')
-                            .filter(line => line.trim())
-                            .map((line, index) => (
+                            .filter((line: string) => line.trim())
+                            .map((line: string, index: string) => (
                               <div
                                 key={index}
                                 className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"

@@ -1,4 +1,5 @@
 'server-only'
+import { log } from '@/lib/logger'
 import {
   StripeInvoiceRuntime,
   StripeSubscriptionRuntime,
@@ -102,16 +103,13 @@ export async function getUserSubscriptionServer(userId: string) {
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Supabase Error Details:', JSON.stringify(error, null, 2))
+    log.error('Supabase Error Details:', JSON.stringify(error, null, 2))
     throw error
   }
   return data[0]
 }
 
-export async function updateCancelSupscription(
-  userId: string,
-  sub: Subscription
-) {
+export async function updateCancelSubscription(sub: Subscription) {
   const subscription = await stripe.subscriptions.update(
     sub.stripe_subscription_id,
     {

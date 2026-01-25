@@ -1,5 +1,6 @@
 'use client'
 
+import { log } from '@/lib/logger'
 import { useEffect, useState } from 'react'
 import { SubscriptionCard } from '@/components/subscriptions/subscription-card'
 import { SubscriptionStatusAlert } from '@/components/subscriptions/subscription-status-alert'
@@ -30,7 +31,7 @@ export default function SubscriptionPage() {
 
       const userId = user.id
       const sub = await getUserSubscription(userId)
-      console.log(sub)
+      log.info('subscription object: ', sub)
       setSubscription(sub)
     } catch (err) {
       setError(
@@ -43,7 +44,7 @@ export default function SubscriptionPage() {
 
   const subscriptionStatus = getSubscriptionStatus(subscription)
 
-  console.log(subscriptionStatus)
+  log.info('subscription status: ', subscriptionStatus)
   return (
     <div className="container mx-auto px-4 ">
       <p className="py-4 text-muted-foreground">

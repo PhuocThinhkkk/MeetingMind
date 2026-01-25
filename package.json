@@ -9,7 +9,9 @@
     "lint": "next lint",
     "format": "prettier --write .",
     "migration:push": "npx supabase db push",
-    "stripe:webhook": " stripe listen --forward-to localhost:3000/api/stripe/webhook/subscribe"
+    "stripe:webhook": " stripe listen --forward-to localhost:3000/api/stripe/webhook/subscribe",
+    "codemod:log:dry": "jscodeshift  app lib hooks services --extensions=ts,tsx,js,jsx --parser=tsx --transform scripts/replace-console-with-log.js --dry",
+    "codemod:log": "jscodeshift app lib hooks services --extensions=ts,tsx,js,jsx --parser=tsx --transform scripts/replace-console-with-log.js"
   },
   "dependencies": {
     "@alexanderolsen/libsamplerate-js": "^2.1.2",
@@ -84,6 +86,7 @@
     "eslint-config-prettier": "^10.1.8",
     "jest": "^30.2.0",
     "jest-environment-jsdom": "^30.2.0",
+    "jscodeshift": "^17.3.0",
     "prettier": "^3.8.1",
     "ts-jest": "^29.4.5",
     "tw-animate-css": "^1.3.5"

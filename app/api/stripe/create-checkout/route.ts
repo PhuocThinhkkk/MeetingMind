@@ -1,3 +1,4 @@
+import { log } from '@/lib/logger'
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import { getSupabseAuthServer } from '@/lib/supabase-auth-server'
@@ -19,8 +20,8 @@ export async function POST(req: Request) {
     data: { user },
   } = await supabaseAuth.auth.getUser()
   if (!user) {
-    console.error('There was no user in the request auth!')
-    console.log('supbase auth: ', supabaseAuth)
+    log.error('There was no user in the request auth!')
+    log.info('supbase auth: ', supabaseAuth)
     return NextResponse.json(
       { error: 'Please sign in to do this' },
       { status: 400 }

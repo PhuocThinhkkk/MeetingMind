@@ -244,7 +244,8 @@ function RenameInputDialog({
         })
       )
 
-      log.info('Rename audio:', audio.id, 'New name:', newName)
+      log.info('Rename audio:', audio.id)
+      log.info('New name:', newName)
       setShowRenameDialog(false)
       await updateAudioName(audio.id, newName)
     } catch (e) {

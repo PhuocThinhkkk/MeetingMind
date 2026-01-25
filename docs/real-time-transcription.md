@@ -42,7 +42,7 @@ Why 1800 bytes?
 1. The browser records audio chunks via `AudioWorklet`.
 2. When we call `startTranscription()`, it gonna start connecting to the Websocket server, the server then send us a begin msg if it was good
 3. request microphone and system audio access.
-4. After that, when recording the audio, audio will be processed from 2 channels to 1 channel (mono) in the [public/worklet-processor.js](./public/worklet-processor.js) file.
+4. After that, when recording the audio, audio will be processed from 2 channels to 1 channel (mono) in the [public/worklet-processor.js](../public/worklet-processor.js) file.
 5. The `handleWorkletSendingMessage` function will format the audio chunks into int16 PCM and send the chunks if it was greater than 1800 bytes.
 
 - first checking if the websocket server was good and the AssemblyAI ( The ws server will send us an begin msg on the `handleWorkletReceivingMessage` and then we can update the state to know if it was ready )

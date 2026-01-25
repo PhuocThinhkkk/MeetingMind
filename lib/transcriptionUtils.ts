@@ -107,6 +107,7 @@ export async function getAudioDuration(blob: Blob): Promise<number> {
  * @param float32 - Mono audio samples sampled at 48000 Hz.
  * @returns A Float32Array containing the resampled mono audio at 16000 Hz.
  */
+//@ts-ignore
 export async function resampleTo16kHz(float32) {
   const originalSampleRate = 48000
   const targetSampleRate = 16000
@@ -149,6 +150,7 @@ export async function resampleTo16kHz(float32) {
  * @param float32 - Mono audio samples in the range [-1, 1]; values outside this range will be clamped.
  * @returns An Int16Array where negative inputs are scaled to the [-32768, -1] range and non-negative inputs to the [0, 32767] range.
  */
+//@ts-ignore
 export function float32ToInt16(float32) {
   const int16 = new Int16Array(float32.length)
   for (let i = 0; i < float32.length; i++) {

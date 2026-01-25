@@ -112,7 +112,6 @@ describe('useAuth', () => {
       ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
         data: { subscription: mockSubscription },
       })
-
       ;(supabase.auth.signUp as jest.Mock).mockResolvedValue({
         error: null,
         data: { user: mockUser },
@@ -190,11 +189,9 @@ describe('useAuth', () => {
     it('should create user profile on SIGNED_IN event', async () => {
       const mockSubscription = { unsubscribe: jest.fn() }
       let authChangeCallback: any
-
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
       })
-
       ;(supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
         callback => {
           authChangeCallback = callback
@@ -248,7 +245,6 @@ describe('useAuth', () => {
       ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
         data: { subscription: mockSubscription },
       })
-
       ;(supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
         error: null,
         data: { session: mockSession },
@@ -327,7 +323,6 @@ describe('useAuth', () => {
       ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
         data: { subscription: mockSubscription },
       })
-
       ;(supabase.auth.signOut as jest.Mock).mockResolvedValue({ error: null })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
@@ -352,11 +347,9 @@ describe('useAuth', () => {
     it('should update user state on SIGNED_IN event', async () => {
       const mockSubscription = { unsubscribe: jest.fn() }
       let authChangeCallback: any
-
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
       })
-
       ;(supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
         callback => {
           authChangeCallback = callback
@@ -385,11 +378,9 @@ describe('useAuth', () => {
     it('should clear user state on SIGNED_OUT event', async () => {
       const mockSubscription = { unsubscribe: jest.fn() }
       let authChangeCallback: any
-
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: mockSession },
       })
-
       ;(supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
         callback => {
           authChangeCallback = callback
@@ -436,7 +427,6 @@ describe('useAuth', () => {
       ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
       })
-
       ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
         data: { subscription: mockSubscription },
       })

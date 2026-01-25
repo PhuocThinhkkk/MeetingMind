@@ -1,3 +1,4 @@
+import { log } from '@/lib/logger'
 import { StripeInvoiceRuntime, StripeSubscriptionRuntime } from './types'
 
 /**
@@ -19,9 +20,9 @@ export function assertSubscriptionRuntime(
     !('current_period_end' in sub.items.data[0]) ||
     !('cancel_at_period_end' in sub)
   ) {
-    console.log('SUBSCRIPTION OBJECT: ', sub)
+    log.info('SUBSCRIPTION OBJECT: ', sub)
     // @ts-ignore
-    console.log('Subscriptions items: ', sub.items.data)
+    log.info('Subscriptions items: ', sub.items.data)
     throw new Error('Invalid Stripe subscription runtime shape')
   }
 }
@@ -41,7 +42,7 @@ export function assertInvoiceRuntime(
     !('subscription' in invoice) ||
     typeof (invoice as any).subscription !== 'string'
   ) {
-    console.log('INVOICE OBJECT: ', invoice)
+    log.info('INVOICE OBJECT: ', invoice)
     throw new Error('Invalid Stripe invoice runtime shape')
   }
 }

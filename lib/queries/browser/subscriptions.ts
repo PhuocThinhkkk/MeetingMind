@@ -9,7 +9,7 @@ export async function getUserSubscription(userId: string) {
     .eq('user_id', userId)
 
   if (error) {
-    console.error('Supabase Error Details:', JSON.stringify(error, null, 2))
+    log.error('Supabase Error Details:', JSON.stringify(error, null, 2))
     log.error('Error fetching audio history from Supabase:', {
       error,
       message: error.message,

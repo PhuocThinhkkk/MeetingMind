@@ -1,3 +1,4 @@
+import { log } from '@/lib/logger'
 import { NextResponse } from 'next/server'
 import { stripe } from '@/lib/stripe'
 import type Stripe from 'stripe'
@@ -34,7 +35,7 @@ export async function POST(req: Request) {
       process.env.STRIPE_WEBHOOK_SECRET!
     )
   } catch (err) {
-    console.error('Webhook verification failed:', err)
+    log.error('Webhook verification failed:', err)
     return new NextResponse('Invalid signature', { status: 400 })
   }
 
@@ -47,7 +48,7 @@ export async function POST(req: Request) {
           typeof session.subscription !== 'string' ||
           typeof session.customer !== 'string'
         ) {
-          console.log(
+          log.info(
             'checkout.session.completed: skipping non-subscription checkout session'
           )
           break
@@ -61,30 +62,30 @@ export async function POST(req: Request) {
         const subscription = await stripe.subscriptions.retrieve(
           session.subscription
         )
-        console.log('CUSTOMER SESSION COMPLETED OBJECT: ', subscription)
+        log.info('CUSTOMER SESSION COMPLETED OBJECT: ', subscription)
         await createStripeSubscription(userId, subscription)
-        console.log('SESSION COMPLETED EVENT')
+        log.info('SESSION COMPLETED EVENT')
         break
       }
       case 'customer.subscription.created': {
         const subscription = event.data.object
         assertSubscriptionRuntime(subscription)
         await updateStripeSubscription(subscription)
-        console.log('CUSTOMER SUBSCRIPTION CREATED EVENT')
+        log.info('CUSTOMER SUBSCRIPTION CREATED EVENT')
         break
       }
       case 'customer.subscription.updated': {
         const subscription = event.data.object
         assertSubscriptionRuntime(subscription)
         await updateStripeSubscription(subscription)
-        console.log('CUSTOMER UPDATED EVENT')
+        log.info('CUSTOMER UPDATED EVENT')
         break
       }
 
       case 'customer.subscription.deleted': {
         const subscription = event.data.object as Stripe.Subscription
         await deleteStripeSubscription(subscription)
-        console.log('CUSTOMER DELETE EVENT')
+        log.info('CUSTOMER DELETE EVENT')
         break
       }
 
@@ -92,15 +93,15 @@ export async function POST(req: Request) {
         const invoice = event.data.object as Stripe.Invoice
         assertInvoiceRuntime(invoice)
         await invoiceStripeSubscription(invoice)
-        console.log('INVOICE PAYMENT FAILED EVENT')
+        log.info('INVOICE PAYMENT FAILED EVENT')
         break
       }
 
       default:
-        console.log('Unhandled event:', event.type)
+        log.info('Unhandled event:', event.type)
     }
   } catch (err) {
-    console.error('Webhook handler error:', err)
+    log.error('Webhook handler error:', err)
     return new NextResponse('Webhook handler failed', { status: 500 })
   }
 

@@ -24,7 +24,7 @@ export default function Home() {
           throw new Error(`Server responded with status ${res.status}`)
         }
       } catch (error) {
-        console.error('Server is not reachable:', error)
+        log.error('Server is not reachable:', error)
       }
     }
     serverCheck()

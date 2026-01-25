@@ -19,7 +19,7 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   ) {
-    console.error(
+    log.error(
       '❌ Supabase not configured! Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local'
     )
     return []
@@ -33,7 +33,7 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
     .order('created_at', { ascending: false })
 
   if (error) {
-    console.error('Supabase Error Details:', JSON.stringify(error, null, 2))
+    log.error('Supabase Error Details:', JSON.stringify(error, null, 2))
     log.error('Error fetching audio history from Supabase:', {
       error,
       message: error.message,

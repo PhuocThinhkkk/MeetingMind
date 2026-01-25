@@ -1,8 +1,8 @@
+import { log } from '@/lib/logger'
 import { NextResponse } from 'next/server'
 import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
 import {
   getUserSubscriptionServer,
-  updateCancelSupscription,
   updateResumeSubscription,
 } from '@/lib/queries/server/stripe-subscription-operations'
 
@@ -23,7 +23,7 @@ export async function POST() {
       { status: 200 }
     )
   } catch (err) {
-    console.error('Resume subscription error:', err)
+    log.error('Resume subscription error:', err)
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 })
   }
 }

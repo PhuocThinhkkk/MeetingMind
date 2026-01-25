@@ -1,4 +1,5 @@
 'use client'
+import { log } from '@/lib/logger'
 
 import { useEffect, useState } from 'react'
 import {
@@ -70,7 +71,7 @@ export default function PricingSection() {
         setCurrentPlan('free')
       }
     } catch (e) {
-      console.error(e)
+      log.error("Error when fetching user plan: ", e)
       setCurrentPlan('free')
     } finally {
       setLoading(false)
@@ -115,11 +116,10 @@ export default function PricingSection() {
             return (
               <Card
                 key={plan.key}
-                className={`relative flex flex-col rounded-2xl border transition-all ${
-                  plan.featured
+                className={`relative flex flex-col rounded-2xl border transition-all ${plan.featured
                     ? 'border-primary/50 shadow-lg'
                     : 'border-border'
-                } ${isCurrentPlan ? 'ring-2 ring-primary' : ''}`}
+                  } ${isCurrentPlan ? 'ring-2 ring-primary' : ''}`}
               >
                 {plan.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
