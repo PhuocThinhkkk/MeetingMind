@@ -1,4 +1,3 @@
-
 # Next.js Application
 
 This document covers the structure and organization of the MeetingMind Next.js frontend application.
@@ -54,11 +53,13 @@ public/
 ### Landing Page (`app/page.tsx`)
 
 ### Home Page (`app/(main)/home/page.tsx`)
+
 - Real-time transcription interface
 - Wrapped in `RealtimeRecorderProvider` for WebSocket audio streaming
 - Client-side only with dynamic loading
 
 ### History Page (`app/(main)/history/page.tsx`)
+
 - Displays past transcription records
 - Wrapped in `AudioProvider` context
 - Fetches data from Supabase
@@ -66,14 +67,18 @@ public/
 ## Context Providers
 
 ### RealtimeRecorderProvider
+
 Located in `components/context/realtime-recorder-context.tsx`
+
 - Manages WebSocket connection to the socket server
 - Handles audio recording and streaming
 - Provides real-time transcription state
 - Uses `RealtimeTranscriptResponse` type
 
 ### AudioProvider
+
 Located in `components/context/audios-list-context.tsx`
+
 - Manages audio file list and operations
 - Provides CRUD operations for audio records
 - Integrates with Supabase database
@@ -81,27 +86,34 @@ Located in `components/context/audios-list-context.tsx`
 ## Custom Hooks
 
 ### `use-auth`
+
 Provides authentication state and user information:
+
 ```typescript
-const { user, loading } = useAuth();
+const { user, loading } = useAuth()
 ```
 
 ### `use-mobile`
+
 Detects mobile device for responsive behavior:
+
 ```typescript
-const isMobile = useMobile();
+const isMobile = useMobile()
 ```
 
 ### `use-toast`
+
 Displays toast notifications:
+
 ```typescript
-const { toast } = useToast();
-toast({ title: "Success", description: "Action completed" });
+const { toast } = useToast()
+toast({ title: 'Success', description: 'Action completed' })
 ```
 
 ## Data Fetching
 
 ### Database Operations on the Client Side (using supabase client)
+
 Query operations are organized in `lib/query/`:
 
 - **Audio Operations** (`audio-operations.ts`):
@@ -111,14 +123,17 @@ Query operations are organized in `lib/query/`:
   - Operations for managing transcripts and words
 
 ### Supabase Integration
+
 The Supabase client is configured in `lib/supabase.ts`:
+
 ```typescript
-import { supabase } from '@/lib/supabase';
+import { supabase } from '@/lib/supabase'
 ```
 
 ## Audio Processing
 
 Audio processing is handled through:
+
 - **Audio Worklet** (`public/worklet-processor.js`) - Processes raw audio in a separate thread
 - **Audio Utils** (`lib/audioWorkletUtils.ts`) - Helper functions for audio operations
 - **Transcription Utils** (`lib/transcriptionUtils.ts`) - Duration calculation and formatting
@@ -126,6 +141,7 @@ Audio processing is handled through:
 ## Environment Variables
 
 Required environment variables for the Next.js app:
+
 ```env
 NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
 NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_anon_key

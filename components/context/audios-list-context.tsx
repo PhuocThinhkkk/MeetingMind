@@ -1,16 +1,16 @@
-"use client";
+'use client'
 
-import React from "react";
-import { AudioFile } from "@/types/transcription.db";
+import React from 'react'
+import { AudioFile } from '@/types/transcription.db'
 
 type AudioContextType = {
-  audios: AudioFile[];
-  setAudios: React.Dispatch<React.SetStateAction<AudioFile[]>>;
-};
+  audios: AudioFile[]
+  setAudios: React.Dispatch<React.SetStateAction<AudioFile[]>>
+}
 
 const AudioContext = React.createContext<AudioContextType | undefined>(
-  undefined,
-);
+  undefined
+)
 
 /**
  * Provides an AudioContext containing the current `audios` array and its setter to descendant components.
@@ -19,13 +19,13 @@ const AudioContext = React.createContext<AudioContextType | undefined>(
  * @returns The React element that supplies the audio context to its descendants
  */
 export function AudioProvider({ children }: { children: React.ReactNode }) {
-  const [audios, setAudios] = React.useState<AudioFile[]>([]);
+  const [audios, setAudios] = React.useState<AudioFile[]>([])
 
   return (
     <AudioContext.Provider value={{ audios, setAudios }}>
       {children}
     </AudioContext.Provider>
-  );
+  )
 }
 
 /**
@@ -35,9 +35,9 @@ export function AudioProvider({ children }: { children: React.ReactNode }) {
  * @throws Error when the hook is called outside of an `AudioProvider`.
  */
 export function useAudio() {
-  const context = React.useContext(AudioContext);
+  const context = React.useContext(AudioContext)
   if (!context) {
-    throw new Error("useAudio must be used within an AudioProvider");
+    throw new Error('useAudio must be used within an AudioProvider')
   }
-  return context;
+  return context
 }

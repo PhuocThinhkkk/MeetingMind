@@ -3,6 +3,7 @@
 Welcome to the MeetingMind developer documentation.
 
 ## Sections
+
 - [Setup](./setup.md)
 - [Architecture](./architecture.md)
 - [Nextjs app](./nextjs-app.md)
@@ -11,4 +12,3 @@ Welcome to the MeetingMind developer documentation.
 - [Real-time Transcription](./real-time-transcription.md)
 - [API Reference](./api.md)
 - [Troubleshooting](./troubleshooting.md)
-

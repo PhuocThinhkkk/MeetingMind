@@ -1,7 +1,7 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { XCircle } from "lucide-react"
-import Link from "next/link"
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { XCircle } from 'lucide-react'
+import Link from 'next/link'
 
 /**
  * Render a centered "Payment Failed" page with a failure icon, explanatory text, contact link, and actions to return home or retry.
@@ -30,7 +30,7 @@ export default function PaymentFailedPage() {
           </p>
 
           <p className="mt-4 text-sm text-gray-700 dark:text-gray-400">
-            If the problem persists, contact us at{" "}
+            If the problem persists, contact us at{' '}
             <a
               href="mailto:admin@eliteai.tools"
               className="font-medium text-indigo-600 underline dark:text-indigo-400"

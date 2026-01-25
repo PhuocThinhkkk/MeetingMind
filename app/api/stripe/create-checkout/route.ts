@@ -1,6 +1,6 @@
-import { NextResponse } from "next/server"
-import { stripe } from "@/lib/stripe"
-import { getSupabseAuthServer } from "@/lib/supabase-auth-server"
+import { NextResponse } from 'next/server'
+import { stripe } from '@/lib/stripe'
+import { getSupabseAuthServer } from '@/lib/supabase-auth-server'
 
 /**
  * Create a Stripe Checkout Session for the authenticated user and return the session URL.
@@ -13,18 +13,23 @@ import { getSupabseAuthServer } from "@/lib/supabase-auth-server"
  * authenticated user is present returns JSON with `error` and an HTTP 400 status.
  */
 export async function POST(req: Request) {
-    const priceId = process.env.STRIPE_PRO_PLAN_PRICE_ID
-    const supabaseAuth = await getSupabseAuthServer()
-    const { data: { user } } = await supabaseAuth.auth.getUser()
-    if (!user){
-      console.error("There was no user in the request auth!")
-      console.log("supbase auth: ",supabaseAuth)
-      return NextResponse.json({error: "Please sign in to do this"}, { status: 400 })
-    }
+  const priceId = process.env.STRIPE_PRO_PLAN_PRICE_ID
+  const supabaseAuth = await getSupabseAuthServer()
+  const {
+    data: { user },
+  } = await supabaseAuth.auth.getUser()
+  if (!user) {
+    console.error('There was no user in the request auth!')
+    console.log('supbase auth: ', supabaseAuth)
+    return NextResponse.json(
+      { error: 'Please sign in to do this' },
+      { status: 400 }
+    )
+  }
 
   const session = await stripe.checkout.sessions.create({
-    mode: "subscription",
-    payment_method_types: ["card"],
+    mode: 'subscription',
+    payment_method_types: ['card'],
     customer_email: user.email,
     line_items: [
       {

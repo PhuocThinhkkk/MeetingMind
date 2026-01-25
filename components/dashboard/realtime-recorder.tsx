@@ -1,8 +1,8 @@
-import { useState, useEffect } from "react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { log } from "@/lib/logger";
-import { Badge } from "@/components/ui/badge";
+import { useState, useEffect } from 'react'
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { log } from '@/lib/logger'
+import { Badge } from '@/components/ui/badge'
 import {
   Mic,
   MicOff,
@@ -11,20 +11,20 @@ import {
   AlertCircle,
   Wifi,
   WifiOff,
-} from "lucide-react";
-import RealTimeTranscriptionPage from "./realtime-view-transcription";
-import { useRecorder } from "@/components/context/realtime-recorder-context";
-import { SaveTranscriptInput } from "@/types/transcription.db";
-import { useAuth } from "@/hooks/use-auth";
-import { formatDuration } from "@/lib/utils";
-import { toast } from "sonner";
-import { LoadingOverlay } from "../loading-overlay";
+} from 'lucide-react'
+import RealTimeTranscriptionPage from './realtime-view-transcription'
+import { useRecorder } from '@/components/context/realtime-recorder-context'
+import { SaveTranscriptInput } from '@/types/transcription.db'
+import { useAuth } from '@/hooks/use-auth'
+import { formatDuration } from '@/lib/utils'
+import { toast } from 'sonner'
+import { LoadingOverlay } from '../loading-overlay'
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (
     audioBlob: Blob,
-    transcription: SaveTranscriptInput,
-  ) => Promise<void>;
+    transcription: SaveTranscriptInput
+  ) => Promise<void>
 }
 
 /**
@@ -36,10 +36,10 @@ interface RealtimeRecorderProps {
 export function RealtimeRecorder({
   onTranscriptionComplete,
 }: RealtimeRecorderProps) {
-  const { user } = useAuth();
-  const [showTranscription, setShowTranscription] = useState(false);
-  const [isStopping, setIsStopping] = useState(false);
-  const [audioBlobBackUp, setAudioBlobBackUp] = useState<Blob | null>(null);
+  const { user } = useAuth()
+  const [showTranscription, setShowTranscription] = useState(false)
+  const [isStopping, setIsStopping] = useState(false)
+  const [audioBlobBackUp, setAudioBlobBackUp] = useState<Blob | null>(null)
   const {
     transcriptWords,
     translateWords,
@@ -49,107 +49,110 @@ export function RealtimeRecorder({
     setSessionStartTime,
     isRecording,
     status,
-  } = useRecorder();
-  const [duration, setDuration] = useState(0);
-  const [isRetry, setIsRetry] = useState(false);
+  } = useRecorder()
+  const [duration, setDuration] = useState(0)
+  const [isRetry, setIsRetry] = useState(false)
 
   useEffect(() => {
     if (!sessionStartTime || !isRecording) {
-      setDuration(0);
-      return;
+      setDuration(0)
+      return
     }
     const id = setInterval(() => {
       setDuration(
-        Math.max(0, Date.now() / 1000 - sessionStartTime.getTime() / 1000),
-      );
-    }, 1000);
-    return () => clearInterval(id);
-  }, [sessionStartTime, isRecording]);
+        Math.max(0, Date.now() / 1000 - sessionStartTime.getTime() / 1000)
+      )
+    }, 1000)
+    return () => clearInterval(id)
+  }, [sessionStartTime, isRecording])
 
   async function handleStartRecording() {
-    await startRecording();
-    setShowTranscription(true);
+    await startRecording()
+    setShowTranscription(true)
   }
 
   async function handleStopRecording() {
     try {
       if (isStopping) {
-        log.warn("Already stopping the recording, please wait.");
-        return;
+        log.warn('Already stopping the recording, please wait.')
+        return
       }
-      setIsStopping(true);
+      setIsStopping(true)
       if (!user) {
-        log.error("User not authenticated");
-        setIsStopping(false);
-        return;
+        log.error('User not authenticated')
+        setIsStopping(false)
+        return
       }
 
-      let audioBlob = stopRecording();
+      let audioBlob = stopRecording()
       if (audioBlob) {
-        setAudioBlobBackUp(audioBlob);
+        setAudioBlobBackUp(audioBlob)
       }
 
       if (!audioBlob) {
-        log.error("No audio blob available on stop recording");
-        setIsStopping(false);
-        return;
+        log.error('No audio blob available on stop recording')
+        setIsStopping(false)
+        return
       }
 
-      log.info(`${audioBlob}`);
-      const transcription = transcriptWords;
-      await onTranscriptionComplete(audioBlob, transcription);
+      log.info(`${audioBlob}`)
+      const transcription = transcriptWords
+      await onTranscriptionComplete(audioBlob, transcription)
       handleCloseAll()
-      toast.success("Upload your audio successfully, you can check out the history page")
+      toast.success(
+        'Upload your audio successfully, you can check out the history page'
+      )
     } catch (e) {
-      log.error(`${e}`);
-      toast.error("Can not upload your audio");
-      setIsStopping(false);
-      setIsRetry(true);
+      log.error(`${e}`)
+      toast.error('Can not upload your audio')
+      setIsStopping(false)
+      setIsRetry(true)
     }
   }
 
-  function handleCloseAll(){
-      setIsRetry(false)
-      setAudioBlobBackUp(null)
-      setShowTranscription(false)
-      setSessionStartTime(null);
-      setIsStopping(false);
-      setShowTranscription(false);
+  function handleCloseAll() {
+    setIsRetry(false)
+    setAudioBlobBackUp(null)
+    setShowTranscription(false)
+    setSessionStartTime(null)
+    setIsStopping(false)
+    setShowTranscription(false)
   }
 
   async function handleRetry() {
     try {
       if (isStopping) {
-        log.warn("Already stopping the recording, please wait.");
-        return;
+        log.warn('Already stopping the recording, please wait.')
+        return
       }
-      setIsStopping(true);
+      setIsStopping(true)
       if (!user) {
-        log.error("User not authenticated");
-        setIsStopping(false);
-        return;
+        log.error('User not authenticated')
+        setIsStopping(false)
+        return
       }
 
       if (!audioBlobBackUp) {
-        log.error("No audio blob available on stop recording");
-        setIsRetry(true);
+        log.error('No audio blob available on stop recording')
+        setIsRetry(true)
         setIsStopping(false)
-        return;
+        return
       }
 
-      log.info(`${audioBlobBackUp}`);
-      const transcription = transcriptWords;
-      await onTranscriptionComplete(audioBlobBackUp, transcription);
+      log.info(`${audioBlobBackUp}`)
+      const transcription = transcriptWords
+      await onTranscriptionComplete(audioBlobBackUp, transcription)
       handleCloseAll()
-      toast.success("Upload your audio successfully, you can check out the history page")
+      toast.success(
+        'Upload your audio successfully, you can check out the history page'
+      )
     } catch (e) {
-      log.error(`${e}`);
-      toast.error("Can not upload your audio");
-      setIsStopping(false);
-      setIsRetry(true);
+      log.error(`${e}`)
+      toast.error('Can not upload your audio')
+      setIsStopping(false)
+      setIsRetry(true)
     }
   }
-
 
   /**
    * Selects the Tailwind CSS class string used for the status badge based on the current recorder status.
@@ -165,31 +168,31 @@ export function RealtimeRecorder({
    */
   function getStatusColor() {
     switch (status) {
-      case "recording":
-        return "bg-red-100 text-red-800 border-red-200";
-      case "connecting":
-        return "bg-yellow-100 text-yellow-800 border-yellow-200";
-      case "processing":
-        return "bg-blue-100 text-blue-800 border-blue-200";
-      case "error":
-        return "bg-red-100 text-red-800 border-red-200";
+      case 'recording':
+        return 'bg-red-100 text-red-800 border-red-200'
+      case 'connecting':
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+      case 'processing':
+        return 'bg-blue-100 text-blue-800 border-blue-200'
+      case 'error':
+        return 'bg-red-100 text-red-800 border-red-200'
       default:
-        return "bg-gray-100 text-gray-800 border-gray-200";
+        return 'bg-gray-100 text-gray-800 border-gray-200'
     }
   }
 
   function getStatusIcon() {
     switch (status) {
-      case "recording":
-        return <Mic className="w-4 h-4" />;
-      case "connecting":
-        return <Loader2 className="w-4 h-4 animate-spin" />;
-      case "processing":
-        return <Loader2 className="w-4 h-4 animate-spin" />;
-      case "error":
-        return <AlertCircle className="w-4 h-4" />;
+      case 'recording':
+        return <Mic className="w-4 h-4" />
+      case 'connecting':
+        return <Loader2 className="w-4 h-4 animate-spin" />
+      case 'processing':
+        return <Loader2 className="w-4 h-4 animate-spin" />
+      case 'error':
+        return <AlertCircle className="w-4 h-4" />
       default:
-        return <MicOff className="w-4 h-4" />;
+        return <MicOff className="w-4 h-4" />
     }
   }
 
@@ -206,7 +209,7 @@ export function RealtimeRecorder({
                 <span className="capitalize">{status}</span>
               </Badge>
 
-              {status === "recording" && (
+              {status === 'recording' && (
                 <div className="flex items-center space-x-2 text-sm text-gray-600">
                   <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
                   <span>{formatDuration(duration)}</span>
@@ -218,11 +221,11 @@ export function RealtimeRecorder({
               <div
                 className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
                   isRecording
-                    ? "bg-red-500 hover:bg-red-600 animate-pulse"
-                    : "bg-red-100 hover:bg-red-200 group-hover:bg-red-200"
+                    ? 'bg-red-500 hover:bg-red-600 animate-pulse'
+                    : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
                 }`}
               >
-                {status === "connecting" ? (
+                {status === 'connecting' ? (
                   <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
                 ) : isRecording ? (
                   <Square className="w-8 h-8 text-white" />
@@ -232,21 +235,21 @@ export function RealtimeRecorder({
               </div>
 
               <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                {!isRecording && "Real-time Recording"}
+                {!isRecording && 'Real-time Recording'}
               </h3>
 
               <p className="text-gray-600 text-sm mb-6">
-                {!isRecording && "Start recording to see live transcription"}
+                {!isRecording && 'Start recording to see live transcription'}
               </p>
 
               <div className="space-y-3">
                 {!isRecording ? (
                   <Button
                     onClick={handleStartRecording}
-                    disabled={status === "connecting"}
+                    disabled={status === 'connecting'}
                     className="hover:cursor-pointer w-full bg-red-600 hover:bg-red-700 transition-all hover:scale-[1.02] shadow-lg hover:shadow-xl"
                   >
-                    {status === "connecting" ? (
+                    {status === 'connecting' ? (
                       <>
                         <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                         Connecting...
@@ -269,7 +272,7 @@ export function RealtimeRecorder({
                   </Button>
                 )}
 
-                {status === "error" && (
+                {status === 'error' && (
                   <p className="text-sm text-red-600 flex items-center justify-center">
                     <AlertCircle className="w-4 h-4 mr-1" />
                     Connection failed. Please check your settings.
@@ -280,15 +283,15 @@ export function RealtimeRecorder({
 
             {/* Connection Status */}
             <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
-              {status === "recording" || status === "connecting" ? (
+              {status === 'recording' || status === 'connecting' ? (
                 <Wifi className="w-4 h-4 text-green-500" />
               ) : (
                 <WifiOff className="w-4 h-4 text-gray-400" />
               )}
               <span>
-                {status === "recording"
-                  ? "Connected to transcription service"
-                  : "Ready to connect"}
+                {status === 'recording'
+                  ? 'Connected to transcription service'
+                  : 'Ready to connect'}
               </span>
             </div>
           </div>
@@ -310,5 +313,5 @@ export function RealtimeRecorder({
         onDismiss={handleCloseAll}
       />
     </>
-  );
+  )
 }

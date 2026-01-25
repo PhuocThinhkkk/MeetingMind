@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,62 +11,66 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Loader2 } from "lucide-react";
+} from '@/components/ui/alert-dialog'
+import { Loader2 } from 'lucide-react'
 
 type ResumeSubscriptionButtonProps = {
-  subscriptionId: string;
-  onResumeSuccess?: () => void;
-};
+  subscriptionId: string
+  onResumeSuccess?: () => void
+}
 
 export function ResumeSubscriptionButton({
   subscriptionId,
   onResumeSuccess,
 }: ResumeSubscriptionButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleCancelSubscription = async () => {
-    setIsLoading(true);
-    setError(null);
+    setIsLoading(true)
+    setError(null)
 
     try {
-      const response = await fetch("/api/stripe/resume-subscription", {
-        method: "POST",
+      const response = await fetch('/api/stripe/resume-subscription', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ subscriptionId }),
-        credentials: "include",
-      });
+        credentials: 'include',
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to resume subscription");
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to resume subscription')
       }
 
-      onResumeSuccess?.();
+      onResumeSuccess?.()
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "An error occurred while canceling"
-      );
+        err instanceof Error ? err.message : 'An error occurred while canceling'
+      )
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <>
       <AlertDialog>
         <AlertDialogTrigger asChild>
-          <Button className="bg-blue-700 text-white hover:bg-blue-800 hover:cursor-pointer" variant="default" disabled={isLoading}>
+          <Button
+            className="bg-blue-700 text-white hover:bg-blue-800 hover:cursor-pointer"
+            variant="default"
+            disabled={isLoading}
+          >
             {isLoading ? (
               <>
                 <Loader2 className="mr-2 h-4 w-4 animate-spin" />
                 Resuming...
               </>
             ) : (
-              "Resume Subscription"
+              'Resume Subscription'
             )}
           </Button>
         </AlertDialogTrigger>
@@ -97,5 +101,5 @@ export function ResumeSubscriptionButton({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
+  )
 }

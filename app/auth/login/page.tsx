@@ -1,50 +1,49 @@
-"use client";
+'use client'
 
-import { useState, } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Loader2, Mail, Lock, ArrowRight, Mic } from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
-import GoogleSignInButton from "@/components/google-btn-sign-in";
-
+} from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
+import { Loader2, Mail, Lock, ArrowRight, Mic } from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
+import GoogleSignInButton from '@/components/google-btn-sign-in'
 
 export default function LoginPage() {
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const router = useRouter();
-  const { signIn } = useAuth();
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const router = useRouter()
+  const { signIn } = useAuth()
 
   const handleLogin = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
     try {
-      const { error } = await signIn(email, password);
+      const { error } = await signIn(email, password)
       if (error) {
-        setError(error.message);
+        setError(error.message)
       } else {
-        router.push("/home");
+        router.push('/home')
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      setError('An unexpected error occurred')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
@@ -85,7 +84,7 @@ export default function LoginPage() {
                     type="email"
                     placeholder="Enter your email"
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={e => setEmail(e.target.value)}
                     className="pl-10 transition-all focus:scale-[1.02] hover:shadow-md"
                     required
                   />
@@ -101,7 +100,7 @@ export default function LoginPage() {
                     type="password"
                     placeholder="Enter your password"
                     value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    onChange={e => setPassword(e.target.value)}
                     className="pl-10 transition-all focus:scale-[1.02] hover:shadow-md"
                     required
                   />
@@ -118,14 +117,14 @@ export default function LoginPage() {
                 ) : (
                   <ArrowRight className="w-4 h-4 mr-2" />
                 )}
-                {loading ? "Signing in..." : "Sign in"}
+                {loading ? 'Signing in...' : 'Sign in'}
               </Button>
             </form>
             <GoogleSignInButton />
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Don't have an account?{" "}
+                Don't have an account?{' '}
                 <Link
                   href="/auth/signup"
                   className="text-blue-600 hover:text-blue-700 font-medium transition-colors hover:underline"
@@ -138,5 +137,5 @@ export default function LoginPage() {
         </Card>
       </div>
     </div>
-  );
+  )
 }

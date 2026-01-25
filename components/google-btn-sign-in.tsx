@@ -1,8 +1,8 @@
-"use client";
-import { useAuth } from "@/hooks/use-auth";
+'use client'
+import { useAuth } from '@/hooks/use-auth'
 
 export default function GoogleSignInButton() {
-  const { signInWithGoogle } = useAuth();
+  const { signInWithGoogle } = useAuth()
 
   return (
     <button
@@ -18,6 +18,5 @@ export default function GoogleSignInButton() {
       />
       <span>Sign in with Google</span>
     </button>
-  );
+  )
 }
-

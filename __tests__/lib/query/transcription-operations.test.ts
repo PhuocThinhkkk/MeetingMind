@@ -18,9 +18,27 @@ describe('Transcription Query Functions', () => {
     it('should save transcript with concatenated text from words', async () => {
       const mockAudioId = 'audio-1'
       const mockTranscriptWords: RealtimeTranscriptionWord[] = [
-        { text: 'Hello', confidence: 0.98, start: 0, end: 0.5, word_is_final: true },
-        { text: 'world', confidence: 0.97, start: 0.5, end: 1.0, word_is_final: true },
-        { text: 'test', confidence: 0.99, start: 1.0, end: 1.5, word_is_final: true },
+        {
+          text: 'Hello',
+          confidence: 0.98,
+          start: 0,
+          end: 0.5,
+          word_is_final: true,
+        },
+        {
+          text: 'world',
+          confidence: 0.97,
+          start: 0.5,
+          end: 1.0,
+          word_is_final: true,
+        },
+        {
+          text: 'test',
+          confidence: 0.99,
+          start: 1.0,
+          end: 1.5,
+          word_is_final: true,
+        },
       ]
 
       const mockInsert = jest.fn().mockReturnThis()
@@ -59,17 +77,27 @@ describe('Transcription Query Functions', () => {
     })
 
     it('should throw error if transcripts array is empty', async () => {
-      await expect(saveTranscript('audio-1', [])).rejects.toThrow('Transcripts array cannot be empty')
+      await expect(saveTranscript('audio-1', [])).rejects.toThrow(
+        'Transcripts array cannot be empty'
+      )
     })
 
     it('should throw error if transcripts is null/undefined', async () => {
-      await expect(saveTranscript('audio-1', null as any)).rejects.toThrow('Transcripts array cannot be empty')
+      await expect(saveTranscript('audio-1', null as any)).rejects.toThrow(
+        'Transcripts array cannot be empty'
+      )
     })
 
     it('should throw error if database insert fails', async () => {
       const mockError = new Error('Database error')
       const mockTranscriptWords: RealtimeTranscriptionWord[] = [
-        { text: 'Hello', confidence: 0.98, start: 0, end: 0.5, word_is_final: true },
+        {
+          text: 'Hello',
+          confidence: 0.98,
+          start: 0,
+          end: 0.5,
+          word_is_final: true,
+        },
       ]
 
       const mockInsert = jest.fn().mockReturnThis()
@@ -91,12 +119,20 @@ describe('Transcription Query Functions', () => {
         single: mockSingle,
       })
 
-      await expect(saveTranscript('audio-1', mockTranscriptWords)).rejects.toThrow(mockError)
+      await expect(
+        saveTranscript('audio-1', mockTranscriptWords)
+      ).rejects.toThrow(mockError)
     })
 
     it('should handle single word transcript', async () => {
       const mockTranscriptWords: RealtimeTranscriptionWord[] = [
-        { text: 'Hello', confidence: 0.98, start: 0, end: 0.5, word_is_final: true },
+        {
+          text: 'Hello',
+          confidence: 0.98,
+          start: 0,
+          end: 0.5,
+          word_is_final: true,
+        },
       ]
 
       const mockInsert = jest.fn().mockReturnThis()
@@ -139,8 +175,20 @@ describe('Transcript Words Query Functions', () => {
     it('should save multiple transcript words with proper field mapping', async () => {
       const mockTranscriptId = 'transcript-1'
       const mockWords: RealtimeTranscriptionWord[] = [
-        { text: 'Hello', confidence: 0.98, start: 0, end: 0.5, word_is_final: true },
-        { text: 'world', confidence: 0.97, start: 0.5, end: 1.0, word_is_final: true },
+        {
+          text: 'Hello',
+          confidence: 0.98,
+          start: 0,
+          end: 0.5,
+          word_is_final: true,
+        },
+        {
+          text: 'world',
+          confidence: 0.97,
+          start: 0.5,
+          end: 1.0,
+          word_is_final: true,
+        },
       ]
 
       const expectedRows = [
@@ -190,7 +238,13 @@ describe('Transcript Words Query Functions', () => {
 
     it('should return empty array if no data returned', async () => {
       const mockWords: RealtimeTranscriptionWord[] = [
-        { text: 'Hello', confidence: 0.98, start: 0, end: 0.5, word_is_final: true },
+        {
+          text: 'Hello',
+          confidence: 0.98,
+          start: 0,
+          end: 0.5,
+          word_is_final: true,
+        },
       ]
 
       const mockInsert = jest.fn().mockReturnThis()
@@ -215,7 +269,13 @@ describe('Transcript Words Query Functions', () => {
     it('should throw error if database insert fails', async () => {
       const mockError = { message: 'Database error' }
       const mockWords: RealtimeTranscriptionWord[] = [
-        { text: 'Hello', confidence: 0.98, start: 0, end: 0.5, word_is_final: true },
+        {
+          text: 'Hello',
+          confidence: 0.98,
+          start: 0,
+          end: 0.5,
+          word_is_final: true,
+        },
       ]
 
       const mockInsert = jest.fn().mockReturnThis()
@@ -232,9 +292,9 @@ describe('Transcript Words Query Functions', () => {
         select: mockSelect,
       })
 
-      await expect(saveTranscriptWords('transcript-1', mockWords)).rejects.toThrow(
-        'Error when saving transcript words: Database error'
-      )
+      await expect(
+        saveTranscriptWords('transcript-1', mockWords)
+      ).rejects.toThrow('Error when saving transcript words: Database error')
     })
 
     it('should handle empty words array', async () => {

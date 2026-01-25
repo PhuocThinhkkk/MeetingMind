@@ -1,13 +1,11 @@
 # Architecture
 
 MeetingMind consists of:
+
 - **Nextjs:** Next.js (App Router) for UI and api routes
 - **Socket Server:** Go WebSocket server just for real-time transcription
 - **Database:** Supabase (PostgreSQL)
 - **Storage:** Supabase buckets for audio files
-
-
-
 
 ## 📁 Project Structure
 
@@ -48,7 +46,6 @@ MeetingMind/
 ```
 
 Client (Browser) (binary chunk)→     Go Server     (binary chunk)→   AssemblyAI WebSocket
-          <-(transcript words)      (process a bit)         <-(transcript words)   
-  
-```
+          <-(transcript words)      (process a bit)         <-(transcript words)
 
+```

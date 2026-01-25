@@ -1,8 +1,8 @@
-import { log } from "@/lib/logger";
-import { SaveTranscriptInput, Transcript } from "@/types/transcription.db";
-import { supabase } from "@/lib/supabase-init/supabase-browser";
-import { RealtimeTranscriptionWord } from "@/types/transcription.ws";
-import { TranscriptionWord } from "@/types/transcription.db";
+import { log } from '@/lib/logger'
+import { SaveTranscriptInput, Transcript } from '@/types/transcription.db'
+import { supabase } from '@/lib/supabase-init/supabase-browser'
+import { RealtimeTranscriptionWord } from '@/types/transcription.ws'
+import { TranscriptionWord } from '@/types/transcription.db'
 
 /**
  * Save a transcript for an audio file to the database.
@@ -15,25 +15,25 @@ import { TranscriptionWord } from "@/types/transcription.db";
  */
 export async function saveTranscript(
   audioId: string,
-  transcripts: SaveTranscriptInput,
+  transcripts: SaveTranscriptInput
 ) {
   if (!transcripts || transcripts.length === 0) {
-    throw new Error("Transcripts array cannot be empty");
+    throw new Error('Transcripts array cannot be empty')
   }
-  const transcriptText = transcripts.map((t) => t.text).join(" ");
+  const transcriptText = transcripts.map(t => t.text).join(' ')
   const { data, error } = await supabase
-    .from("transcripts")
+    .from('transcripts')
     .insert({
       audio_id: audioId,
       text: transcriptText,
     })
     .select()
-    .single();
+    .single()
   if (error) {
-    log.error("Error saving transcript:", error);
-    throw error;
+    log.error('Error saving transcript:', error)
+    throw error
   }
-  return data as Transcript;
+  return data as Transcript
 }
 
 /**
@@ -46,25 +46,25 @@ export async function saveTranscript(
  */
 export async function saveTranscriptWords(
   transcriptionId: string,
-  transcriptWords: RealtimeTranscriptionWord[],
+  transcriptWords: RealtimeTranscriptionWord[]
 ) {
-  const rows = transcriptWords.map((word) => ({
+  const rows = transcriptWords.map(word => ({
     transcript_id: transcriptionId,
     text: word.text,
     confidence: word.confidence,
     start_time: word.start,
     end_time: word.end,
     word_is_final: word.word_is_final,
-  }));
+  }))
 
   const { data, error } = await supabase
-    .from("transcription_words")
+    .from('transcription_words')
     .insert(rows)
-    .select();
+    .select()
 
   if (error) {
-    throw new Error("Error when saving transcript words: " + error.message);
+    throw new Error('Error when saving transcript words: ' + error.message)
   }
-  if (!data) return [];
-  return data as TranscriptionWord[];
+  if (!data) return []
+  return data as TranscriptionWord[]
 }

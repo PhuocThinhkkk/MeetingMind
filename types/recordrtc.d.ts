@@ -1,3 +1,2 @@
 // this file just for shutting ts warning
-declare module 'recordrtc';
-
+declare module 'recordrtc'

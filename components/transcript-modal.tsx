@@ -1,24 +1,24 @@
-"use client";
+'use client'
 
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { TranscriptDetails } from "@/components/transcript-details";
-import { useRouter } from "next/navigation";
-import { FileAudio, Clock, HardDrive } from "lucide-react";
-import { StatusBadge } from "@/components/status-badge";
-import { AudioFile } from "@/types/transcription.db";
-import { formatDate, formatDuration, formatFileSize } from "@/lib/utils";
-import { useState, useRef } from "react";
-import { Play, Pause, Volume2, VolumeX } from "lucide-react";
-import { Slider } from "@/components/ui/slider";
+} from '@/components/ui/dialog'
+import { TranscriptDetails } from '@/components/transcript-details'
+import { useRouter } from 'next/navigation'
+import { FileAudio, Clock, HardDrive } from 'lucide-react'
+import { StatusBadge } from '@/components/status-badge'
+import { AudioFile } from '@/types/transcription.db'
+import { formatDate, formatDuration, formatFileSize } from '@/lib/utils'
+import { useState, useRef } from 'react'
+import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
+import { Slider } from '@/components/ui/slider'
 
 type TranscriptModalProps = {
-  audio: AudioFile;
-};
+  audio: AudioFile
+}
 
 /**
  * Render a modal dialog showing details and transcript for an audio file.
@@ -30,68 +30,68 @@ type TranscriptModalProps = {
  * @returns A JSX element containing the transcript modal dialog
  */
 export function TranscriptModal({ audio }: TranscriptModalProps) {
-  const audioRef = useRef<HTMLAudioElement>(null);
-  const [isPlaying, setIsPlaying] = useState(false);
-  const [muted, setMuted] = useState(false);
-  const [progressPercent, setProgressPercent] = useState(0);
-  const [durationSeconds, setDurationSeconds] = useState(0);
-  const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0);
-  const router = useRouter();
+  const audioRef = useRef<HTMLAudioElement>(null)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [muted, setMuted] = useState(false)
+  const [progressPercent, setProgressPercent] = useState(0)
+  const [durationSeconds, setDurationSeconds] = useState(0)
+  const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0)
+  const router = useRouter()
 
   function togglePlay() {
-    if (!audioRef.current) return;
+    if (!audioRef.current) return
     if (isPlaying) {
-      audioRef.current.pause();
+      audioRef.current.pause()
     } else {
-      audioRef.current.play();
+      audioRef.current.play()
     }
-    setIsPlaying(!isPlaying);
+    setIsPlaying(!isPlaying)
   }
   function toggleMute() {
-    if (!audioRef.current) return;
-    audioRef.current.muted = !muted;
-    setMuted(!muted);
+    if (!audioRef.current) return
+    audioRef.current.muted = !muted
+    setMuted(!muted)
   }
 
   function handleClose() {
-    router.push("/history");
+    router.push('/history')
   }
 
   function handleLoadedMetadata() {
     if (audioRef.current) {
-      setDurationSeconds(audioRef.current.duration);
+      setDurationSeconds(audioRef.current.duration)
     }
   }
 
   function handleTimeUpdate() {
     if (audioRef.current) {
-      const current = audioRef.current.currentTime;
-      const dur = audioRef.current.duration;
-      setCurrentTimeSeconds(current);
+      const current = audioRef.current.currentTime
+      const dur = audioRef.current.duration
+      setCurrentTimeSeconds(current)
       if (dur <= 0) {
-        setProgressPercent(0);
-        return 
+        setProgressPercent(0)
+        return
       }
-      setProgressPercent((current / dur) * 100);
+      setProgressPercent((current / dur) * 100)
     }
   }
 
   function handleSeek(val: number[]) {
-    if (!audioRef.current || durationSeconds === 0) return;
+    if (!audioRef.current || durationSeconds === 0) return
 
-    const newTime = (val[0] / 100) * durationSeconds;
-    audioRef.current.currentTime = newTime;
-    setProgressPercent(val[0]);
+    const newTime = (val[0] / 100) * durationSeconds
+    audioRef.current.currentTime = newTime
+    setProgressPercent(val[0])
   }
 
   function handleEnded() {
-    setIsPlaying(false);
+    setIsPlaying(false)
   }
 
   function formatTime(time: number) {
-    const minutes = Math.floor(time / 60);
-    const seconds = Math.floor(time % 60);
-    return `${minutes}:${seconds.toString().padStart(2, "0")}`;
+    const minutes = Math.floor(time / 60)
+    const seconds = Math.floor(time % 60)
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`
   }
 
   return (
@@ -204,5 +204,5 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
         </div>
       </DialogContent>
     </Dialog>
-  );
+  )
 }
