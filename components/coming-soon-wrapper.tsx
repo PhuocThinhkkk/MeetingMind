@@ -1,9 +1,9 @@
-import type React from "react";
-import { Lock } from "lucide-react";
+import type React from 'react'
+import { Lock } from 'lucide-react'
 
 interface FeatureLockWrapperProps {
-  children: React.ReactNode;
-  isLocked?: boolean;
+  children: React.ReactNode
+  isLocked?: boolean
 }
 
 export function FeatureLockWrapper({
@@ -11,8 +11,8 @@ export function FeatureLockWrapper({
   isLocked = true,
 }: FeatureLockWrapperProps) {
   return (
-    <div className={`relative ${isLocked ? "cursor-not-allowed" : ""}`}>
-      <div className={`h-full ${isLocked ? "pointer-events-none" : ""}`}>
+    <div className={`relative ${isLocked ? 'cursor-not-allowed' : ''}`}>
+      <div className={`h-full ${isLocked ? 'pointer-events-none' : ''}`}>
         {children}
         {isLocked && (
           <div className="absolute inset-0 bg-black/10 rounded-lg pointer-events-none">
@@ -23,5 +23,5 @@ export function FeatureLockWrapper({
         )}
       </div>
     </div>
-  );
+  )
 }

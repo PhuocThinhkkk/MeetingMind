@@ -1,7 +1,7 @@
-import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
-import { SignOutBtn } from "@/components/sign-out-btn";
-import { HelpModal } from "./help-btn-modal";
+import { SidebarTrigger } from '@/components/ui/sidebar'
+import { Separator } from '@/components/ui/separator'
+import { SignOutBtn } from '@/components/sign-out-btn'
+import { HelpModal } from './help-btn-modal'
 
 /**
  * Render the sidebar header containing a sidebar trigger, a vertical separator, the title "Transcription", and a right-aligned sign-out button.
@@ -16,12 +16,11 @@ export default function SideBarHeader({ header }: { header?: string }) {
         orientation="vertical"
         className="mr-2 data-[orientation=vertical]:h-4"
       />
-      <span className="text-lg font-semibold">{header || "Transcription"}</span>{" "}
+      <span className="text-lg font-semibold">{header || 'Transcription'}</span>{' '}
       <div className="flex justify-end flex-1">
         <HelpModal />
         <SignOutBtn />
       </div>
     </header>
-  );
+  )
 }
-

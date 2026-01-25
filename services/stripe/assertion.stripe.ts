@@ -1,4 +1,5 @@
-import { StripeInvoiceRuntime, StripeSubscriptionRuntime } from "./types"
+import { log } from '@/lib/logger'
+import { StripeInvoiceRuntime, StripeSubscriptionRuntime } from './types'
 
 /**
  * Asserts that `sub` matches the runtime shape of a Stripe subscription and narrows its type to `StripeSubscriptionRuntime`.
@@ -11,37 +12,36 @@ export function assertSubscriptionRuntime(
 ): asserts sub is StripeSubscriptionRuntime {
   if (
     !sub ||
-    typeof sub !== "object" ||
-    !("id" in sub) ||
-    !("status" in sub) ||
-    !("items" in sub) ||
+    typeof sub !== 'object' ||
+    !('id' in sub) ||
+    !('status' in sub) ||
+    !('items' in sub) ||
     // @ts-ignore
-  !("current_period_end" in sub.items.data[0]) ||
-    !("cancel_at_period_end" in sub)
+    !('current_period_end' in sub.items.data[0]) ||
+    !('cancel_at_period_end' in sub)
   ) {
-    console.log("SUBSCRIPTION OBJECT: ", sub)
+    log.info('SUBSCRIPTION OBJECT: ', sub)
     // @ts-ignore
-    console.log("Subscriptions items: ", sub.items.data)
-    throw new Error("Invalid Stripe subscription runtime shape")
+    log.info('Subscriptions items: ', sub.items.data)
+    throw new Error('Invalid Stripe subscription runtime shape')
   }
 }
 
 /**
- * Validate that a runtime value conforms to the expected Stripe invoice shape and narrow its type.
+ * Validate that a runtime value matches the expected Stripe invoice shape.
  *
- * @param invoice - The runtime value to validate as a Stripe invoice
- * @throws Error if `invoice` is not an object or does not have a string `subscription` property
+ * @throws Error if `invoice` is not an object with a string `subscription` property
  */
 export function assertInvoiceRuntime(
   invoice: unknown
 ): asserts invoice is StripeInvoiceRuntime {
   if (
     !invoice ||
-    typeof invoice !== "object" ||
-    !("subscription" in invoice) ||
-    typeof (invoice as any).subscription !== "string"
+    typeof invoice !== 'object' ||
+    !('subscription' in invoice) ||
+    typeof (invoice as any).subscription !== 'string'
   ) {
-    console.log("INVOICE OBJECT: ", invoice)
-    throw new Error("Invalid Stripe invoice runtime shape")
+    log.info('INVOICE OBJECT: ', invoice)
+    throw new Error('Invalid Stripe invoice runtime shape')
   }
 }

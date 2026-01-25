@@ -1,12 +1,12 @@
-"use client";
+'use client'
 
-import { Subscription } from "@/services/stripe/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { format } from "date-fns";
+import { Subscription } from '@/services/stripe/types'
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
+import { format } from 'date-fns'
 
 type SubscriptionCardProps = {
-  subscription: Subscription | null;
-};
+  subscription: Subscription | null
+}
 
 export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
   if (!subscription) {
@@ -22,7 +22,7 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
           </p>
         </CardContent>
       </Card>
-    );
+    )
   }
 
   return (
@@ -46,8 +46,11 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
             <p className="text-sm text-muted-foreground">Billing Period</p>
             <p className="mt-1 font-medium">
               {subscription.current_period_end
-                ? format(new Date(subscription.current_period_end), "MMM dd, yyyy")
-                : "N/A"}
+                ? format(
+                    new Date(subscription.current_period_end),
+                    'MMM dd, yyyy'
+                  )
+                : 'N/A'}
             </p>
           </div>
           <div>
@@ -60,11 +63,12 @@ export function SubscriptionCard({ subscription }: SubscriptionCardProps) {
         {subscription.cancel_at_period_end && (
           <div className="rounded-md bg-yellow-50 p-3 dark:bg-yellow-950">
             <p className="text-sm text-yellow-800 dark:text-yellow-200">
-              This subscription is scheduled to cancel at the end of the current billing period.
+              This subscription is scheduled to cancel at the end of the current
+              billing period.
             </p>
           </div>
         )}
       </CardContent>
     </Card>
-  );
+  )
 }

@@ -1,11 +1,11 @@
-"use client";
+'use client'
 
-import { CompactAudioCard } from "@/components/compact-audio-card";
-import { AudioFile } from "@/types/transcription.db";
+import { CompactAudioCard } from '@/components/compact-audio-card'
+import { AudioFile } from '@/types/transcription.db'
 
 type AudioHistoryListProps = {
-  audioHistory: AudioFile[];
-};
+  audioHistory: AudioFile[]
+}
 
 /**
  * Renders a vertical list of audio history grouped by day.
@@ -16,15 +16,19 @@ type AudioHistoryListProps = {
  * @returns The JSX element containing the grouped and sorted audio history.
  */
 export function AudioHistoryList({ audioHistory }: AudioHistoryListProps) {
-  const groupedAudio = groupByDay(audioHistory);
+  const groupedAudio = groupByDay(audioHistory)
 
   return (
     <div className="space-y-6">
       {Object.entries(groupedAudio)
         .sort(([, a], [, b]) => {
-          const aDate = a[0]?.created_at ? new Date(a[0].created_at) : new Date(0);
-          const bDate = b[0]?.created_at ? new Date(b[0].created_at) : new Date(0);
-          return bDate.getTime() - aDate.getTime();
+          const aDate = a[0]?.created_at
+            ? new Date(a[0].created_at)
+            : new Date(0)
+          const bDate = b[0]?.created_at
+            ? new Date(b[0].created_at)
+            : new Date(0)
+          return bDate.getTime() - aDate.getTime()
         })
         .map(([day, audios]) => (
           <div key={day}>
@@ -32,13 +36,14 @@ export function AudioHistoryList({ audioHistory }: AudioHistoryListProps) {
               {day}
             </h2>
             <div className="space-y-2">
-              {audios.map((audio) => (
+              {audios.map(audio => (
                 <CompactAudioCard key={audio.id} audio={audio} />
               ))}
             </div>
           </div>
-        ))}    </div>
-  );
+        ))}{' '}
+    </div>
+  )
 }
 
 /**
@@ -48,54 +53,50 @@ export function AudioHistoryList({ audioHistory }: AudioHistoryListProps) {
  * @returns An object mapping day label strings to arrays of AudioFile objects for that label. Dates are formatted using the "en-US" locale with a short month and numeric day; the year is included only when it differs from the current year.
  */
 function groupByDay(audioFiles: AudioFile[]) {
-  const groups: { [key: string]: AudioFile[] } = {};
+  const groups: { [key: string]: AudioFile[] } = {}
 
-  audioFiles.forEach((audio) => {
+  audioFiles.forEach(audio => {
     if (!audio.created_at) {
-
-      const label = "Unknown Date";
+      const label = 'Unknown Date'
       if (!groups[label]) {
-        groups[label] = [];
+        groups[label] = []
       }
-      groups[label].push(audio);
-      return;
-
+      groups[label].push(audio)
+      return
     }
-    const date = new Date(audio.created_at);
+    const date = new Date(audio.created_at)
     if (isNaN(date.getTime())) {
-
-      const label = "Unknown Date";
+      const label = 'Unknown Date'
       if (!groups[label]) {
-        groups[label] = [];
+        groups[label] = []
       }
-      groups[label].push(audio);
-      return;
-
+      groups[label].push(audio)
+      return
     }
-    const today = new Date();
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const today = new Date()
+    const yesterday = new Date(today)
+    yesterday.setDate(yesterday.getDate() - 1)
 
-    let label: string;
+    let label: string
 
     if (date.toDateString() === today.toDateString()) {
-      label = "Today";
+      label = 'Today'
     } else if (date.toDateString() === yesterday.toDateString()) {
-      label = "Yesterday";
+      label = 'Yesterday'
     } else {
-      label = date.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
+      label = date.toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
         year:
-          date.getFullYear() !== today.getFullYear() ? "numeric" : undefined,
-      });
+          date.getFullYear() !== today.getFullYear() ? 'numeric' : undefined,
+      })
     }
 
     if (!groups[label]) {
-      groups[label] = [];
+      groups[label] = []
     }
-    groups[label].push(audio);
-  });
+    groups[label].push(audio)
+  })
 
-  return groups;
+  return groups
 }

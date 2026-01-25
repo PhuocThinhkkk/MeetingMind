@@ -1,19 +1,19 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { useState } from 'react'
+import { useRouter } from 'next/navigation'
+import Link from 'next/link'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card";
-import { Alert, AlertDescription } from "@/components/ui/alert";
+} from '@/components/ui/card'
+import { Alert, AlertDescription } from '@/components/ui/alert'
 import {
   Loader2,
   Mail,
@@ -21,63 +21,63 @@ import {
   User,
   ArrowRight,
   CheckCircle,
-} from "lucide-react";
-import { useAuth } from "@/hooks/use-auth";
-import GoogleSignInButton from "@/components/google-btn-sign-in";
+} from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
+import GoogleSignInButton from '@/components/google-btn-sign-in'
 
 export default function SignupPage() {
   const [formData, setFormData] = useState({
-    name: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
-  const [showVerification, setShowVerification] = useState(false);
-  const { signUp } = useAuth();
+    name: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  })
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState('')
+  const [showVerification, setShowVerification] = useState(false)
+  const { signUp } = useAuth()
 
   const handleSignup = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setLoading(true);
-    setError("");
+    e.preventDefault()
+    setLoading(true)
+    setError('')
 
     if (formData.password !== formData.confirmPassword) {
-      setError("Passwords do not match");
-      setLoading(false);
-      return;
+      setError('Passwords do not match')
+      setLoading(false)
+      return
     }
 
     if (formData.password.length < 6) {
-      setError("Password must be at least 6 characters");
-      setLoading(false);
-      return;
+      setError('Password must be at least 6 characters')
+      setLoading(false)
+      return
     }
 
     try {
       const { error } = await signUp(
         formData.email,
         formData.password,
-        formData.name,
-      );
+        formData.name
+      )
       if (error) {
-        setError(error.message);
+        setError(error.message)
       } else {
-        setShowVerification(true);
+        setShowVerification(true)
       }
     } catch (err) {
-      setError("An unexpected error occurred");
+      setError('An unexpected error occurred')
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
+  }
 
   const handleInputChange = (field: string, value: string) => {
-    setFormData((prev) => ({ ...prev, [field]: value }));
-  };
+    setFormData(prev => ({ ...prev, [field]: value }))
+  }
 
   if (showVerification) {
-    return <VerificationMessage email={formData.email} />;
+    return <VerificationMessage email={formData.email} />
   }
 
   return (
@@ -118,7 +118,7 @@ export default function SignupPage() {
                     type="text"
                     placeholder="Enter your full name"
                     value={formData.name}
-                    onChange={(e) => handleInputChange("name", e.target.value)}
+                    onChange={e => handleInputChange('name', e.target.value)}
                     className="pl-10 transition-all focus:scale-[1.02] hover:shadow-md"
                     required
                   />
@@ -134,7 +134,7 @@ export default function SignupPage() {
                     type="email"
                     placeholder="Enter your email"
                     value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    onChange={e => handleInputChange('email', e.target.value)}
                     className="pl-10 transition-all focus:scale-[1.02] hover:shadow-md"
                     required
                   />
@@ -150,8 +150,8 @@ export default function SignupPage() {
                     type="password"
                     placeholder="Create a password"
                     value={formData.password}
-                    onChange={(e) =>
-                      handleInputChange("password", e.target.value)
+                    onChange={e =>
+                      handleInputChange('password', e.target.value)
                     }
                     className="pl-10 transition-all focus:scale-[1.02] hover:shadow-md"
                     required
@@ -168,8 +168,8 @@ export default function SignupPage() {
                     type="password"
                     placeholder="Confirm your password"
                     value={formData.confirmPassword}
-                    onChange={(e) =>
-                      handleInputChange("confirmPassword", e.target.value)
+                    onChange={e =>
+                      handleInputChange('confirmPassword', e.target.value)
                     }
                     className="pl-10 transition-all focus:scale-[1.02] hover:shadow-md"
                     required
@@ -187,7 +187,7 @@ export default function SignupPage() {
                 ) : (
                   <ArrowRight className="w-4 h-4 mr-2" />
                 )}
-                {loading ? "Creating account..." : "Create account"}
+                {loading ? 'Creating account...' : 'Create account'}
               </Button>
             </form>
 
@@ -195,7 +195,7 @@ export default function SignupPage() {
 
             <div className="mt-6 text-center">
               <p className="text-sm text-gray-600">
-                Already have an account?{" "}
+                Already have an account?{' '}
                 <Link
                   href="/auth/login"
                   className="text-blue-600 hover:text-blue-700 font-medium transition-colors hover:underline"
@@ -208,7 +208,7 @@ export default function SignupPage() {
         </Card>
       </div>
     </div>
-  );
+  )
 }
 
 /**
@@ -218,7 +218,7 @@ export default function SignupPage() {
  * @returns The verification message UI with instructions and a button to return to the sign-in page
  */
 function VerificationMessage({ email }: { email: string }) {
-  const router = useRouter();
+  const router = useRouter()
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
@@ -243,7 +243,7 @@ function VerificationMessage({ email }: { email: string }) {
                   </p>
                 </div>
                 <Button
-                  onClick={() => router.push("/auth/login")}
+                  onClick={() => router.push('/auth/login')}
                   variant="outline"
                   className="w-full transition-all hover:scale-[1.02] hover:shadow-md"
                 >
@@ -255,6 +255,5 @@ function VerificationMessage({ email }: { email: string }) {
         </Card>
       </div>
     </div>
-  );
+  )
 }
-

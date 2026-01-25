@@ -1,4 +1,4 @@
-import { log } from "./logger";
+import { log } from './logger'
 
 /**
  * Create and return a new AudioContext, using a vendor-prefixed fallback if necessary.
@@ -7,9 +7,9 @@ import { log } from "./logger";
  */
 export function initAudioContext() {
   const AudioContextClass =
-    window.AudioContext || (window as any).webkitAudioContext;
-  const audioContext = new AudioContextClass();
-  return audioContext;
+    window.AudioContext || (window as any).webkitAudioContext
+  const audioContext = new AudioContextClass()
+  return audioContext
 }
 
 /**
@@ -21,26 +21,24 @@ export async function requestSystemAudio() {
   try {
     return await navigator.mediaDevices.getDisplayMedia({
       audio: true,
-    });
+    })
   } catch (err) {
-    log.error("System audio permission denied:", err);
-    return null;
+    log.error('System audio permission denied:', err)
+    return null
   }
 }
 
 /**
- * Requests access to the user's microphone and returns the captured audio stream.
+ * Request permission to capture microphone audio and return the captured MediaStream.
  *
- * Logs the error and returns `null` when permission is denied or another error occurs.
- *
- * @returns `MediaStream` containing microphone audio if permission is granted, `null` otherwise.
+ * @returns The captured `MediaStream` if permission is granted, `null` otherwise.
  */
 export async function requestMicrophoneAudio() {
   try {
-    return await navigator.mediaDevices.getUserMedia({ audio: true });
+    return await navigator.mediaDevices.getUserMedia({ audio: true })
   } catch (err) {
-    log.error("Microphone permission denied:", err);
-    return null;
+    log.error('Microphone permission denied:', err)
+    return null
   }
 }
 
@@ -56,45 +54,45 @@ export async function requestMicrophoneAudio() {
 export async function mixAudioStreams(
   audioContext: AudioContext,
   systemStream: MediaStream | null,
-  micStream: MediaStream | null,
+  micStream: MediaStream | null
 ): Promise<MediaStream> {
   try {
     if (!systemStream && !micStream) {
-      throw new Error("No audio streams provided for mixing.");
+      throw new Error('No audio streams provided for mixing.')
     }
-    const destination = audioContext.createMediaStreamDestination();
+    const destination = audioContext.createMediaStreamDestination()
 
     if (systemStream) {
-      const systemSource = audioContext.createMediaStreamSource(systemStream);
-      systemSource.connect(destination);
+      const systemSource = audioContext.createMediaStreamSource(systemStream)
+      systemSource.connect(destination)
     }
     if (micStream) {
-      const micSource = audioContext.createMediaStreamSource(micStream);
-      micSource.connect(destination);
+      const micSource = audioContext.createMediaStreamSource(micStream)
+      micSource.connect(destination)
     }
-    return destination.stream;
+    return destination.stream
   } catch (err) {
-    log.error("Error mixing audio streams:", err);
-    throw err;
+    log.error('Error mixing audio streams:', err)
+    throw err
   }
 }
 
 /**
- * Loads the PCM worklet module, routes `mixedStream` through a `pcm-processor` AudioWorkletNode to the audio context destination, and returns the node.
+ * Loads the PCM worklet module and routes the provided MediaStream through a "pcm-processor" AudioWorkletNode into the AudioContext destination.
  *
  * @param audioContext - The AudioContext used to load the worklet and create audio nodes.
  * @param mixedStream - The MediaStream to be processed and routed (e.g., a mixed system and microphone stream).
- * @returns The created and connected `AudioWorkletNode` named `"pcm-processor"`.
+ * @returns The connected `AudioWorkletNode` named "pcm-processor".
  */
 export async function setupAudioWorklet(
   audioContext: AudioContext,
-  mixedStream: MediaStream,
+  mixedStream: MediaStream
 ) {
-  await audioContext.audioWorklet.addModule("/worklet-processor.js");
+  await audioContext.audioWorklet.addModule('/worklet-processor.js')
 
-  const source = audioContext.createMediaStreamSource(mixedStream);
-  const workletNode = new AudioWorkletNode(audioContext, "pcm-processor");
+  const source = audioContext.createMediaStreamSource(mixedStream)
+  const workletNode = new AudioWorkletNode(audioContext, 'pcm-processor')
 
-  source.connect(workletNode).connect(audioContext.destination);
-  return workletNode;
+  source.connect(workletNode).connect(audioContext.destination)
+  return workletNode
 }

@@ -1,8 +1,8 @@
-"use client"
+'use client'
 
-import { useState, useEffect } from "react"
-import { createPortal } from "react-dom"
-import { cn } from "@/lib/utils"
+import { useState, useEffect } from 'react'
+import { createPortal } from 'react-dom'
+import { cn } from '@/lib/utils'
 
 interface LoadingOverlayProps {
   isLoading: boolean
@@ -48,15 +48,15 @@ export function LoadingOverlay({
         <>
           <div
             className={cn(
-              "fixed inset-0 bg-white/80 backdrop-blur-sm z-[9998] transition-opacity duration-300",
-              "opacity-100",
+              'fixed inset-0 bg-white/80 backdrop-blur-sm z-[9998] transition-opacity duration-300',
+              'opacity-100'
             )}
           />
 
           <div
             className={cn(
-              "fixed inset-0 flex items-center justify-center z-[9999] transition-opacity duration-300",
-              "opacity-100",
+              'fixed inset-0 flex items-center justify-center z-[9999] transition-opacity duration-300',
+              'opacity-100'
             )}
           >
             <div className="flex flex-col items-center gap-4">
@@ -67,7 +67,9 @@ export function LoadingOverlay({
               </div>
 
               {/* Message */}
-              <p className="text-base text-slate-700 font-medium text-balance">{message}</p>
+              <p className="text-base text-slate-700 font-medium text-balance">
+                {message}
+              </p>
             </div>
           </div>
         </>
@@ -76,13 +78,16 @@ export function LoadingOverlay({
       {isRetry && (
         <>
           {/* Subtle backdrop */}
-          <div className="fixed inset-0 bg-black/20 z-[9998] transition-opacity duration-300" onClick={onDismiss} />
+          <div
+            className="fixed inset-0 bg-black/20 z-[9998] transition-opacity duration-300"
+            onClick={onDismiss}
+          />
 
           {/* Modal dialog */}
           <div className="fixed inset-0 flex items-center justify-center z-[9999] transition-opacity duration-300">
             <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-4 space-y-4">
               <p className="text-base text-slate-700 font-medium text-center text-balance">
-                {retryMessage || message || "Something went wrong."}
+                {retryMessage || message || 'Something went wrong.'}
               </p>
 
               <div className="flex gap-3 justify-center">
@@ -104,7 +109,6 @@ export function LoadingOverlay({
         </>
       )}
     </>,
-    document.body,
+    document.body
   )
 }
-

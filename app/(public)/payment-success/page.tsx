@@ -1,7 +1,7 @@
-import { Card, CardContent } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { CheckCircle2 } from "lucide-react"
-import Link from "next/link"
+import { Card, CardContent } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { CheckCircle2 } from 'lucide-react'
+import Link from 'next/link'
 
 /**
  * Renders a payment confirmation page with a success icon, confirmation text, support contact link, and a button to navigate back to the home page.
@@ -27,7 +27,7 @@ export default function PaymentSuccessPage() {
 
           <p className="mt-4 text-sm text-gray-700 dark:text-gray-400">
             If you have any questions or need further assistance, feel free to
-            contact us at{" "}
+            contact us at{' '}
             <a
               href="mailto:admin@eliteai.tools"
               className="font-medium text-indigo-600 underline dark:text-indigo-400"

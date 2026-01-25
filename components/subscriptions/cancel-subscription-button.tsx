@@ -1,7 +1,7 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -11,49 +11,49 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
   AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
-import { Loader2 } from "lucide-react";
+} from '@/components/ui/alert-dialog'
+import { Loader2 } from 'lucide-react'
 
 type CancelSubscriptionButtonProps = {
-  subscriptionId: string;
-  onCancelSuccess?: () => void;
-};
+  subscriptionId: string
+  onCancelSuccess?: () => void
+}
 
 export function CancelSubscriptionButton({
   subscriptionId,
   onCancelSuccess,
 }: CancelSubscriptionButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   const handleCancelSubscription = async () => {
-    setIsLoading(true);
-    setError(null);
+    setIsLoading(true)
+    setError(null)
 
     try {
-      const response = await fetch("/api/stripe/canceled-subscription", {
-        method: "POST",
+      const response = await fetch('/api/stripe/canceled-subscription', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ subscriptionId }),
-        credentials: "include",
-      });
+        credentials: 'include',
+      })
 
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "Failed to cancel subscription");
+        const errorData = await response.json()
+        throw new Error(errorData.message || 'Failed to cancel subscription')
       }
 
-      onCancelSuccess?.();
+      onCancelSuccess?.()
     } catch (err) {
       setError(
-        err instanceof Error ? err.message : "An error occurred while canceling"
-      );
+        err instanceof Error ? err.message : 'An error occurred while canceling'
+      )
     } finally {
-      setIsLoading(false);
+      setIsLoading(false)
     }
-  };
+  }
 
   return (
     <>
@@ -66,7 +66,7 @@ export function CancelSubscriptionButton({
                 Canceling...
               </>
             ) : (
-              "Cancel Subscription"
+              'Cancel Subscription'
             )}
           </Button>
         </AlertDialogTrigger>
@@ -97,5 +97,5 @@ export function CancelSubscriptionButton({
         </AlertDialogContent>
       </AlertDialog>
     </>
-  );
+  )
 }

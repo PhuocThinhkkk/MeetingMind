@@ -1,7 +1,7 @@
-import { log } from "@/lib/logger";
-import { supabase } from "@/lib/supabase-init/supabase-browser";
-import { getAudioDuration } from "@/lib/transcriptionUtils";
-import { AudioFile } from "@/types/transcription.db";
+import { log } from '@/lib/logger'
+import { supabase } from '@/lib/supabase-init/supabase-browser'
+import { getAudioDuration } from '@/lib/transcriptionUtils'
+import { AudioFile } from '@/types/transcription.db'
 
 /**
  * Retrieve a user's audio history with each item's primary transcript normalized.
@@ -15,60 +15,65 @@ import { AudioFile } from "@/types/transcription.db";
  */
 export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
   // Check if Supabase is configured
-  if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
-    console.error("❌ Supabase not configured! Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local");
-    return [];
+  if (
+    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
+    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  ) {
+    log.error(
+      '❌ Supabase not configured! Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local'
+    )
+    return []
   }
 
   // Fetch audio files with transcripts only (no nested words)
   const { data, error } = await supabase
-    .from("audio_files")
-    .select("*, transcripts(*)")
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .from('audio_files')
+    .select('*, transcripts(*)')
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
 
   if (error) {
-    console.error("Supabase Error Details:", JSON.stringify(error, null, 2));
-    log.error("Error fetching audio history from Supabase:", {
+    log.error('Supabase Error Details:', JSON.stringify(error, null, 2))
+    log.error('Error fetching audio history from Supabase:', {
       error,
       message: error.message,
       details: error.details,
       hint: error.hint,
       code: error.code,
-    });
-    throw error;
+    })
+    throw error
   }
 
   if (!data || data.length === 0) {
-    log.warn("No audio found! Data:", data);
-    return [];
+    log.warn('No audio found! Data:', data)
+    return []
   }
 
   try {
     // For each audio file, fetch the transcript words separately
     const audiosWithWords = await Promise.all(
-      data.map(async (audio) => {
-        let transcript: any = { words: [] };
+      data.map(async audio => {
+        let transcript: any = { words: [] }
 
         if (audio.transcripts && audio.transcripts.length > 0) {
-          transcript = audio.transcripts[0];
+          transcript = audio.transcripts[0]
 
           // Fetch words for this transcript separately
           const { data: words } = await supabase
-            .from("transcription_words")
-            .select("*")
-            .eq("transcript_id", transcript.id);
+            .from('transcription_words')
+            .select('*')
+            .eq('transcript_id', transcript.id)
 
-          transcript.words = words || [];
+          transcript.words = words || []
         }
 
-        return { ...audio, transcript };
+        return { ...audio, transcript }
       })
-    );
+    )
 
-    return audiosWithWords as AudioFile[];
+    return audiosWithWords as AudioFile[]
   } catch (e) {
-    throw new Error(`can not format audio: ${e}`);
+    throw new Error(`can not format audio: ${e}`)
   }
 }
 
@@ -85,46 +90,46 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
  */
 
 export async function saveAudioFile(blob: Blob, userId: string, name: string) {
-  const mimeType = blob.type;
-  const fileSize = blob.size;
+  const mimeType = blob.type
+  const fileSize = blob.size
 
   if (!mimeType || mimeType.length === 0) {
-    throw new Error("Blob must have a valid MIME type");
+    throw new Error('Blob must have a valid MIME type')
   }
   if (!fileSize || fileSize <= 0) {
-    throw new Error("Blob must have a valid file size");
+    throw new Error('Blob must have a valid file size')
   }
-  const filePath = `recordings/${userId}/${Date.now()}-${name}.wav`;
+  const filePath = `recordings/${userId}/${Date.now()}-${name}.wav`
 
   const { error: uploadError } = await supabase.storage
-    .from("audio-files")
+    .from('audio-files')
     .upload(filePath, blob, {
       contentType: mimeType,
-    });
+    })
 
   if (uploadError) {
-    log.error("Upload error:", uploadError);
-    throw uploadError;
+    log.error('Upload error:', uploadError)
+    throw uploadError
   }
 
   const { data: publicUrlData } = supabase.storage
-    .from("audio-files")
-    .getPublicUrl(filePath);
+    .from('audio-files')
+    .getPublicUrl(filePath)
 
-  const url = publicUrlData.publicUrl;
+  const url = publicUrlData.publicUrl
 
-  let duration;
+  let duration
   try {
-    duration = await getAudioDuration(blob);
+    duration = await getAudioDuration(blob)
   } catch (err) {
-    log.error("Error when saving audio file: ", err);
+    log.error('Error when saving audio file: ', err)
   }
   if (duration == undefined) {
-    duration = 0;
+    duration = 0
   }
 
   const { data, error } = await supabase
-    .from("audio_files")
+    .from('audio_files')
     .insert({
       user_id: userId,
       name,
@@ -132,18 +137,18 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
       duration: Math.round(duration),
       file_size: fileSize,
       mime_type: mimeType,
-      transcription_status: "done",
+      transcription_status: 'done',
     })
     .select()
-    .single();
+    .single()
 
   if (error) {
-    log.error("DB insert error:", error);
-    throw error;
+    log.error('DB insert error:', error)
+    throw error
   }
-  log.info("✅ Audio file saved:", data);
+  log.info('✅ Audio file saved:', data)
 
-  return data as AudioFile;
+  return data as AudioFile
 }
 
 /**
@@ -156,19 +161,19 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
  */
 export async function updateAudioName(audioId: string, newName: string) {
   const { data, error } = await supabase
-    .from("audio_files")
+    .from('audio_files')
     .update({ name: newName, updated_at: new Date().toISOString() })
-    .eq("id", audioId)
+    .eq('id', audioId)
     .select()
-    .single();
+    .single()
 
   if (error) {
-    log.error("❌ Error updating audio name:", error);
-    throw error;
+    log.error('❌ Error updating audio name:', error)
+    throw error
   }
 
-  log.info("✅ Audio name updated:", data);
-  return data as AudioFile;
+  log.info('✅ Audio name updated:', data)
+  return data as AudioFile
 }
 
 /**
@@ -180,15 +185,15 @@ export async function updateAudioName(audioId: string, newName: string) {
  */
 export async function deleteAudioById(audioId: string) {
   const { error } = await supabase
-    .from("audio_files")
+    .from('audio_files')
     .delete()
-    .eq("id", audioId);
+    .eq('id', audioId)
 
   if (error) {
-    log.error("❌ Error deleting audio:", error);
-    throw error;
+    log.error('❌ Error deleting audio:', error)
+    throw error
   }
 
-  log.info(`🗑️ Audio with ID ${audioId} deleted`);
-  return true;
+  log.info(`🗑️ Audio with ID ${audioId} deleted`)
+  return true
 }

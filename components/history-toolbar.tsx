@@ -1,20 +1,20 @@
-"use client";
+'use client'
 
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
-import { Search, ChevronDown } from "lucide-react";
+} from '@/components/ui/dropdown-menu'
+import { Search, ChevronDown } from 'lucide-react'
 
 export interface HistoryToolbarProps {
-  selectedStatus: string;
-  setSelectedStatus: (arg: string) => void;
-  searchQuery: string;
-  setSearchQuery: (arg: string) => void;
+  selectedStatus: string
+  setSelectedStatus: (arg: string) => void
+  searchQuery: string
+  setSearchQuery: (arg: string) => void
 }
 
 /**
@@ -33,8 +33,8 @@ export function HistoryToolbar({
   setSearchQuery,
 }: HistoryToolbarProps) {
   const handleStatusSelect = (status: string) => {
-    setSelectedStatus(status);
-  };
+    setSelectedStatus(status)
+  }
 
   return (
     <div className="mb-6">
@@ -45,7 +45,7 @@ export function HistoryToolbar({
             placeholder="Search"
             className="pl-9 h-10 bg-background w-full"
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={e => setSearchQuery(e.target.value)}
           />
         </div>
 
@@ -57,24 +57,24 @@ export function HistoryToolbar({
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleStatusSelect("All")}>
+            <DropdownMenuItem onClick={() => handleStatusSelect('All')}>
               All
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusSelect("Done")}>
+            <DropdownMenuItem onClick={() => handleStatusSelect('Done')}>
               Done
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusSelect("Processing")}>
+            <DropdownMenuItem onClick={() => handleStatusSelect('Processing')}>
               Processing
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusSelect("Error")}>
+            <DropdownMenuItem onClick={() => handleStatusSelect('Error')}>
               Error
             </DropdownMenuItem>
-            <DropdownMenuItem onClick={() => handleStatusSelect("Unknown")}>
+            <DropdownMenuItem onClick={() => handleStatusSelect('Unknown')}>
               Unknown
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
       </div>
     </div>
-  );
+  )
 }

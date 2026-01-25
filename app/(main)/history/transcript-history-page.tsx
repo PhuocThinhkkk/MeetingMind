@@ -1,89 +1,89 @@
-"use client";
-import { AudioHistoryList } from "@/components/audio-history-list";
-import { log } from "@/lib/logger";
-import { useAuth } from "@/hooks/use-auth";
-import { HistoryToolbar } from "@/components/history-toolbar";
-import { TranscriptModal } from "@/components/transcript-modal";
-import { getAudioHistory } from "@/lib/queries/browser/audio-operations";
-import React from "react";
-import { useSearchParams } from "next/navigation";
-import { useAudio } from "@/components/context/audios-list-context";
-
+'use client'
+import { AudioHistoryList } from '@/components/audio-history-list'
+import { log } from '@/lib/logger'
+import { useAuth } from '@/hooks/use-auth'
+import { HistoryToolbar } from '@/components/history-toolbar'
+import { TranscriptModal } from '@/components/transcript-modal'
+import { getAudioHistory } from '@/lib/queries/browser/audio-operations'
+import React from 'react'
+import { useSearchParams } from 'next/navigation'
+import { useAudio } from '@/components/context/audios-list-context'
 
 export default function TranscriptHistoryPage() {
-  const { audios, setAudios } = useAudio();
-  const { user } = useAuth();
+  const { audios, setAudios } = useAudio()
+  const { user } = useAuth()
 
   React.useEffect(() => {
-    let cancelled = false;
+    let cancelled = false
     /**
-     * Initialize and populate the audios state with the authenticated user's audio history.
+     * Populate the audios state with the authenticated user's audio history.
      *
      * If there is no authenticated user or the fetched history is empty, clears the audios state.
-     * If the fetch completes after the operation is cancelled, no state is modified.
-     * On successful fetch with results, logs the retrieval and updates the audios state with the fetched list.
+     * If the fetch completes after cancellation, no state is modified.
+     * On successful fetch with results, logs the retrieval and updates the audios state.
+     * On error, logs the error and clears the audios state.
      */
     async function initializeAudiosFetch() {
       try {
         if (!user) {
-          setAudios([]);
-          return;
+          setAudios([])
+          return
         }
-        const audios = await getAudioHistory(user.id);
+        const audios = await getAudioHistory(user.id)
         if (cancelled) {
-          return;
+          return
         }
         if (audios.length === 0) {
-          setAudios([]);
-          return;
+          setAudios([])
+          return
         }
-        log.info(`Fetched audio history for user ${user.id}`, audios);
-        setAudios(audios);
+        log.info(`Fetched audio history for user ${user.id}`, audios)
+        setAudios(audios)
       } catch (error) {
-        log.error("Error fetching audio history:", error);
-        setAudios([]);
+        log.error('Error fetching audio history:', error)
+        setAudios([])
       }
     }
-    initializeAudiosFetch();
+    initializeAudiosFetch()
     return () => {
-      cancelled = true;
-    };
-  }, [user]);
+      cancelled = true
+    }
+  }, [user])
 
-  const [searchQuery, setSearchQuery] = React.useState("");
-  const [selectedStatus, setSelectedStatus] = React.useState<string>("All");
+  const [searchQuery, setSearchQuery] = React.useState('')
+  const [selectedStatus, setSelectedStatus] = React.useState<string>('All')
 
   const filteredAudios = React.useMemo(() => {
-    let filtered = [...audios];
+    let filtered = [...audios]
 
     if (searchQuery.trim()) {
-      filtered = filtered.filter((audio) =>
-        audio.name.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
+      filtered = filtered.filter(audio =>
+        audio.name.toLowerCase().includes(searchQuery.toLowerCase())
+      )
     }
 
-    if (selectedStatus !== "All") {
+    if (selectedStatus !== 'All') {
       const statusMap: Record<string, string> = {
-        Done: "done",
-        Processing: "processing",
-        Error: "error",
-        Unknown: "unknown",
-      };
+        Done: 'done',
+        Processing: 'processing',
+        Error: 'error',
+        Unknown: 'unknown',
+      }
       const mappedStatus =
-        statusMap[selectedStatus] || selectedStatus.toLowerCase();
+        statusMap[selectedStatus] || selectedStatus.toLowerCase()
       filtered = filtered.filter(
-        (audio) => audio.transcription_status.toLowerCase() === mappedStatus,
-      );
+        audio => audio.transcription_status.toLowerCase() === mappedStatus
+      )
     }
 
-    return filtered;
-  }, [audios, searchQuery, selectedStatus]);
+    return filtered
+  }, [audios, searchQuery, selectedStatus])
 
-  const searchParams = useSearchParams();
-  const audioId = searchParams.get("audioId");
+  const searchParams = useSearchParams()
+  const audioId = searchParams.get('audioId')
   const selectedAudio = audioId
-    ? audios.find((audio) => audio.id === audioId)
-    : null;
+    ? audios.find(audio => audio.id === audioId)
+    : null
 
   return (
     <>
@@ -97,6 +97,5 @@ export default function TranscriptHistoryPage() {
       <AudioHistoryList audioHistory={filteredAudios} />
       {selectedAudio && <TranscriptModal audio={selectedAudio} />}
     </>
-  );
+  )
 }
-

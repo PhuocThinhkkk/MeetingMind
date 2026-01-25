@@ -1,46 +1,53 @@
-"use client"
+'use client'
+import { log } from '@/lib/logger'
 
-import { useEffect, useState } from "react"
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Button } from "@/components/ui/button"
-import { Badge } from "@/components/ui/badge"
-import { Check, Sparkles } from "lucide-react"
-import { useAuth } from "@/hooks/use-auth"
-import { getUserSubscription } from "@/lib/queries/browser/subscriptions"
+import { useEffect, useState } from 'react'
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Badge } from '@/components/ui/badge'
+import { Check, Sparkles } from 'lucide-react'
+import { useAuth } from '@/hooks/use-auth'
+import { getUserSubscription } from '@/lib/queries/browser/subscriptions'
 
-type PlanKey = "free" | "pro"
+type PlanKey = 'free' | 'pro'
 
 export default function PricingSection() {
   const { user } = useAuth()
-  const [currentPlan, setCurrentPlan] = useState<PlanKey>("free")
+  const [currentPlan, setCurrentPlan] = useState<PlanKey>('free')
   const [loading, setLoading] = useState(true)
 
   const plans = [
     {
-      key: "free" as PlanKey,
-      name: "Free",
-      description: "For trying things out",
+      key: 'free' as PlanKey,
+      name: 'Free',
+      description: 'For trying things out',
       price: 0,
       features: [
-        "Up to 3 hours of transcription / month",
-        "Max 30 minutes per recording",
-        "Basic translation tools",
-        "Limited calendar usage",
+        'Up to 3 hours of transcription / month',
+        'Max 30 minutes per recording',
+        'Basic translation tools',
+        'Limited calendar usage',
       ],
-      cta: "Get started",
+      cta: 'Get started',
     },
     {
-      key: "pro" as PlanKey,
-      name: "Pro",
-      description: "Built for serious work",
+      key: 'pro' as PlanKey,
+      name: 'Pro',
+      description: 'Built for serious work',
       price: 14.99,
       features: [
-        "All features unlocked",
-        "50 hours of transcription / month",
-        "Unlimited recording length",
-        "Priority processing",
+        'All features unlocked',
+        '50 hours of transcription / month',
+        'Unlimited recording length',
+        'Priority processing',
       ],
-      cta: "Upgrade to Pro",
+      cta: 'Upgrade to Pro',
       featured: true,
     },
   ]
@@ -49,32 +56,46 @@ export default function PricingSection() {
     fetchUserPlan()
   }, [user?.id])
 
+  /**
+   * Fetches the current user's subscription and updates component state accordingly.
+   *
+   * If there is no authenticated user, sets the plan to 'free' and returns early. Otherwise,
+   * retrieves the user's subscription and sets the current plan to 'pro' when the subscription
+   * status is 'active', or to 'free' otherwise. On error, logs the failure and sets the plan to
+   * 'free'. Always marks loading as finished when complete.
+   */
   async function fetchUserPlan() {
     try {
       if (!user) {
-        setCurrentPlan("free")
+        setCurrentPlan('free')
         return
       }
 
       const sub = await getUserSubscription(user.id)
 
-      if (sub?.status === "active") {
-        setCurrentPlan("pro")
+      if (sub?.status === 'active') {
+        setCurrentPlan('pro')
       } else {
-        setCurrentPlan("free")
+        setCurrentPlan('free')
       }
     } catch (e) {
-      console.error(e)
-      setCurrentPlan("free")
+      log.error("Error when fetching user plan: ", e)
+      setCurrentPlan('free')
     } finally {
       setLoading(false)
     }
   }
 
+  /**
+   * Initiates a Stripe checkout session and redirects the browser to the returned checkout URL.
+   *
+   * Sends a POST request to '/api/stripe/create-checkout' with credentials included, extracts the `url`
+   * field from the JSON response, and sets `window.location.href` to navigate to the checkout page.
+   */
   async function fetchCheckoutSession() {
-    const res = await fetch("/api/stripe/create-checkout", {
-      method: "POST",
-      credentials: "include",
+    const res = await fetch('/api/stripe/create-checkout', {
+      method: 'POST',
+      credentials: 'include',
     })
 
     const { url } = await res.json()
@@ -101,17 +122,18 @@ export default function PricingSection() {
 
         {/* Cards */}
         <div className="grid md:grid-cols-2 gap-8">
-          {plans.map((plan) => {
+          {plans.map(plan => {
             const isCurrentPlan = currentPlan === plan.key
-            const isFreePlan = plan.key === "free"
-            const isProPlan = plan.key === "pro"
+            const isFreePlan = plan.key === 'free'
+            const isProPlan = plan.key === 'pro'
 
             return (
               <Card
                 key={plan.key}
-                className={`relative flex flex-col rounded-2xl border transition-all ${
-                  plan.featured ? "border-primary/50 shadow-lg" : "border-border"
-                } ${isCurrentPlan ? "ring-2 ring-primary" : ""}`}
+                className={`relative flex flex-col rounded-2xl border transition-all ${plan.featured
+                    ? 'border-primary/50 shadow-lg'
+                    : 'border-border'
+                  } ${isCurrentPlan ? 'ring-2 ring-primary' : ''}`}
               >
                 {plan.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
@@ -129,12 +151,8 @@ export default function PricingSection() {
                 <CardContent className="flex flex-col flex-1">
                   {/* Price */}
                   <div className="text-center mb-6">
-                    <div className="text-4xl font-bold">
-                      ${plan.price}
-                    </div>
-                    <p className="text-sm text-muted-foreground">
-                      per month
-                    </p>
+                    <div className="text-4xl font-bold">${plan.price}</div>
+                    <p className="text-sm text-muted-foreground">per month</p>
                   </div>
 
                   {isCurrentPlan ? (
@@ -146,16 +164,13 @@ export default function PricingSection() {
                       Included
                     </Button>
                   ) : (
-                    <Button
-                      onClick={fetchCheckoutSession}
-                      className="mb-6"
-                    >
+                    <Button onClick={fetchCheckoutSession} className="mb-6">
                       Upgrade to Pro
                     </Button>
                   )}
 
                   <ul className="space-y-3 mt-auto">
-                    {plan.features.map((feature) => (
+                    {plan.features.map(feature => (
                       <li key={feature} className="flex items-start gap-3">
                         <Check className="w-4 h-4 text-primary mt-1" />
                         <span className="text-sm text-muted-foreground">

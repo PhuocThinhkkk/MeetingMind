@@ -15,14 +15,15 @@ ASSEMBLYAI_API_KEY=your_api_assembly_key
 </code></pre>
 
 ### Build image:
-````bash
+
+```bash
 docker build -t transcript-socket-server .
-````
+```
 
 ### Run image:
 
 run in socket-server/ to use .env file
 
-````bash
+```bash
 docker run --env-file .env -p 9090:9090 transcript-socket-server
-````
+```
