@@ -3,10 +3,10 @@ import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 
 /**
- * Combines multiple class value inputs into a single merged class string, resolving Tailwind CSS class conflicts.
+ * Compose and merge class values into a single class string, resolving Tailwind CSS conflicts.
  *
- * @param inputs - One or more class values (strings, arrays, objects, etc.) to be combined and merged
- * @returns The resulting merged class name string
+ * @param inputs - Class value inputs (strings, arrays, objects, etc.) to combine
+ * @returns The merged class name string
  */
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -31,10 +31,10 @@ export function convertFloat32ToInt16(buffer: Float32Array) {
 }
 
 /**
- * Pause execution for a given number of milliseconds.
+ * Delays execution for the specified number of milliseconds.
  *
- * @param timeout - Delay duration in milliseconds
- * @returns No value.
+ * @param timeout - Delay duration in milliseconds (default: 5000)
+ * @returns A promise that resolves with no value after the delay
  */
 export function waitFor(timeout = 5000): Promise<void> {
   return new Promise(resolve => {

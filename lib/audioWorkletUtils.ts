@@ -29,11 +29,9 @@ export async function requestSystemAudio() {
 }
 
 /**
- * Requests access to the user's microphone and returns the captured audio stream.
+ * Request permission to capture microphone audio and return the captured MediaStream.
  *
- * Logs the error and returns `null` when permission is denied or another error occurs.
- *
- * @returns `MediaStream` containing microphone audio if permission is granted, `null` otherwise.
+ * @returns The captured `MediaStream` if permission is granted, `null` otherwise.
  */
 export async function requestMicrophoneAudio() {
   try {
@@ -80,11 +78,11 @@ export async function mixAudioStreams(
 }
 
 /**
- * Loads the PCM worklet module, routes `mixedStream` through a `pcm-processor` AudioWorkletNode to the audio context destination, and returns the node.
+ * Loads the PCM worklet module and routes the provided MediaStream through a "pcm-processor" AudioWorkletNode into the AudioContext destination.
  *
  * @param audioContext - The AudioContext used to load the worklet and create audio nodes.
  * @param mixedStream - The MediaStream to be processed and routed (e.g., a mixed system and microphone stream).
- * @returns The created and connected `AudioWorkletNode` named `"pcm-processor"`.
+ * @returns The connected `AudioWorkletNode` named "pcm-processor".
  */
 export async function setupAudioWorklet(
   audioContext: AudioContext,

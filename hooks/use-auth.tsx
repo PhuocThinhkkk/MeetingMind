@@ -27,6 +27,12 @@ export interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined)
 
+/**
+ * Provides access to the authentication context for the current React tree.
+ *
+ * @returns The authentication context value containing `user`, `session`, `loading`, and auth methods (`signUp`, `signIn`, `signOut`, `signInWithGoogle`).
+ * @throws Error if called outside an `AuthProvider`
+ */
 export function useAuth() {
   const context = useContext(AuthContext)
   if (context === undefined) {
@@ -112,6 +118,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }
 
+  /**
+   * Create a new user account using email, password, and a display name.
+   *
+   * @returns An object with `error` set to the Supabase error if signup failed, `null` otherwise.
+   */
   async function signUp(email: string, password: string, name: string) {
     const { error } = await supabase.auth.signUp({
       email,
@@ -125,6 +136,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error }
   }
 
+  /**
+   * Sign in a user using an email and password.
+   *
+   * @returns An object with `error` containing the authentication error if sign-in failed, or `null` if successful.
+   */
   async function signIn(email: string, password: string) {
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -133,6 +149,11 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error }
   }
 
+  /**
+   * Starts a Google OAuth sign-in flow and redirects the user to `/home`.
+   *
+   * @returns An object with `error` containing the authentication error if the sign-in failed, `null` otherwise.
+   */
   async function signInWithGoogle() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
@@ -143,6 +164,9 @@ export function AuthProvider({ children }: AuthProviderProps) {
     return { error }
   }
 
+  /**
+   * Signs the current user out of the Supabase authentication session.
+   */
   async function signOut() {
     await supabase.auth.signOut()
   }

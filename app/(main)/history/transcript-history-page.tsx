@@ -16,11 +16,12 @@ export default function TranscriptHistoryPage() {
   React.useEffect(() => {
     let cancelled = false
     /**
-     * Initialize and populate the audios state with the authenticated user's audio history.
+     * Populate the audios state with the authenticated user's audio history.
      *
      * If there is no authenticated user or the fetched history is empty, clears the audios state.
-     * If the fetch completes after the operation is cancelled, no state is modified.
-     * On successful fetch with results, logs the retrieval and updates the audios state with the fetched list.
+     * If the fetch completes after cancellation, no state is modified.
+     * On successful fetch with results, logs the retrieval and updates the audios state.
+     * On error, logs the error and clears the audios state.
      */
     async function initializeAudiosFetch() {
       try {

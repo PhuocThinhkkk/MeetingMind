@@ -38,6 +38,11 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
   const [currentTimeSeconds, setCurrentTimeSeconds] = useState(0)
   const router = useRouter()
 
+  /**
+   * Toggle playback for the referenced audio element and update the component's playback state.
+   *
+   * If no audio element is available, the function is a no-op.
+   */
   function togglePlay() {
     if (!audioRef.current) return
     if (isPlaying) {
@@ -47,6 +52,11 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
     }
     setIsPlaying(!isPlaying)
   }
+  /**
+   * Toggle the muted state of the hidden audio element and update component state.
+   *
+   * If the audio element is not mounted, the function does nothing.
+   */
   function toggleMute() {
     if (!audioRef.current) return
     audioRef.current.muted = !muted
@@ -57,12 +67,24 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
     router.push('/history')
   }
 
+  /**
+   * Set the component's durationSeconds state to the audio element's duration when metadata is available.
+   *
+   * Updates state only if `audioRef.current` is defined.
+   */
   function handleLoadedMetadata() {
     if (audioRef.current) {
       setDurationSeconds(audioRef.current.duration)
     }
   }
 
+  /**
+   * Synchronizes component playback state with the hidden audio element.
+   *
+   * Reads the audio element's currentTime and duration, updates `currentTimeSeconds`,
+   * and sets `progressPercent` to the current playback position as a percentage of duration.
+   * If the duration is zero or negative, `progressPercent` is set to 0.
+   */
   function handleTimeUpdate() {
     if (audioRef.current) {
       const current = audioRef.current.currentTime
@@ -76,6 +98,15 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
     }
   }
 
+  /**
+   * Seek playback to the position represented by the slider and update the progress percent.
+   *
+   * Seeks the hidden audio element to the time corresponding to the first slider value (expected 0–100)
+   * relative to the current audio duration and updates the component's progress percent. If the audio
+   * element is not ready or the duration is zero, the call is a no-op.
+   *
+   * @param val - Slider value array where `val[0]` is the percentage position (0–100)
+   */
   function handleSeek(val: number[]) {
     if (!audioRef.current || durationSeconds === 0) return
 
@@ -88,6 +119,12 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
     setIsPlaying(false)
   }
 
+  /**
+   * Format a time value in seconds as "M:SS".
+   *
+   * @param time - Time in seconds to format
+   * @returns A string with minutes and zero-padded seconds (for example, "2:05")
+   */
   function formatTime(time: number) {
     const minutes = Math.floor(time / 60)
     const seconds = Math.floor(time % 60)
