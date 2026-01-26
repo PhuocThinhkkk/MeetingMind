@@ -81,7 +81,11 @@ export function formatFileSize(bytes: number): string {
  * @param dateString - The ISO date string to format (e.g., "2023-10-05T14:48:00.000Z").
  * @returns The formatted date and time in en-US locale (e.g., "Oct 5, 2023, 02:48 PM").
  */
-export function formatDate(dateString: string): string {
+export function formatDate(dateString: string | null): string {
+  if (!dateString) {
+    log.warn('Date is null or underfined', dateString)
+    return 'Unknown Time'
+  }
   const date = new Date(dateString)
   return date.toLocaleDateString('en-US', {
     year: 'numeric',
