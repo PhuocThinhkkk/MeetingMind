@@ -9,9 +9,13 @@ export async function createAssemblyAudioUploadWithWebhook(
     process.env.NEXT_PUBLIC_APP_URL,
     process.env.ASSEMBLY_WEBHOOK_SECRET,
   ]
-  if (!ASSEMBLY_KEY || !BASE_URL || !ASSEMBLY_KEY) {
-    log.error('MISSING KEY')
-    throw new Error('Missing api key!')
+  if (!ASSEMBLY_KEY || !BASE_URL || !WEBHOOK_SECRET) {
+    log.error('Missing required environment variable', {
+      hasAssemblyKey: !!ASSEMBLY_KEY,
+      hasBaseUrl: !!BASE_URL,
+      hasWebhookSecret: !!WEBHOOK_SECRET,
+    })
+    throw new Error('Missing required environment variable')
   }
   const res = await fetch('https://api.assemblyai.com/v2/transcript', {
     method: 'POST',
@@ -26,6 +30,14 @@ export async function createAssemblyAudioUploadWithWebhook(
       webhook_auth_header_value: WEBHOOK_SECRET,
     }),
   })
+  if (!res.ok) {
+    const errorBody = await res.text()
+    log.error('AssemblyAI API request failed', {
+      status: res.status,
+      body: errorBody,
+    })
+    throw new Error(`AssemblyAI API error: ${res.status}`)
+  }
   const job = await res.json()
   return job
 }

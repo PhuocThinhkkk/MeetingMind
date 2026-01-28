@@ -17,20 +17,8 @@ export async function POST(req: NextRequest) {
 
     validateAudioFile(file)
     const audio = await uploadAudioFile(user.id, file)
-
     const job = await createAssemblyAudioUploadWithWebhook(audio)
     log.info('Jobs of uploading file: ', job)
-
-    if (!audio) {
-      log.error('No audio found after insert, maybe internal error.')
-
-      return NextResponse.json(
-        {
-          error: 'No audio found',
-        },
-        { status: 404 }
-      )
-    }
 
     return NextResponse.json({
       audio_id: audio.id,
