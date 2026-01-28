@@ -1,5 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
+import {
+  findAudioFileByJobId,
+  updateAudioComplete,
+} from '@/lib/queries/server/audio-upload-operations'
 
 export async function POST(req: NextRequest) {
   const secret = req.headers.get('x-webhook-secret')
@@ -25,28 +29,12 @@ export async function POST(req: NextRequest) {
 
   const transcript = await res.json()
 
-  const { data: audio } = await supabaseAdmin
-    .from('audio_files')
-    .select('id')
-    .eq('assembly_job_id', transcript_id)
-    .single()
-
+  const audio = await findAudioFileByJobId(transcript_id)
   if (!audio) {
     return NextResponse.json({ error: 'Audio not found' }, { status: 404 })
   }
 
-  await supabaseAdmin.from('transcripts').insert({
-    audio_id: audio.id,
-    text: transcript.text,
-    language: transcript.language_code ?? 'en-US',
-    confidence_score: transcript.confidence,
-  })
-
-  await supabaseAdmin
-    .from('audio_files')
-    .update({ transcription_status: 'done' })
-    .eq('id', audio.id)
+  await updateAudioComplete(audio, transcript)
 
   return NextResponse.json({ ok: true })
 }
-
