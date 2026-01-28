@@ -7,6 +7,16 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
 })
 
+/**
+ * Generates a structured meeting summary and events from an audio transcription and persists them to the database.
+ *
+ * Authenticates the requester, verifies ownership and transcription readiness for the specified audio file, avoids duplicate processing, extracts structured JSON (summary and events) from the transcript using the OpenAI chat model, saves the summary and events to the database, and returns the persisted summary and events on success.
+ *
+ * @param req - The incoming Next.js request
+ * @param params - Route parameters object; `params.id` is the audio file ID to analyze
+ * @returns On success, a JSON object with `success: true`, `summary` (summary fields: `text`, `highlights`, `todo`, `key_topics`, `sentiment`), and `events` (array of event objects). On failure, a JSON object with an `error` message and an appropriate HTTP status code (e.g., 401, 404, 409).
+ * @throws Error if no transcription record is found for the audio file
+ */
 export async function POST(
   req: NextRequest,
   { params }: { params: { id: string } }
