@@ -1,6 +1,14 @@
 import { AudioFileRow } from '@/types/transcription.db'
 import { log } from '@/lib/logger'
 
+/**
+ * Create an AssemblyAI transcription job for the given audio and register a webhook for transcript callbacks.
+ *
+ * @param audio - Audio record whose `url` will be submitted to AssemblyAI
+ * @returns The AssemblyAI job object parsed from the API response
+ * @throws Error if required environment variables (ASSEMBLY_API_KEY, NEXT_PUBLIC_APP_URL, ASSEMBLY_WEBHOOK_SECRET) are missing
+ * @throws Error if the AssemblyAI API responds with a non-OK status
+ */
 export async function createAssemblyAudioUploadWithWebhook(
   audio: AudioFileRow
 ) {

@@ -5,6 +5,12 @@ import {
   updateAudioComplete,
 } from '@/lib/queries/server/audio-upload-operations'
 
+/**
+ * Handle AssemblyAI transcript webhook POSTs and update the corresponding local audio record when a transcription completes.
+ *
+ * @param req - Incoming Next.js request containing the webhook payload and `x-webhook-secret` header
+ * @returns A JSON NextResponse: `{ ok: true }` when the webhook is ignored or the audio record is successfully updated; a 401 response when the webhook secret is invalid; a 404 response when no matching audio record is found; a 500 response on internal error.
+ */
 export async function POST(req: NextRequest) {
   try {
     const secret = req.headers.get('x-webhook-secret')

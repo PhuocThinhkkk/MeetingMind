@@ -5,6 +5,15 @@ import { validateAudioFile } from '@/services/audio-upload/audio-validation'
 import { uploadAudioFile } from '@/lib/queries/server/audio-upload-operations'
 import { createAssemblyAudioUploadWithWebhook } from '@/services/audio-upload/assembly-webhook'
 
+/**
+ * Handle an audio file upload request, validate and persist the file, and enqueue a webhook-based processing job.
+ *
+ * @param req - Incoming NextRequest containing multipart/form-data with the audio file under the `audio_file` field
+ * @returns A NextResponse with JSON:
+ * - on success: `{ audio_id: string, status: 'processing' }` (HTTP 200)
+ * - if unauthenticated: `{ error: 'Unauthorized' }` (HTTP 401)
+ * - on server error: `{ error: 'Server Error' }` (HTTP 500)
+ */
 export async function POST(req: NextRequest) {
   try {
     const user = await getUserAuthInSupabaseToken()

@@ -69,6 +69,13 @@ export async function saveTranscriptWords(
   return data as TranscriptionWord[]
 }
 
+/**
+ * Retrieve the transcript record associated with a given audio ID.
+ *
+ * @param audioId - The audio file identifier to query.
+ * @returns The transcript record matching `audioId`.
+ * @throws If the database query fails or if no transcript is found.
+ */
 export async function getTranscriptByAudioId(audioId: string) {
   const { data, error } = await supabase
     .from('transcripts')
