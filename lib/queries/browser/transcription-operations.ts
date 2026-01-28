@@ -68,3 +68,19 @@ export async function saveTranscriptWords(
   if (!data) return []
   return data as TranscriptionWord[]
 }
+
+export async function getTranscriptByAudioId(audioId: string) {
+  const { data, error } = await supabase
+    .from('transcripts')
+    .select('*')
+    .eq('audio_id', audioId)
+    .single()
+
+  if (error) {
+    throw new Error('Error when saving transcript words: ' + error.message)
+  }
+  if (!data) {
+    throw new Error('No transcript found.')
+  }
+  return data
+}

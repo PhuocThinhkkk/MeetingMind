@@ -7,13 +7,13 @@ export async function uploadAudioFile(userId: string, file: File) {
   const storagePath = `uploads/${userId}/${crypto.randomUUID()}.${ext}`
 
   const { error: uploadError } = await supabaseAdmin.storage
-    .from('audio')
+    .from('audio-files')
     .upload(storagePath, file, { contentType: file.type })
 
   if (uploadError) throw uploadError
 
   const { data: urlData } = supabaseAdmin.storage
-    .from('audio')
+    .from('audio-files')
     .getPublicUrl(storagePath)
 
   const { data: audio } = await supabaseAdmin

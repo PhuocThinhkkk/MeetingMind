@@ -119,9 +119,12 @@ Return:
     })
   }
 
-  return NextResponse.json({
-    success: true,
-    summary: parsed.summary,
-    events: parsed.events,
-  })
+  return NextResponse.json(
+    {
+      success: true,
+      summary: parsed.summary,
+      events: parsed.events,
+    },
+    { status: 200 }
+  )
 }

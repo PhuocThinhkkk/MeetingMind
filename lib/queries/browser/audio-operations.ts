@@ -197,3 +197,17 @@ export async function deleteAudioById(audioId: string) {
   log.info(`🗑️ Audio with ID ${audioId} deleted`)
   return true
 }
+
+export async function getAudioById(audioId: string) {
+  const { data, error } = await supabase
+    .from('audio_files')
+    .select('*')
+    .eq('id', audioId)
+    .single()
+
+  if (error) {
+    log.error('error: ', error)
+    throw new Error('Error when get audio by id')
+  }
+  return data
+}
