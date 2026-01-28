@@ -1,3 +1,4 @@
+import { Database } from './database.types'
 import { RealtimeTranscriptionWord } from './transcription.ws'
 
 export type AudioFile = {
@@ -34,3 +35,17 @@ export type TranscriptionWord = {
   confidence: number
 }
 export type SaveTranscriptInput = RealtimeTranscriptionWord[]
+
+export type AudioFileRow = Database['public']['Tables']['audio_files']['Row']
+export type TranscriptRow = Database['public']['Tables']['transcripts']['Row']
+export type SummaryRow = Database['public']['Tables']['summaries']['Row']
+export type EventItemRow = Database['public']['Tables']['events']['Row']
+export type QALogRow = Database['public']['Tables']['qa_logs']['Row']
+
+export type TranscriptionDataUpload = {
+  audioFile: AudioFileRow
+  transcript?: TranscriptRow
+  summary?: SummaryRow
+  events: EventItemRow[]
+  qaLogs: QALogRow[]
+}
