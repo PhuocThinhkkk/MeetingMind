@@ -2,7 +2,10 @@ import { NextRequest, NextResponse } from 'next/server'
 import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
 import { log } from '@/lib/logger'
 import { validateAudioFile } from '@/services/audio-upload/audio-validation'
-import { uploadAudioFile } from '@/lib/queries/server/audio-upload-operations'
+import {
+  insertAudioFile,
+  uploadAudioFile,
+} from '@/lib/queries/server/audio-upload-operations'
 import { createAssemblyAudioUploadWithWebhook } from '@/services/audio-upload/assembly-webhook'
 
 export async function POST(req: NextRequest) {
@@ -16,12 +19,21 @@ export async function POST(req: NextRequest) {
     const file = formData.get('audio_file') as File | null
 
     validateAudioFile(file)
-    const audio = await uploadAudioFile(user.id, file)
-    const job = await createAssemblyAudioUploadWithWebhook(audio)
+    const audioUrl = await uploadAudioFile(user.id, file)
+    const job = await createAssemblyAudioUploadWithWebhook(audioUrl)
     log.info('Jobs of uploading file: ', job)
+    const dataInsert = {
+      user_id: user.id,
+      name: file.name,
+      url: audioUrl,
+      assembly_job_id: job.id,
+      transcription_status: 'processing',
+    }
+    const audio = await insertAudioFile(dataInsert)
 
     return NextResponse.json({
       audio_id: audio.id,
+      audio,
       status: 'processing',
     })
   } catch (e) {

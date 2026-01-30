@@ -1,9 +1,7 @@
 import { AudioFileRow } from '@/types/transcription.db'
 import { log } from '@/lib/logger'
 
-export async function createAssemblyAudioUploadWithWebhook(
-  audio: AudioFileRow
-) {
+export async function createAssemblyAudioUploadWithWebhook(audioUrl: string) {
   const [ASSEMBLY_KEY, BASE_URL, WEBHOOK_SECRET] = [
     process.env.ASSEMBLY_API_KEY,
     process.env.NEXT_PUBLIC_APP_URL,
@@ -24,7 +22,7 @@ export async function createAssemblyAudioUploadWithWebhook(
       'Content-Type': 'application/json',
     },
     body: JSON.stringify({
-      audio_url: audio?.url,
+      audio_url: audioUrl,
       webhook_url: `${BASE_URL}/api/assemblyai/webhook/transcript`,
       webhook_auth_header_name: 'X-Webhook-Secret',
       webhook_auth_header_value: WEBHOOK_SECRET,

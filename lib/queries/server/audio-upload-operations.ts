@@ -1,5 +1,6 @@
 import { log } from '@/lib/logger'
 import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
+import { Database } from '@/types/database.types'
 import { AudioFileRow } from '@/types/transcription.db'
 
 export async function uploadAudioFile(userId: string, file: File) {
@@ -16,14 +17,14 @@ export async function uploadAudioFile(userId: string, file: File) {
     .from('audio-files')
     .getPublicUrl(storagePath)
 
+  return urlData.publicUrl
+}
+export async function insertAudioFile(
+  audioFileInput: Database['public']['Tables']['audio_files']['Insert']
+) {
   const { data: audio, error: insertError } = await supabaseAdmin
     .from('audio_files')
-    .insert({
-      user_id: userId,
-      name: file.name,
-      url: urlData.publicUrl,
-      transcription_status: 'processing',
-    })
+    .insert(audioFileInput)
     .select()
     .single()
   if (insertError || !audio) {
@@ -41,7 +42,9 @@ export async function findAudioFileByJobId(jobId: string) {
     .single()
 
   if (error || !audio) {
-    throw error ?? new Error(`Audio file not found for job ID: ${jobId}`)
+    throw new Error(
+      `Audio file not found for job ID: ${jobId}, error: ${JSON.stringify(error)}`
+    )
   }
 
   return audio as AudioFileRow
