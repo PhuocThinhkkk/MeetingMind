@@ -15,6 +15,11 @@ export default function TranscriptionTestPage() {
     const [status, setStatus] = useState<string>('idle')
     const [data, setData] = useState<TranscriptionDataUpload | null>(null)
 
+    /**
+     * Uploads an audio file to start a transcription job and updates component state with the returned audio ID and transcription status.
+     *
+     * @param file - The audio File to upload under the form field `audio_file`
+     */
     async function startTranscription(file: File) {
         const form = new FormData()
         form.append('audio_file', file)
@@ -59,6 +64,11 @@ export default function TranscriptionTestPage() {
         }
     }, [audioId])
 
+    /**
+     * Trigger server-side analysis for an audio file, assemble the resulting data, and open the transcription dialog.
+     *
+     * @param audioId - The identifier of the audio file to analyze
+     */
     async function analyze(audioId: string) {
         const res = await fetch(`/api/audiofile/${audioId}/analyze`, {
             method: 'POST',

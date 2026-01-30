@@ -1,4 +1,3 @@
-import { AudioFileRow } from '@/types/transcription.db'
 import { log } from '@/lib/logger'
 
 export async function createAssemblyAudioUploadWithWebhook(audioUrl: string) {
