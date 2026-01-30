@@ -1,5 +1,6 @@
 'use client'
 
+import { log } from '@/lib/logger'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { TranscriptionDialog } from '@/components/dashboard/transcription-view/transcription-main-view-dialog'
@@ -72,14 +73,16 @@ export default function TranscriptionTestPage() {
                 getQaLogsByAudioId(audioId)
             ])
 
-
-        setData({
+        const data = {
             audioFile,
             transcript,
             summary,
             events,
             qaLogs: qaLogs ?? [],
-        })
+        }
+
+        log.info("full data transcript: ", data)
+        setData(data)
 
         setOpen(true)
     }
