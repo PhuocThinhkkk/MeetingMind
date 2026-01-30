@@ -8,7 +8,7 @@ import {
 export async function POST(req: NextRequest) {
   try {
     const secret = req.headers.get('x-webhook-secret')
-    const expectedSecret = process.env.WEBHOOK_SECRET
+    const expectedSecret = process.env.ASSEMBLY_WEBHOOK_SECRET
 
     if (!expectedSecret || secret !== expectedSecret) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -24,7 +24,7 @@ export async function POST(req: NextRequest) {
       `https://api.assemblyai.com/v2/transcript/${transcript_id}`,
       {
         headers: {
-          Authorization: process.env.ASSEMBLYAI_API_KEY!,
+          Authorization: process.env.ASSEMBLY_API_KEY!,
         },
       }
     )
