@@ -4,9 +4,9 @@ import { log } from '@/lib/logger'
 import { useEffect, useState } from 'react'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { TranscriptionDialog } from '@/components/dashboard/transcription-view/transcription-main-view-dialog'
-import { TranscriptionDataUpload } from '@/types/transcription.db'
+import { TranscriptionDataUpload } from '@/types/transcriptions/transcription.db'
 import { getAudioById } from '@/lib/queries/browser/audio-operations'
-import { getTranscriptByAudioId } from '@/lib/queries/browser/transcription-operations'
+import { getTranscriptByAudioId, getTranscriptWordNestedByAudioId } from '@/lib/queries/browser/transcription-operations'
 import { getQaLogsByAudioId } from '@/lib/queries/browser/qa-log-operations'
 
 export default function TranscriptionTestPage() {
@@ -79,7 +79,7 @@ export default function TranscriptionTestPage() {
         const [audioFile, transcript, qaLogs] =
             await Promise.all([
                 getAudioById(audioId),
-                getTranscriptByAudioId(audioId),
+                getTranscriptWordNestedByAudioId(audioId),
                 getQaLogsByAudioId(audioId)
             ])
 

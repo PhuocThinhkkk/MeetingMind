@@ -7,6 +7,7 @@ import {
   uploadAudioFile,
 } from '@/lib/queries/server/audio-upload-operations'
 import { createAssemblyAudioUploadWithWebhook } from '@/services/audio-upload/assembly-webhook'
+import { getAudioDuration } from '@/lib/transcriptionUtils'
 
 /**
  * Handle an audio file upload request, validate and persist the file, and enqueue a webhook-based processing job.
@@ -34,6 +35,9 @@ export async function POST(req: NextRequest) {
     const dataInsert = {
       user_id: user.id,
       name: file.name,
+      file_size: file.size,
+      duration: await getAudioDuration(file),
+      mine_tyep: file.type,
       url: audioUrl,
       assembly_job_id: job.id,
       transcription_status: 'processing',

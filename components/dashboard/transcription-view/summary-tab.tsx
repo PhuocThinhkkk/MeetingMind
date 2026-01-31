@@ -1,6 +1,6 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle } from 'lucide-react'
-import { SummaryRow } from '@/types/transcription.db'
+import { SummaryRow } from '@/types/transcriptions/transcription.db'
 
 type Props = {
     summary?: SummaryRow

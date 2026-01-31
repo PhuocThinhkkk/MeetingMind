@@ -1,8 +1,11 @@
 import { log } from '@/lib/logger'
-import { SaveTranscriptInput, Transcript } from '@/types/transcription.db'
+import {
+  SaveTranscriptInput,
+  Transcript,
+} from '@/types/transcriptions/transcription.db'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
-import { RealtimeTranscriptionWord } from '@/types/transcription.ws'
-import { TranscriptionWord } from '@/types/transcription.db'
+import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
+import { TranscriptionWord } from '@/types/transcriptions/transcription.db'
 
 /**
  * Save a transcript for an audio file to the database.
@@ -84,7 +87,28 @@ export async function getTranscriptByAudioId(audioId: string) {
     .single()
 
   if (error) {
-    throw new Error('Error when saving transcript words: ' + error.message)
+    throw new Error('Error when getting transcript words: ' + error.message)
+  }
+  if (!data) {
+    throw new Error('No transcript found.')
+  }
+  return data
+}
+
+export async function getTranscriptWordNestedByAudioId(audioId: string) {
+  const { data, error } = await supabase
+    .from('transcripts')
+    .select(
+      `
+    *,
+    transcription_words:transcription_words!transcript_id (*)
+  `
+    )
+    .eq('audio_id', audioId)
+    .single()
+
+  if (error) {
+    throw new Error('Error when getting transcript words: ' + error.message)
   }
   if (!data) {
     throw new Error('No transcript found.')

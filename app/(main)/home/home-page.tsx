@@ -16,14 +16,14 @@ import { FileAudio, Clock, MoreHorizontal } from 'lucide-react'
 import { RealtimeRecorder } from '@/components/dashboard/realtime-recorder'
 import { AudioUpload } from '@/components/dashboard/audio-upload'
 import { useAuth } from '@/hooks/use-auth'
-import { AudioFile } from '@/types/transcription.db'
+import { AudioFile } from '@/types/transcriptions/transcription.db'
 import {
   getAudioHistory,
   saveAudioFile,
 } from '@/lib/queries/browser/audio-operations'
 import { saveTranscript } from '@/lib/queries/browser/transcription-operations'
 import { saveTranscriptWords } from '@/lib/queries/browser/transcription-operations'
-import { SaveTranscriptInput } from '@/types/transcription.db'
+import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
 import { formatDuration } from '@/lib/utils'
 import { FeatureLockWrapper } from '@/components/coming-soon-wrapper'
 import { TranscriptionView } from '@/components/dashboard/transcription-view'

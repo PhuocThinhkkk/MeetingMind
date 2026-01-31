@@ -2,7 +2,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, CheckCircle } from 'lucide-react'
-import { EventItemRow } from '@/types/transcription.db'
+import { EventItemRow } from '@/types/transcriptions/transcription.db'
 
 type Props = {
     events: EventItemRow[]

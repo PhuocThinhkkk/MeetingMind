@@ -1,8 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
-import { AudioFileRow } from '@/types/transcription.db'
+import { AudioFileRow } from '@/types/transcriptions/transcription.db'
 import { validateAudioTime } from '@/lib/validations/audio-validations'
-import { formatDate } from '@/lib/utils'
+import { formatDateShorted } from '@/lib/utils'
 
 type Props = {
     audioFile: AudioFileRow
@@ -28,7 +28,7 @@ export function FileInfoPanel({ audioFile }: Props) {
                 <div className="flex justify-between">
                     <span className="text-gray-600">Created</span>
                     <span>
-                        {formatDate(audioFile.created_at)}
+                        {formatDateShorted(audioFile.created_at)}
                     </span>
                 </div>
 

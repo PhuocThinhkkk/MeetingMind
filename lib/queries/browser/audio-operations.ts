@@ -1,7 +1,7 @@
 import { log } from '@/lib/logger'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { getAudioDuration } from '@/lib/transcriptionUtils'
-import { AudioFile } from '@/types/transcription.db'
+import { AudioFile } from '@/types/transcriptions/transcription.db'
 
 /**
  * Retrieve a user's audio history with each item's primary transcript normalized.

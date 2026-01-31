@@ -1,7 +1,9 @@
+import { adaptAssemblyAIWords } from '@/lib/adapters/upload-transcript'
 import { log } from '@/lib/logger'
 import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
 import { Database } from '@/types/database.types'
-import { AudioFileRow } from '@/types/transcription.db'
+import { AudioFileRow } from '@/types/transcriptions/transcription.db'
+import { AssemblyAIWebhookPayload } from '@/types/transcriptions/transcription.upload'
 
 /**
  * Uploads an audio file to storage, creates an `audio_files` record with transcription status set to `processing`, and returns the created row.
@@ -74,22 +76,46 @@ export async function findAudioFileByJobId(jobId: string) {
  */
 export async function updateAudioComplete(
   audio: AudioFileRow,
-  transcript: any
+  transcript: AssemblyAIWebhookPayload
 ) {
-  const { error: insertError } = await supabaseAdmin
+  const { data: transcriptDb, error: insertError } = await supabaseAdmin
     .from('transcripts')
     .insert({
       audio_id: audio.id,
-      text: transcript.text,
+      text: transcript.text ?? '',
       language: transcript.language_code ?? 'en-US',
       confidence_score: transcript.confidence,
     })
-  if (insertError) {
+    .select('*')
+    .single()
+
+  if (!transcriptDb || insertError) {
     log.error('Failed to insert transcript', {
       error: insertError,
+      transcript,
+      transcriptDb,
       audioId: audio.id,
     })
     throw insertError
+  }
+
+  const transcriptWordsInsert = adaptAssemblyAIWords(
+    transcript.words,
+    transcriptDb.id
+  )
+
+  const { error: insertError2 } = await supabaseAdmin
+    .from('transcription_words')
+    .insert(transcriptWordsInsert)
+
+  if (insertError2) {
+    log.error('Failed to insert transcript words: ', {
+      error: insertError,
+      transcript,
+      transcriptDb,
+      audioId: audio.id,
+    })
+    throw insertError2
   }
 
   await supabaseAdmin

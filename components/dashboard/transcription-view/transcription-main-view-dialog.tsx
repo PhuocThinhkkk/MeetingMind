@@ -10,7 +10,7 @@ import { Badge } from '@/components/ui/badge'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { FileText } from 'lucide-react'
 
-import { TranscriptionDataUpload } from '@/types/transcription.db'
+import { TranscriptionDataUpload } from '@/types/transcriptions/transcription.db'
 import { TranscriptTab } from '@/components/dashboard/transcription-view/transcript-tab'
 import { QATab } from './qa-tab'
 import { FileInfoPanel } from './file-info-panel'
@@ -29,7 +29,7 @@ export function TranscriptionDialog({ open, onClose, data }: Props) {
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-6xl h-[90vh]">
+            <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <FileText className="w-5 h-5" />
@@ -38,7 +38,7 @@ export function TranscriptionDialog({ open, onClose, data }: Props) {
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex h-full gap-6">
+                <div className="flex flex-1 h-full gap-6">
                     <div className="flex-1">
                         <Tabs defaultValue="transcript" className="h-full">
                             <TabsList className="grid grid-cols-4">

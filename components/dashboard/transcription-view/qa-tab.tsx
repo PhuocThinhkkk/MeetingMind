@@ -1,7 +1,7 @@
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { formatDate } from '@/lib/utils'
-import { QALogRow } from '@/types/transcription.db'
+import { QALogRow } from '@/types/transcriptions/transcription.db'
 
 type Props = {
     qaLogs: QALogRow[]

@@ -95,3 +95,15 @@ export function formatDate(dateString: string | null): string {
     minute: '2-digit',
   })
 }
+export function formatDateShorted(dateString: string | null): string {
+  if (!dateString) {
+    log.warn('Date is null or underfined', dateString)
+    return 'Unknown Time'
+  }
+  const date = new Date(dateString)
+  return date.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'short',
+    day: 'numeric',
+  })
+}
