@@ -1,7 +1,7 @@
 import { log } from '@/lib/logger'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { getAudioDuration } from '@/lib/transcriptionUtils'
-import { AudioFile } from '@/types/transcription.db'
+import { AudioFile } from '@/types/transcriptions/transcription.db'
 
 /**
  * Retrieve a user's audio history with each item's primary transcript normalized.
@@ -196,4 +196,28 @@ export async function deleteAudioById(audioId: string) {
 
   log.info(`🗑️ Audio with ID ${audioId} deleted`)
   return true
+}
+
+/**
+ * Fetches the audio file record with the given ID.
+ *
+ * @param audioId - The ID of the audio file to retrieve
+ * @returns The audio file record matching `audioId`
+ * @throws When the database query returns an error
+ */
+export async function getAudioById(audioId: string) {
+  const { data, error } = await supabase
+    .from('audio_files')
+    .select('*')
+    .eq('id', audioId)
+    .single()
+
+  if (error) {
+    log.error('error: ', {
+      error,
+      data,
+    })
+    throw new Error('Error when get audio by id')
+  }
+  return data
 }

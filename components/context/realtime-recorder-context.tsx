@@ -20,7 +20,7 @@ import {
   RealtimeTranscriptionWord,
   RealtimeTranscriptResponse,
   RealtimeTranslateResponse,
-} from '@/types/transcription.ws'
+} from '@/types/transcriptions/transcription.ws'
 
 import { resampleTo16kHz, float32ToInt16 } from '@/lib/transcriptionUtils'
 import { useAuth } from '@/hooks/use-auth'

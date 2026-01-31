@@ -1,8 +1,11 @@
 import { log } from '@/lib/logger'
-import { SaveTranscriptInput, Transcript } from '@/types/transcription.db'
+import {
+  SaveTranscriptInput,
+  Transcript,
+} from '@/types/transcriptions/transcription.db'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
-import { RealtimeTranscriptionWord } from '@/types/transcription.ws'
-import { TranscriptionWord } from '@/types/transcription.db'
+import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
+import { TranscriptionWord } from '@/types/transcriptions/transcription.db'
 
 /**
  * Save a transcript for an audio file to the database.
@@ -67,4 +70,48 @@ export async function saveTranscriptWords(
   }
   if (!data) return []
   return data as TranscriptionWord[]
+}
+
+/**
+ * Retrieve the transcript record associated with a given audio ID.
+ *
+ * @param audioId - The audio file identifier to query.
+ * @returns The transcript record matching `audioId`.
+ * @throws If the database query fails or if no transcript is found.
+ */
+export async function getTranscriptByAudioId(audioId: string) {
+  const { data, error } = await supabase
+    .from('transcripts')
+    .select('*')
+    .eq('audio_id', audioId)
+    .single()
+
+  if (error) {
+    throw new Error('Error when getting transcript words: ' + error.message)
+  }
+  if (!data) {
+    throw new Error('No transcript found.')
+  }
+  return data
+}
+
+export async function getTranscriptWordNestedByAudioId(audioId: string) {
+  const { data, error } = await supabase
+    .from('transcripts')
+    .select(
+      `
+  *,
+  transcription_words (*)
+`
+    )
+    .eq('audio_id', audioId)
+    .single()
+
+  if (error) {
+    throw new Error('Error when getting transcript words: ' + error.message)
+  }
+  if (!data) {
+    throw new Error('No transcript found.')
+  }
+  return data
 }

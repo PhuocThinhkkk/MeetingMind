@@ -1,7 +1,7 @@
 import { log } from '@/lib/logger'
 import { Badge } from '@/components/ui/badge'
 import { Calendar } from 'lucide-react'
-import { Transcript } from '@/types/transcription.db'
+import { Transcript } from '@/types/transcriptions/transcription.db'
 import { formatDate } from '@/lib/utils'
 
 type TranscriptDetailsProps = {
