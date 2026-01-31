@@ -67,6 +67,19 @@ export async function findAudioFileByJobId(jobId: string) {
   return audio as AudioFileRow
 }
 
+export async function getAudioById(audioId: string) {
+  const { data: audio, error: e } = await supabaseAdmin
+    .from('audio_files')
+    .select('*')
+    .eq('id', audioId)
+
+  if (e) {
+    log.error('Error when get audio by id: ', { e, audio, audioId })
+    throw e
+  }
+  return audio[0]
+}
+
 /**
  * Finalize an audio record by saving its transcript and marking its transcription status as done.
  *

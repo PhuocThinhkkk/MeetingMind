@@ -1,13 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { log } from '@/lib/logger'
 import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
-import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
-import OpenAI from 'openai'
 import { getLLM } from '@/types/llm/llm-factory'
-
-const openai = new OpenAI({
-  apiKey: process.env.OPENAI_API_KEY!,
-})
+import { getAudioById } from '@/lib/queries/server/audio-upload-operations'
+import { saveSummaryByAudioId } from '@/lib/queries/server/summary-operations'
+import { getTranscriptByAudioId } from '@/lib/queries/server/transcript-operations'
+import { insertManyEventsByAudioId } from '@/lib/queries/server/events-operations'
+import { isAudioFileStatusDone } from '@/services/audio-upload/utils'
 
 /**
  * Generates a structured meeting summary and events from an audio transcription and persists them to the database.
@@ -32,71 +31,30 @@ export async function POST(
     }
 
     log.info('audio id: ', audioId)
-    const { data: audio } = await supabaseAdmin
-      .from('audio_files')
-      .select('*')
-      .eq('id', audioId)
-      .single()
+    const audio = await getAudioById(audioId)
 
     if (!audio || audio.user_id !== user.id) {
       log.error(`User with id ${user.id} can not access with audio ${audio}`)
       return NextResponse.json({ error: 'Not found' }, { status: 404 })
     }
 
-    if (audio.transcription_status !== 'done') {
+    if (!isAudioFileStatusDone(audio)) {
       return NextResponse.json(
         { error: 'Transcript not ready' },
         { status: 409 }
       )
     }
 
-    // 3. Idempotency
-    const { data: existingSummary } = await supabaseAdmin
-      .from('summaries')
-      .select('id')
-      .eq('audio_id', audioId)
-      .maybeSingle()
-
-    if (existingSummary) {
-      return NextResponse.json({ success: true })
-    }
-
-    // 4. Get transcript
-    const { data: transcript } = await supabaseAdmin
-      .from('transcripts')
-      .select('text')
-      .eq('audio_id', audioId)
-      .single()
-
+    const transcript = await getTranscriptByAudioId(audioId)
     if (!transcript) {
       throw new Error('No transcription')
     }
 
-    // 5. GPT extraction
     const llm = getLLM()
     const parsed = await llm.extractMeeting(transcript.text)
 
-    // 6. Save summary
-    await supabaseAdmin.from('summaries').insert({
-      audio_id: audioId,
-      text: parsed.summary.text,
-      highlights: parsed.summary.highlights,
-      todo: parsed.summary.todo,
-      key_topics: parsed.summary.key_topics,
-      sentiment: parsed.summary.sentiment,
-    })
-
-    // 7. Save events
-    for (const event of parsed.events || []) {
-      await supabaseAdmin.from('events').insert({
-        audio_id: audioId,
-        title: event.title,
-        description: event.description,
-        start_time: event.start_time,
-        end_time: event.end_time,
-        location: event.location,
-      })
-    }
+    await saveSummaryByAudioId(audioId, parsed.summary)
+    await insertManyEventsByAudioId(audioId, parsed.events)
 
     return NextResponse.json(
       {

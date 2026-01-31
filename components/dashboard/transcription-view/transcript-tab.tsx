@@ -135,20 +135,18 @@ export function TranscriptTab({ audioFile, transcript }: Props) {
                 <ScrollArea className="h-[40vh] text-sm">
                     <div className="flex flex-wrap gap-0">
                         {transcript.transcription_words?.map(word => {
-                            if (!word.end_time || !word.start_time) return
+                            if (word.end_time == null || word.start_time == null) return
                             const isActive =
                                 currentMs >= word.start_time - WINDOW_BEFORE &&
                                 currentMs <= word.end_time + WINDOW_AFTER
-
                             return (
                                 <span
                                     key={word.id}
                                     onClick={() => {
                                         if (!audioRef.current) return
-                                        if (!word.start_time) return
+                                        if (word.start_time == null) return
                                         audioRef.current.currentTime = word.start_time / 1000
-                                    }}
-                                    className={cn(
+                                    }} className={cn(
                                         'cursor-pointer rounded-xs px-1 py-0.5 transition',
                                         isActive
                                             ? 'bg-primary text-primary-foreground'
