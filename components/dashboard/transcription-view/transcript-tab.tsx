@@ -14,10 +14,7 @@ import {
     FileAudio,
 } from 'lucide-react'
 
-import {
-    AudioFileRow,
-    TranscriptWithWordNested,
-} from '@/types/transcriptions/transcription.db'
+import { AudioFileRow, Transcript, TranscriptWithWordNested } from '@/types/transcriptions/transcription.db'
 import { validateAudioTime } from '@/lib/validations/audio-validations'
 import { cn } from '@/lib/utils'
 
@@ -39,6 +36,7 @@ export function TranscriptTab({ audioFile, transcript }: Props) {
     }
 
     const safeDuration = validateAudioTime(audioFile.duration)
+    const currentMs = currentTime * 1000
 
     function togglePlay() {
         if (!audioRef.current) return
@@ -63,18 +61,12 @@ export function TranscriptTab({ audioFile, transcript }: Props) {
         return `${m}:${s.toString().padStart(2, '0')}`
     }
 
-    const activeWordId = transcript.transcription_words.find(
-        w =>
-            w.start_time != null &&
-            w.end_time != null &&
-            currentTime >= w.start_time &&
-            currentTime <= w.end_time
-    )?.id
+    const WINDOW_BEFORE = 350
+    const WINDOW_AFTER = 350
 
     return (
         <Card className="h-full">
             <CardHeader className="space-y-4">
-                {/* Header */}
                 <div className="flex items-center gap-3">
                     <div className="rounded-lg bg-primary/10 p-2">
                         <FileAudio className="h-5 w-5 text-primary" />
@@ -82,34 +74,29 @@ export function TranscriptTab({ audioFile, transcript }: Props) {
                     <CardTitle className="text-lg">{audioFile.name}</CardTitle>
                 </div>
 
-                {/* Meta */}
                 <div className="flex gap-4 text-sm text-muted-foreground">
                     <span className="flex items-center gap-1">
                         <Clock className="h-4 w-4" />
-                        {Math.floor(safeDuration / 60)}:
-                        {(safeDuration % 60).toString().padStart(2, '0')}
+                        {formatTime(safeDuration)}
                     </span>
 
                     <span className="flex items-center gap-1">
                         <User className="h-4 w-4" />
-                        {transcript.speakers_detected ?? 1} speakers
+                        {
+                            transcript.speakers_detected ?? 1} speakers
                     </span>
                 </div>
 
-                {/* Audio Player */}
+                {/* Player */}
                 <div className="flex items-center gap-4 rounded-lg bg-muted/30 p-3">
                     <button
                         onClick={togglePlay}
-                        className="rounded-full bg-primary p-2 text-white hover:bg-primary/90"
+                        className="rounded-full bg-primary p-2 text-white"
                     >
-                        {isPlaying ? (
-                            <Pause className="h-5 w-5" />
-                        ) : (
-                            <Play className="h-5 w-5" />
-                        )}
+                        {isPlaying ? <Pause /> : <Play />}
                     </button>
 
-                    <span className="w-10 text-xs text-muted-foreground text-right">
+                    <span className="w-10 text-xs text-right">
                         {formatTime(currentTime)}
                     </span>
 
@@ -121,19 +108,12 @@ export function TranscriptTab({ audioFile, transcript }: Props) {
                         className="flex-1"
                     />
 
-                    <span className="w-10 text-xs text-muted-foreground">
+                    <span className="w-10 text-xs">
                         {formatTime(duration)}
                     </span>
 
-                    <button
-                        onClick={toggleMute}
-                        className="rounded-full p-2 hover:bg-muted"
-                    >
-                        {muted ? (
-                            <VolumeX className="h-5 w-5 text-muted-foreground" />
-                        ) : (
-                            <Volume2 className="h-5 w-5 text-muted-foreground" />
-                        )}
+                    <button onClick={toggleMute}>
+                        {muted ? <VolumeX /> : <Volume2 />}
                     </button>
 
                     <audio
@@ -151,27 +131,34 @@ export function TranscriptTab({ audioFile, transcript }: Props) {
                 </div>
             </CardHeader>
 
-            {/* Transcript */}
             <CardContent>
-                <ScrollArea className="h-[55vh] text-sm leading-relaxed">
-                    <div className="flex flex-wrap gap-1">
-                        {transcript.transcription_words.map(word => (
-                            <span
-                                key={word.id}
-                                onClick={() => {
-                                    if (!audioRef.current || word.start_time == null) return
-                                    audioRef.current.currentTime = word.start_time
-                                }}
-                                className={cn(
-                                    'cursor-pointer rounded px-1 py-0.5 transition',
-                                    word.id === activeWordId
-                                        ? 'bg-primary text-primary-foreground'
-                                        : 'hover:bg-muted'
-                                )}
-                            >
-                                {word.text}
-                            </span>
-                        ))}
+                <ScrollArea className="h-[40vh] text-sm">
+                    <div className="flex flex-wrap gap-0">
+                        {transcript.transcription_words?.map(word => {
+                            if (!word.end_time || !word.start_time) return
+                            const isActive =
+                                currentMs >= word.start_time - WINDOW_BEFORE &&
+                                currentMs <= word.end_time + WINDOW_AFTER
+
+                            return (
+                                <span
+                                    key={word.id}
+                                    onClick={() => {
+                                        if (!audioRef.current) return
+                                        if (!word.start_time) return
+                                        audioRef.current.currentTime = word.start_time / 1000
+                                    }}
+                                    className={cn(
+                                        'cursor-pointer rounded-xs px-1 py-0.5 transition',
+                                        isActive
+                                            ? 'bg-primary text-primary-foreground'
+                                            : 'hover:bg-muted'
+                                    )}
+                                >
+                                    {word.text}
+                                </span>
+                            )
+                        })}
                     </div>
                 </ScrollArea>
             </CardContent>

@@ -100,9 +100,9 @@ export async function getTranscriptWordNestedByAudioId(audioId: string) {
     .from('transcripts')
     .select(
       `
-    *,
-    transcription_words:transcription_words!transcript_id (*)
-  `
+  *,
+  transcription_words (*)
+`
     )
     .eq('audio_id', audioId)
     .single()

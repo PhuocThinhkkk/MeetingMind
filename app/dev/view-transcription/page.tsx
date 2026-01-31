@@ -7,12 +7,12 @@ import { TranscriptionDataUpload } from '@/types/transcriptions/transcription.db
 import { getEventAndSumariesByAudioId } from '@/lib/queries/browser/events-sumaries-operations'
 import { getAudioById } from '@/lib/queries/browser/audio-operations'
 import { getQaLogsByAudioId } from '@/lib/queries/browser/qa-log-operations'
-import { getTranscriptByAudioId } from '@/lib/queries/browser/transcription-operations'
+import { getTranscriptWordNestedByAudioId } from '@/lib/queries/browser/transcription-operations'
 import { Button } from '@/components/ui/button'
 
 export default function TranscriptionTestPage() {
     const [open, setOpen] = useState(false)
-    const [audioId, setAudioId] = useState<string>("67673f00-8faa-4d5f-a615-4f0a5d0c4ed1")
+    const [audioId, setAudioId] = useState<string>("62fa7b6b-334b-4885-8720-14f9ec30f0b4")
     const [data, setData] = useState<TranscriptionDataUpload | null>(null)
 
 
@@ -20,21 +20,25 @@ export default function TranscriptionTestPage() {
         fetchAudioTranscriptionData()
     }, [])
     async function fetchAudioTranscriptionData() {
-        const dataAnalyzed = await getEventAndSumariesByAudioId(audioId)
-        const audioData = await getAudioById(audioId)
-        const qaLogs = await getQaLogsByAudioId(audioId)
-        const transcript = await getTranscriptByAudioId(audioId)
+        try {
+            const dataAnalyzed = await getEventAndSumariesByAudioId(audioId)
+            const audioData = await getAudioById(audioId)
+            const qaLogs = await getQaLogsByAudioId(audioId)
+            const transcript = await getTranscriptWordNestedByAudioId(audioId)
 
-        const d = {
-            audioFile: audioData,
-            qaLogs: qaLogs,
-            transcript: transcript,
-            summary: dataAnalyzed.summary,
-            events: dataAnalyzed.events
-        } as TranscriptionDataUpload
-        log.info("transcript view props", d)
-        setData(d)
-        setOpen(true)
+            const d = {
+                audioFile: audioData,
+                qaLogs: qaLogs,
+                transcript: transcript,
+                summary: dataAnalyzed.summary,
+                events: dataAnalyzed.events
+            } as TranscriptionDataUpload
+            log.info("transcript view props", d)
+            setData(d)
+            setOpen(true)
+        } catch (e) {
+            log.error("error: ", e)
+        }
     }
 
 

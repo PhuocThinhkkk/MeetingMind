@@ -213,7 +213,10 @@ export async function getAudioById(audioId: string) {
     .single()
 
   if (error) {
-    log.error('error: ', error)
+    log.error('error: ', {
+      error,
+      data,
+    })
     throw new Error('Error when get audio by id')
   }
   return data

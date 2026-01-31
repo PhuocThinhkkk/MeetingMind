@@ -16,13 +16,12 @@ export async function getEventAndSumariesByAudioId(audioId: string) {
     .from('summaries')
     .select('*')
     .eq('audio_id', audioId)
-    .single()
   if (summaryError) {
     log.error('query summaries error: ', summaryError)
     throw summaryError
   }
   const result = {
-    summary: summary,
+    summary: summary[0],
     events: events,
   } as MeetingExtractionResult
 
