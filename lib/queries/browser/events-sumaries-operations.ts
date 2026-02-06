@@ -1,6 +1,5 @@
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { log } from '@/lib/logger'
-import { MeetingExtractionResult } from '@/types/llm/llm-abstract'
 
 export async function getEventAndSumariesByAudioId(audioId: string) {
   const { data: events, error: eventError } = await supabase
@@ -23,7 +22,7 @@ export async function getEventAndSumariesByAudioId(audioId: string) {
   const result = {
     summary: summary[0],
     events: events,
-  } as MeetingExtractionResult
+  }
 
   return result
 }

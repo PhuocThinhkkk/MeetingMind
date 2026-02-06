@@ -1,12 +1,10 @@
+import { useTranscriptionView } from '@/components/context/transcription-view-context'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle } from 'lucide-react'
-import { SummaryRow } from '@/types/transcriptions/transcription.db'
 
-type Props = {
-    summary?: SummaryRow
-}
 
-export function SummaryTab({ summary }: Props) {
+export function SummaryTab() {
+    const { summary } = useTranscriptionView()
     if (!summary) {
         return <p className="text-gray-500">No summary available.</p>
     }

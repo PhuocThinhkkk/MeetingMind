@@ -2,13 +2,12 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, CheckCircle } from 'lucide-react'
-import { EventItemRow } from '@/types/transcriptions/transcription.db'
+import { useTranscriptionView } from '@/components/context/transcription-view-context'
 
-type Props = {
-    events: EventItemRow[]
-}
 
-export function EventsTab({ events }: Props) {
+
+export function EventsTab() {
+    const { events } = useTranscriptionView()
     return (
         <Card className="h-full">
             <CardHeader>
@@ -23,8 +22,8 @@ export function EventsTab({ events }: Props) {
                         No events detected.
                     </div>
                 ) : (
-                    events.map(event => (
-                        <div key={event.id} className="p-4 border rounded-lg">
+                    events.map((event, index) => (
+                        <div key={index} className="p-4 border rounded-lg">
                             <div className="flex items-start justify-between">
                                 <div>
                                     <h4 className="font-medium">{event.title}</h4>

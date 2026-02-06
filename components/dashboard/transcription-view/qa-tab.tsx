@@ -11,14 +11,9 @@ import { QALog } from '@/types/utils'
 import { toast } from 'sonner'
 import { getQaLogsByAudioId, insertQALogs } from '@/lib/queries/browser/qa-log-operations'
 import { log } from '@/lib/logger'
-import { adaptQA } from '@/lib/adapters/qa-log'
 import { useAuth } from '@/hooks/use-auth'
+import { useTranscriptionView } from '@/components/context/transcription-view-context'
 
-type Props = {
-    qaLogs: QALogInit[]
-    transcript?: TranscriptRow
-    audioId: string
-}
 type QALogInit = QALog | QALogRow
 
 type QALogUI = {
@@ -28,9 +23,9 @@ type QALogUI = {
 }
 
 
-export function QATab({ qaLogs: initialQaLogs, transcript, audioId }: Props) {
+export function QATab() {
     const { user } = useAuth()
-    const [qaLogs, setQaLogs] = useState<QALogInit[]>(initialQaLogs)
+    const { qaLogs, appendQaLog, setQaLogs, transcript, audioId } = useTranscriptionView()
     const [question, setQuestion] = useState('')
     const [loading, setLoading] = useState(false)
 
@@ -72,7 +67,7 @@ export function QATab({ qaLogs: initialQaLogs, transcript, audioId }: Props) {
                 transcript_id: transcript.id
             }
 
-            setQaLogs(prev => [...prev, data.qa])
+            appendQaLog(data.qa)
             setQuestion('')
             await insertQALogs(data, relation)
 

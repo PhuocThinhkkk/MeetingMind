@@ -17,13 +17,10 @@ import {
 import { AudioFileRow, Transcript, TranscriptWithWordNested } from '@/types/transcriptions/transcription.db'
 import { validateAudioTime } from '@/lib/validations/audio-validations'
 import { cn } from '@/lib/utils'
+import { useTranscriptionView } from '@/components/context/transcription-view-context'
 
-type Props = {
-    audioFile: AudioFileRow
-    transcript?: TranscriptWithWordNested
-}
-
-export function TranscriptTab({ audioFile, transcript }: Props) {
+export function TranscriptTab() {
+    const { audio: audioFile, transcript } = useTranscriptionView()
     const audioRef = useRef<HTMLAudioElement>(null)
 
     const [isPlaying, setIsPlaying] = useState(false)

@@ -50,10 +50,14 @@ export type QALogRow = Database['public']['Tables']['qa_logs']['Row']
 export type TranscriptionDataUpload = {
   audioFile: AudioFileRow
   transcript?: TranscriptWithWordNested
-  summary?: SummaryRow
-  events: EventItemRow[]
-  qaLogs: QALogRow[]
+  summary?: SummaryBase
+  events: EventItemBase[]
+  qaLogs: QALogBase[]
 }
 export type TranscriptWordInsert =
   Database['public']['Tables']['transcription_words']['Insert']
 export type QALogInsert = Database['public']['Tables']['qa_logs']['Insert']
+
+export type QALogBase = Omit<QALogRow, 'id' | 'user_id' | 'audio_id'>
+export type SummaryBase = Omit<SummaryRow, 'id' | 'user_id' | 'audio_id'>
+export type EventItemBase = Omit<EventItemRow, 'id' | 'user_id' | 'audio_id'>
