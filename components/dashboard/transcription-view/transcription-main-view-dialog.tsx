@@ -67,7 +67,9 @@ export function TranscriptionDialog({ open, onClose, data }: Props) {
 
                             <TabsContent value="qa" className='flex flex-col flex-1 min-h-0 overflow-hidden'>
                                 <QATab qaLogs={data.qaLogs}
-                                    transcript={data.transcript?.text} />
+                                    transcript={data.transcript}
+                                    audioId={data.audioFile.id}
+                                />
                             </TabsContent>
 
                             <TabsContent value="events">

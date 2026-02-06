@@ -1,18 +1,23 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatDate } from '@/lib/utils'
-import { QALogRow } from '@/types/transcriptions/transcription.db'
+import { QALogRow, TranscriptRow } from '@/types/transcriptions/transcription.db'
 import { QALog } from '@/types/utils'
 import { toast } from 'sonner'
+import { getQaLogsByAudioId, insertQALogs } from '@/lib/queries/browser/qa-log-operations'
+import { log } from '@/lib/logger'
+import { adaptQA } from '@/lib/adapters/qa-log'
+import { useAuth } from '@/hooks/use-auth'
 
 type Props = {
     qaLogs: QALogInit[]
-    transcript?: string
+    transcript?: TranscriptRow
+    audioId: string
 }
 type QALogInit = QALog | QALogRow
 
@@ -23,7 +28,8 @@ type QALogUI = {
 }
 
 
-export function QATab({ qaLogs: initialQaLogs, transcript }: Props) {
+export function QATab({ qaLogs: initialQaLogs, transcript, audioId }: Props) {
+    const { user } = useAuth()
     const [qaLogs, setQaLogs] = useState<QALogInit[]>(initialQaLogs)
     const [question, setQuestion] = useState('')
     const [loading, setLoading] = useState(false)
@@ -43,7 +49,8 @@ export function QATab({ qaLogs: initialQaLogs, transcript }: Props) {
     const handleAsk = async () => {
         try {
             if (!question.trim()) return
-            if (!transcript?.trim()) {
+            if (!user) return
+            if (!transcript?.text.trim()) {
                 throw new Error("Some how transcript no where to be found")
 
             }
@@ -59,9 +66,16 @@ export function QATab({ qaLogs: initialQaLogs, transcript }: Props) {
             if (!res.ok) throw new Error('Failed to ask question')
 
             const data = await res.json()
+            const relation = {
+                user_id: user.id,
+                audio_id: audioId,
+                transcript_id: transcript.id
+            }
 
             setQaLogs(prev => [...prev, data.qa])
             setQuestion('')
+            await insertQALogs(data, relation)
+
         } catch (err) {
             console.error(err)
             toast.error(`${err}`)
@@ -69,6 +83,20 @@ export function QATab({ qaLogs: initialQaLogs, transcript }: Props) {
             setLoading(false)
         }
     }
+
+    useEffect(() => {
+        fetchQALogs()
+        async function fetchQALogs() {
+            try {
+                const qaLogs = await getQaLogsByAudioId(audioId)
+                setQaLogs(qaLogs)
+            } catch (e) {
+                log.error("Error in fetching audio id: ", e)
+            }
+        }
+
+    }, [])
+
 
     return (
         <Card className="h-full flex flex-col min-h-0">
