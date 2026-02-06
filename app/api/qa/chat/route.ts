@@ -13,18 +13,17 @@ export async function POST(req: NextRequest) {
     }
 
     const { question, transcript, passQA } = await req.json()
-    if (!question.trim()) {
-      return NextResponse.json({ error: 'No question ' }, { status: 401 })
+    if (!question?.trim()) {
+      return NextResponse.json({ error: 'No question ' }, { status: 400 })
     }
-    if (!transcript.trim()) {
+    if (!transcript?.trim()) {
       return NextResponse.json(
         { error: 'No transcript found ' },
-        { status: 401 }
+        { status: 400 }
       )
     }
     const llm = getLLM()
     const promptBuilder = buildQAPrompt(transcript, question, passQA)
-    log.info('this is promt: ', promptBuilder)
     const parsed = await llm.callLLM<QALogResult>(promptBuilder)
 
     return NextResponse.json(

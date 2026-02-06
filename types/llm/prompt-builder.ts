@@ -43,16 +43,16 @@ export function buildQAPrompt(
   return {
     prompt: `
 
-Answer the question using the transcript, question and pass conversation.
-Understand the transcript also the context of the current conversation and then answer with correct format
+Answer the question using the transcript and past conversation context.
+If the answer cannot be determined from the provided context, respond with the answer "Not enough information."
+Output ONLY valid JSON.
 
 Transcript:
 ${transcript}
 
 Question:
 "${question}"
-
-Pass conversation:"${JSON.stringify(passQA)}"
+Past conversation: ${passQA ? JSON.stringify(passQA) : 'None'}
 
 Return ONLY valid JSON:
 {

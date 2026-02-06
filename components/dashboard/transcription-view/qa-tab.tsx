@@ -61,15 +61,17 @@ export function QATab() {
             if (!res.ok) throw new Error('Failed to ask question')
 
             const data = await res.json()
+            if (!data.qa) throw new Error('Invalid response from server')
+
             const relation = {
                 user_id: user.id,
                 audio_id: audioId,
                 transcript_id: transcript.id
             }
 
+            await insertQALogs(data, relation)
             appendQaLog(data.qa)
             setQuestion('')
-            await insertQALogs(data, relation)
 
         } catch (err) {
             console.error(err)
@@ -90,7 +92,7 @@ export function QATab() {
             }
         }
 
-    }, [])
+    }, [audioId])
 
 
     return (

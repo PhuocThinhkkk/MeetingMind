@@ -62,24 +62,27 @@ export function useTranscriptionViewData(audioId: string) {
     }, [audioId])
 
     /** QA helpers (local-first, optimistic friendly) */
-    const appendQaLog = useCallback((log: QALogRow) => {
-        setQaLogs(prev => [log, ...prev])
+    const appendQaLog = useCallback((qaLog: QALogRow) => {
+        setQaLogs(prev => [qaLog, ...prev])
     }, [])
-
 
     const replaceQaLogs = useCallback((logs: QALogRow[]) => {
         setQaLogs(logs)
     }, [])
 
     const refreshQaLogs = useCallback(async () => {
-        const logs = await getQaLogsByAudioId(audioId)
-        setQaLogs(logs)
+        try {
+            const logs = await getQaLogsByAudioId(audioId)
+            setQaLogs(logs)
+        } catch (e) {
+            log.error('refreshQaLogs error', e)
+            setError(e)
+        }
     }, [audioId])
 
-    const resplaceSummary = useCallback((summary: TranscriptionDataUpload["summary"]) => {
-        setSummary(summary)
+    const replaceSummary = useCallback((newSummary: TranscriptionDataUpload["summary"]) => {
+        setSummary(newSummary)
     }, [])
-
     useEffect(() => {
         fetchAll()
     }, [fetchAll])
@@ -133,6 +136,11 @@ export function TranscriptionViewProvider({
     children: ReactNode
 }) {
     const view = useTranscriptionViewData(audioId)
+
+    if (view.error) {
+        // Handle error state - throw to error boundary or render error UI
+        return null // or return <ErrorFallback error={view.error} />
+    }
 
     if (view.loading || !view.audio || !view.transcript) {
         return null // or <Skeleton />

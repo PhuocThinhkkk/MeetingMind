@@ -26,13 +26,12 @@ type Props = {
 
 export function TranscriptionDialog({ open, onClose }: Props) {
     const { audio, transcript } = useTranscriptionView()
-    if (!transcript) {
-        log.error("no transcript found!")
+    if (!audio || !transcript) {
+        if (open) {
+            log.error("Unexpected error: TranscriptionDialog opened without required data", { audio: !!audio, transcript: !!transcript })
+        }
+        return null
     }
-    if (!audio) {
-        log.error("no audio found!")
-    }
-
 
     return (
         <Dialog open={open} onOpenChange={onClose}>

@@ -12,6 +12,13 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
     const { transcript } = await req.json()
+    if (!transcript?.text || typeof transcript.text !== 'string') {
+      return NextResponse.json(
+        { error: 'Invalid request: transcript.text is required' },
+        { status: 400 }
+      )
+    }
+
     const llm = getLLM()
     const promptBuilder = buildMeetingSummaryPrompt(transcript.text)
     const parsed = await llm.callLLM<MeetingExtractionResult>(promptBuilder)
