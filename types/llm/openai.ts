@@ -8,7 +8,7 @@ const openai = new OpenAI({
 })
 
 export class OpenAILLM extends LLMProvider {
-  async callLLM(p: PromptBuilder): Promise<MeetingExtractionResult> {
+  async callLLM<T>(p: PromptBuilder): Promise<T> {
     log.info('Using gpt llm')
     const res = await openai.chat.completions.create({
       model: 'gpt-4o-mini', // 👈 cheap model

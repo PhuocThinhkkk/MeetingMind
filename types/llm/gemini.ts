@@ -6,7 +6,7 @@ import { PromptBuilder } from './prompt-builder'
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!)
 
 export class GeminiLLM extends LLMProvider {
-  async callLLM(p: PromptBuilder): Promise<MeetingExtractionResult> {
+  async callLLM<T>(p: PromptBuilder): Promise<T> {
     const model = genAI.getGenerativeModel({
       model: 'gemini-2.5-flash-lite',
     })

@@ -56,3 +56,4 @@ export type TranscriptionDataUpload = {
 }
 export type TranscriptWordInsert =
   Database['public']['Tables']['transcription_words']['Insert']
+export type QALogInsert = Database['public']['Tables']['qa_logs']['Insert']

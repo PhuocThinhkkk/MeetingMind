@@ -17,10 +17,14 @@ export type MeetingExtractionResult = {
   }[]
 }
 
+export type QALogResult = {
+  question: string
+  answer: string
+  confidence_score: number
+}
+
 export abstract class LLMProvider {
-  public abstract callLLM(
-    prompt: PromptBuilder
-  ): Promise<MeetingExtractionResult>
+  public abstract callLLM<T>(prompt: PromptBuilder): Promise<T>
 
   protected validateTranscript(transcript: string) {
     if (!transcript.trim()) {

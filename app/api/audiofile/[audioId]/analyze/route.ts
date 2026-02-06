@@ -8,6 +8,7 @@ import { getTranscriptByAudioId } from '@/lib/queries/server/transcript-operatio
 import { insertManyEventsByAudioId } from '@/lib/queries/server/events-operations'
 import { isAudioFileStatusDone } from '@/services/audio-upload/utils'
 import { buildMeetingSummaryPrompt } from '@/types/llm/prompt-builder'
+import { MeetingExtractionResult } from '@/types/llm/llm-abstract'
 
 /**
  * Generates a structured meeting summary and events from an audio transcription and persists them to the database.
@@ -53,7 +54,7 @@ export async function POST(
 
     const llm = getLLM()
     const promptBuilder = buildMeetingSummaryPrompt(transcript.text)
-    const parsed = await llm.callLLM(promptBuilder)
+    const parsed = await llm.callLLM<MeetingExtractionResult>(promptBuilder)
 
     await saveSummaryByAudioId(audioId, parsed.summary)
     await insertManyEventsByAudioId(audioId, parsed.events)

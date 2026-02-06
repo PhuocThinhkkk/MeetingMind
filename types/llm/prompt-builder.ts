@@ -1,3 +1,5 @@
+import { QALog } from '../utils'
+
 export type PromptBuilder = {
   prompt: string
 }
@@ -35,19 +37,22 @@ Return:
 }
 export function buildQAPrompt(
   transcript: string,
-  question: string
+  question: string,
+  passQA?: QALog
 ): PromptBuilder {
   return {
     prompt: `
 
-Answer the question using ONLY the transcript.
-If unsure, say "Not enough information".
+Answer the question using the transcript, question and pass conversation.
+Understand the transcript also the context of the current conversation and then answer with correct format
 
 Transcript:
 ${transcript}
 
 Question:
 "${question}"
+
+Pass conversation:"${JSON.stringify(passQA)}"
 
 Return ONLY valid JSON:
 {

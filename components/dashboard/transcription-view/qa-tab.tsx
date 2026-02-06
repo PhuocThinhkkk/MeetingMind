@@ -1,46 +1,136 @@
+'use client'
+
+import { useState } from 'react'
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
 import { formatDate } from '@/lib/utils'
 import { QALogRow } from '@/types/transcriptions/transcription.db'
+import { QALog } from '@/types/utils'
+import { toast } from 'sonner'
 
 type Props = {
-    qaLogs: QALogRow[]
+    qaLogs: QALogInit[]
+    transcript?: string
+}
+type QALogInit = QALog | QALogRow
+
+type QALogUI = {
+    question: string
+    answer: string
+    created_at?: string
 }
 
-export function QATab({ qaLogs }: Props) {
+
+export function QATab({ qaLogs: initialQaLogs, transcript }: Props) {
+    const [qaLogs, setQaLogs] = useState<QALogInit[]>(initialQaLogs)
+    const [question, setQuestion] = useState('')
+    const [loading, setLoading] = useState(false)
+
+    const now = new Date()
+
+    function toQALogUI(log: QALogInit): QALogUI {
+        return {
+            question: log.question,
+            answer: log.answer,
+            created_at: 'created_at' in log ? log.created_at as string : now.toISOString()
+        }
+    }
+
+
+
+    const handleAsk = async () => {
+        try {
+            if (!question.trim()) return
+            if (!transcript?.trim()) {
+                throw new Error("Some how transcript no where to be found")
+
+            }
+
+            setLoading(true)
+            const last5QAlogs = qaLogs.slice(-5)
+            const res = await fetch('/api/qa/chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ question, transcript, passQA: last5QAlogs }),
+            })
+
+            if (!res.ok) throw new Error('Failed to ask question')
+
+            const data = await res.json()
+
+            setQaLogs(prev => [...prev, data.qa])
+            setQuestion('')
+        } catch (err) {
+            console.error(err)
+            toast.error(`${err}`)
+        } finally {
+            setLoading(false)
+        }
+    }
+
     return (
-        <Card className="h-full flex flex-col">
+        <Card className="h-full flex flex-col min-h-0">
             <CardHeader>
                 <CardTitle>Q&A</CardTitle>
                 <CardDescription>Questions asked about this meeting</CardDescription>
             </CardHeader>
 
-            <CardContent className="flex-1">
-                <ScrollArea className="h-[60vh] space-y-4">
+            <CardContent className="flex flex-col flex-1 gap-4">
+                {/* Chat history */}
+                <ScrollArea className="h-[450px] pr-4">
                     {qaLogs.length === 0 ? (
                         <p className="text-sm text-gray-500">No questions yet.</p>
                     ) : (
-                        qaLogs.map(qa => (
-                            <div key={qa.id} className="space-y-2">
-                                <div className="bg-blue-50 p-3 rounded border border-blue-200">
-                                    <p className="text-sm font-medium text-blue-900">
-                                        Q: {qa.question}
-                                    </p>
-                                </div>
+                        <div className="space-y-4">
+                            {qaLogs.map((qa, index) => {
+                                const qaUI = toQALogUI(qa);
+                                return (
 
-                                <div className="bg-gray-50 p-3 rounded border border-gray-200">
-                                    <p className="text-sm text-gray-700">
-                                        A: {qa.answer}
-                                    </p>
-                                    <p className="text-xs text-gray-500 mt-2">
-                                        {formatDate(qa.created_at)}
-                                    </p>
-                                </div>
-                            </div>
-                        ))
+                                    <div key={index} className="space-y-2">
+
+                                        {/* Question */}
+                                        <div className="bg-blue-50 p-3 rounded border border-blue-200">
+                                            <p className="text-sm font-medium text-blue-900">
+                                                Q: {qaUI.question}
+                                            </p>
+                                        </div>
+
+                                        {/* Answer */}
+                                        <div className="bg-gray-50 p-3 rounded border border-gray-200">
+                                            <p className="text-sm text-gray-700">
+                                                A: {qaUI.answer ?? 'Thinking...'}
+                                            </p>
+                                            {qaUI.created_at && (
+                                                <p className="text-xs text-gray-500 mt-2">
+                                                    {formatDate(qaUI.created_at)}
+                                                </p>
+                                            )}
+                                        </div>
+                                    </div>
+                                )
+                            })}
+                        </div>
                     )}
                 </ScrollArea>
+
+                <div className="flex gap-2 pt-2 border-t">
+                    <Input
+                        placeholder="Ask a question..."
+                        value={question}
+                        onChange={e => setQuestion(e.target.value)}
+                        onKeyDown={e => {
+                            if (e.key === 'Enter') handleAsk()
+                        }}
+                        disabled={loading}
+                    />
+                    <Button onClick={handleAsk} disabled={loading}>
+                        {loading ? 'Asking...' : 'Ask'}
+                    </Button>
+                </div>
             </CardContent>
         </Card>
     )
 }
+

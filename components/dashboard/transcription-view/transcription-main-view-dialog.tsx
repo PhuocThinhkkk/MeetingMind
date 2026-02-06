@@ -17,6 +17,7 @@ import { FileInfoPanel } from './file-info-panel'
 import { SummaryTab } from './summary-tab'
 import { EventsTab } from './event-tab'
 import { ActionPanel } from './action-panel'
+import { log } from '@/lib/logger'
 
 type Props = {
     open: boolean
@@ -25,11 +26,15 @@ type Props = {
 }
 
 export function TranscriptionDialog({ open, onClose, data }: Props) {
-    const { audioFile } = data
+    const { audioFile, transcript } = data
+    if (!transcript) {
+        log.error("no transcript found!")
+    }
+
 
     return (
         <Dialog open={open} onOpenChange={onClose}>
-            <DialogContent className="max-w-6xl h-[90vh] flex flex-col">
+            <DialogContent className="max-w-6xl max-h-[90vh] flex flex-col">
                 <DialogHeader>
                     <DialogTitle className="flex items-center gap-2">
                         <FileText className="w-5 h-5" />
@@ -38,9 +43,10 @@ export function TranscriptionDialog({ open, onClose, data }: Props) {
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="flex flex-1 h-full gap-6">
+                <div className="flex flex-1 gap-6">
                     <div className="flex-1">
-                        <Tabs defaultValue="transcript" className="h-full">
+                        <Tabs defaultValue="transcript" className="flex flex-col h-full">
+
                             <TabsList className="grid grid-cols-4">
                                 <TabsTrigger value="transcript">Transcript</TabsTrigger>
                                 <TabsTrigger value="summary">Summary</TabsTrigger>
@@ -59,8 +65,9 @@ export function TranscriptionDialog({ open, onClose, data }: Props) {
                                 <SummaryTab summary={data.summary} />
                             </TabsContent>
 
-                            <TabsContent value="qa">
-                                <QATab qaLogs={data.qaLogs} />
+                            <TabsContent value="qa" className='flex flex-col flex-1 min-h-0 overflow-hidden'>
+                                <QATab qaLogs={data.qaLogs}
+                                    transcript={data.transcript?.text} />
                             </TabsContent>
 
                             <TabsContent value="events">
