@@ -6,7 +6,7 @@ import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { formatDate } from '@/lib/utils'
-import { QALogRow, TranscriptRow } from '@/types/transcriptions/transcription.db'
+import { QALogBase, QALogRow, TranscriptRow } from '@/types/transcriptions/transcription.db'
 import { QALog } from '@/types/utils'
 import { toast } from 'sonner'
 import { getQaLogsByAudioId, insertQALogs } from '@/lib/queries/browser/qa-log-operations'
@@ -14,7 +14,7 @@ import { log } from '@/lib/logger'
 import { useAuth } from '@/hooks/use-auth'
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
 
-type QALogInit = QALog | QALogRow
+type QALogInit = QALog | QALogRow | QALogBase
 
 type QALogUI = {
     question: string
@@ -55,7 +55,7 @@ export function QATab() {
             const res = await fetch('/api/qa/chat', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question, transcript, passQA: last5QAlogs }),
+                body: JSON.stringify({ question, transcript: transcript.text, passQA: last5QAlogs }),
             })
 
             if (!res.ok) throw new Error('Failed to ask question')
@@ -69,7 +69,8 @@ export function QATab() {
                 transcript_id: transcript.id
             }
 
-            await insertQALogs(data, relation)
+            log.info("QA: ", { qaLogs: data.qa })
+            await insertQALogs([data.qa], relation)
             appendQaLog(data.qa)
             setQuestion('')
 

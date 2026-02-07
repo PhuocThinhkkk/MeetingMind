@@ -23,11 +23,11 @@ export function useTranscriptionViewData(audioId: string) {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<unknown>(null)
 
-    const [audio, setAudio] = useState<AudioFileRow | null>(null)
-    const [transcript, setTranscript] = useState<TranscriptWithWordNested | null>(null)
+    const [audio, setAudio] = useState<TranscriptionDataUpload["audioFile"] | null>(null)
+    const [transcript, setTranscript] = useState<TranscriptionDataUpload["transcript"] | null>(null)
     const [summary, setSummary] = useState<TranscriptionDataUpload["summary"] | null>(null)
     const [events, setEvents] = useState<TranscriptionDataUpload["events"]>([])
-    const [qaLogs, setQaLogs] = useState<QALogRow[]>([])
+    const [qaLogs, setQaLogs] = useState<TranscriptionDataUpload['qaLogs']>([])
 
     const fetchAll = useCallback(async () => {
         if (!audioId) return
@@ -110,11 +110,11 @@ import { createContext, useContext, ReactNode } from 'react'
 type TranscriptionViewContextValue = {
     audioId: string
 
-    audio: AudioFileRow
-    transcript: TranscriptWithWordNested
+    audio: TranscriptionDataUpload['audioFile']
+    transcript: TranscriptionDataUpload['transcript']
     summary?: TranscriptionDataUpload['summary'] | null
     events: TranscriptionDataUpload['events']
-    qaLogs: QALogRow[]
+    qaLogs: TranscriptionDataUpload['qaLogs']
 
     loading: boolean
     error: unknown
