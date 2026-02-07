@@ -4,7 +4,7 @@ import {
   getAudioDuration,
   resampleTo16kHz,
   float32ToInt16,
-} from '@/lib/transcriptionUtils'
+} from '@/lib/transcript/transcript-realtime-utils'
 
 beforeAll(() => {
   // @ts-ignore

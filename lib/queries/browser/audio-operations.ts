@@ -1,6 +1,6 @@
 import { log } from '@/lib/logger'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
-import { getAudioDuration } from '@/lib/transcriptionUtils'
+import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
 import { AudioFile } from '@/types/transcriptions/transcription.db'
 
 /**

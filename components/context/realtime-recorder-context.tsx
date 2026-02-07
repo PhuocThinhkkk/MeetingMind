@@ -5,8 +5,8 @@ import {
   mixAudioStreams,
   setupAudioWorklet,
   initAudioContext,
-} from '@/lib/audioWorkletUtils'
-import { encodeWAV, mergeChunks } from '@/lib/transcriptionUtils'
+} from '@/lib/transcript/audioWorkletUtils'
+import { encodeWAV, mergeChunks } from '@/lib/transcript/transcript-realtime-utils'
 import {
   useState,
   useRef,
@@ -22,7 +22,7 @@ import {
   RealtimeTranslateResponse,
 } from '@/types/transcriptions/transcription.ws'
 
-import { resampleTo16kHz, float32ToInt16 } from '@/lib/transcriptionUtils'
+import { resampleTo16kHz, float32ToInt16 } from '@/lib/transcript/transcript-realtime-utils'
 import { useAuth } from '@/hooks/use-auth'
 
 const SAMPLE_RATE = 16000

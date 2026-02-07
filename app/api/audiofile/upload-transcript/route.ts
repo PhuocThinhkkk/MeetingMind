@@ -7,7 +7,7 @@ import {
   uploadAudioFile,
 } from '@/lib/queries/server/audio-upload-operations'
 import { createAssemblyAudioUploadWithWebhook } from '@/services/audio-upload/assembly-webhook'
-import { getAudioDuration } from '@/lib/transcriptionUtils'
+import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
 
 /**
  * Handle an audio file upload request, validate and persist the file, and enqueue a webhook-based processing job.

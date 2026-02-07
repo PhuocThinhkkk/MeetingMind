@@ -14,10 +14,9 @@ import {
     FileAudio,
 } from 'lucide-react'
 
-import { AudioFileRow, Transcript, TranscriptWithWordNested } from '@/types/transcriptions/transcription.db'
 import { validateAudioTime } from '@/lib/validations/audio-validations'
-import { cn } from '@/lib/utils'
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
+import { TranscriptSentences } from './transcript-sentences'
 
 export function TranscriptTab() {
     const { audio: audioFile, transcript } = useTranscriptionView()
@@ -57,9 +56,6 @@ export function TranscriptTab() {
         const s = Math.floor(sec % 60)
         return `${m}:${s.toString().padStart(2, '0')}`
     }
-
-    const WINDOW_BEFORE = 350
-    const WINDOW_AFTER = 350
 
     return (
         <Card className="h-full">
@@ -130,31 +126,11 @@ export function TranscriptTab() {
 
             <CardContent>
                 <ScrollArea className="h-[40vh] text-sm">
-                    <div className="flex flex-wrap gap-0">
-                        {transcript.transcription_words?.map(word => {
-                            if (word.end_time == null || word.start_time == null) return
-                            const isActive =
-                                currentMs >= word.start_time - WINDOW_BEFORE &&
-                                currentMs <= word.end_time + WINDOW_AFTER
-                            return (
-                                <span
-                                    key={word.id}
-                                    onClick={() => {
-                                        if (!audioRef.current) return
-                                        if (word.start_time == null) return
-                                        audioRef.current.currentTime = word.start_time / 1000
-                                    }} className={cn(
-                                        'cursor-pointer rounded-xs px-1 py-0.5 transition',
-                                        isActive
-                                            ? 'bg-primary text-primary-foreground'
-                                            : 'hover:bg-muted'
-                                    )}
-                                >
-                                    {word.text}
-                                </span>
-                            )
-                        })}
-                    </div>
+                    <TranscriptSentences
+                        words={transcript.transcription_words}
+                        currentMs={currentMs}
+                        audioRef={audioRef}
+                    />
                 </ScrollArea>
             </CardContent>
         </Card>

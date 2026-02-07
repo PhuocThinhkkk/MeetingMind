@@ -1,4 +1,4 @@
-import { log } from './logger'
+import { log } from '../logger'
 
 /**
  * Create and return a new AudioContext, using a vendor-prefixed fallback if necessary.
