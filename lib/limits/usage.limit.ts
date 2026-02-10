@@ -27,3 +27,22 @@ export function checkTranscriptionAllowed({
 
   return { allowed: true, reason: 'Did not violate the quota.' }
 }
+
+export function checkFileSizeAllowed({
+  plan,
+  fileSeconds,
+}: {
+  plan: PlanKey
+  fileSeconds: number
+}) {
+  const limits = PLAN_LIMITS[plan]
+
+  if (fileSeconds > limits.MAX_PER_FILE_SECONDS) {
+    return {
+      allowed: false,
+      reason: 'This recording exceeds the maximum length for your plan.',
+    }
+  }
+
+  return { allowed: true, reason: 'Did not violate the quota.' }
+}

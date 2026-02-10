@@ -1,19 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
 import { log } from '@/lib/logger'
-import { validateAudioFile } from '@/services/audio-upload/audio-validation'
 import {
+  getStorageFileSize,
   insertAudioFile,
-  uploadAudioFile,
 } from '@/lib/queries/server/audio-upload-operations'
 import { createAssemblyAudioUploadWithWebhook } from '@/services/audio-upload/assembly-webhook'
-import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
-import {
-  getMonthlyUploadCount,
-  getMonthlyUsageSeconds,
-  getUserPlan,
-} from '@/lib/queries/server/limits-audio-upload-operations'
-import { checkTranscriptionAllowed } from '@/lib/limits/usage.limit'
+import { getUserPlan } from '@/lib/queries/server/limits-audio-upload-operations'
+import { checkFileSizeAllowed } from '@/lib/limits/usage.limit'
+import { getSignedAudioUrl } from '@/lib/queries/server/storage-operations'
 
 export async function POST(req: NextRequest) {
   try {
@@ -22,30 +17,19 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, duration, size, type } = await req.json()
-
-    const [totalSeconds, uploadsCount] = await Promise.all([
-      getMonthlyUsageSeconds(user.id),
-      getMonthlyUploadCount(user.id),
-    ])
-
-    const userPlan = await getUserPlan(user.id)
-    const { allowed, reason } = checkTranscriptionAllowed({
-      plan: userPlan,
-      usedSeconds: totalSeconds,
-      fileSeconds: duration,
+    const { path, type, name, size, duration } = await req.json()
+    const sizeInStorage = await getStorageFileSize('audio-files', path)
+    const plan = await getUserPlan(user.id)
+    const { allowed, reason } = checkFileSizeAllowed({
+      plan,
+      fileSeconds: sizeInStorage,
     })
     if (!allowed) {
-      return NextResponse.json(
-        {
-          error: reason,
-        },
-        { status: 500 }
-      )
+      return NextResponse.json({ error: reason }, { status: 401 })
     }
 
-    const audioUrl = await uploadAudioFile(user.id, file)
-    const job = await createAssemblyAudioUploadWithWebhook(audioUrl)
+    const url = await getSignedAudioUrl(path)
+    const job = await createAssemblyAudioUploadWithWebhook(url)
     log.info('Jobs of uploading file: ', job)
     const dataInsert = {
       user_id: user.id,
@@ -53,7 +37,7 @@ export async function POST(req: NextRequest) {
       file_size: size,
       duration,
       mine_tyep: type,
-      url: audioUrl,
+      url: path,
       assembly_job_id: job.id,
       transcription_status: 'processing',
     }

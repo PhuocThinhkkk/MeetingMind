@@ -16,6 +16,7 @@ import {
 import { checkTranscriptionAllowed } from '@/lib/limits/usage.limit'
 
 /**
+ * THIS ROUTE IS NOT BEING USED ANYMORE CONSIDER DELETE IN THE NEXT PR
  * Handle an audio file upload request, validate and persist the file, and enqueue a webhook-based processing job.
  *
  * @param req - Incoming NextRequest containing multipart/form-data with the audio file under the `audio_file` field

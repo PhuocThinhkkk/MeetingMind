@@ -1,5 +1,5 @@
 import { TranscriptWordInsert } from '@/types/transcriptions/transcription.db'
-import { AssemblyAIWord } from '@/types/transcriptions/transcription.upload'
+import { AssemblyAIWord } from '@/types/transcriptions/transcription.assembly.upload'
 export function adaptAssemblyAIWords(
   words: AssemblyAIWord[] | undefined,
   transcriptionId: string
