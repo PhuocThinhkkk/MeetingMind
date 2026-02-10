@@ -7,7 +7,7 @@ export const PLAN_LIMITS = {
   },
   PRO: {
     MONTHLY_SECONDS: 50 * 60 * 60,
-    MAX_PER_FILE_SECONDS: Infinity,
+    MAX_PER_FILE_SECONDS: 60 * 60 * 2,
   },
 }
 

@@ -3,7 +3,11 @@ import { log } from '@/lib/logger'
 import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
 import { Database } from '@/types/database.types'
 import { AudioFileRow } from '@/types/transcriptions/transcription.db'
-import { AssemblyAIWebhookPayload } from '@/types/transcriptions/transcription.upload'
+import { AssemblyAIWebhookPayload } from '@/types/transcriptions/transcription.assembly.upload'
+import {
+  CreateUploadUrlParams,
+  CreateUploadUrlResult,
+} from '@/types/transcriptions/transcription.storage.upload'
 
 /**
  * NOT USING THIS ANYMORE, CONSIDER REMOVING IN THE NEXT PR
@@ -43,6 +47,61 @@ export async function insertAudioFile(
     throw insertError ?? new Error('Failed to insert audio record')
   }
   return audio as AudioFileRow
+}
+
+export async function createAudioUploadUrl(
+  params: CreateUploadUrlParams,
+  isUpload: boolean
+): Promise<CreateUploadUrlResult> {
+  const { userId, fileName, fileType } = params
+
+  const ext = fileName.split('.').pop()
+  let path
+  if (isUpload) {
+    path = `uploads/${userId}/${crypto.randomUUID()}.${ext}`
+  } else {
+    path = `recordings/${userId}/${crypto.randomUUID()}.${ext}`
+  }
+
+  const { data, error } = await supabaseAdmin.storage
+    .from('audio-files')
+    .createSignedUploadUrl(path)
+
+  if (error || !data) {
+    throw new Error(error?.message || 'Failed to create signed upload URL')
+  }
+
+  return {
+    path,
+    signedUrl: data.signedUrl,
+    token: data.token,
+    contentType: fileType,
+  }
+}
+
+export async function getStorageFileSize(
+  bucket: string,
+  path: string
+): Promise<number> {
+  const parts = path.split('/')
+  const fileName = parts.pop()
+  const folder = parts.join('/')
+
+  const { data, error } = await supabaseAdmin.storage
+    .from(bucket)
+    .list(folder, {
+      search: fileName,
+      limit: 1,
+    })
+
+  if (error) throw error
+
+  const file = data?.[0]
+  if (!file || file.name !== fileName) {
+    throw new Error('File not found in storage')
+  }
+
+  return file.metadata.size || file.metadata.file_size || 0
 }
 
 /**
