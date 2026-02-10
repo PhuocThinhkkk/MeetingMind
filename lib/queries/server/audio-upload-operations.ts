@@ -6,6 +6,7 @@ import { AudioFileRow } from '@/types/transcriptions/transcription.db'
 import { AssemblyAIWebhookPayload } from '@/types/transcriptions/transcription.upload'
 
 /**
+ * NOT USING THIS ANYMORE, CONSIDER REMOVING IN THE NEXT PR
  * Uploads an audio file to storage, creates an `audio_files` record with transcription status set to `processing`, and returns the created row.
  *
  * @param userId - ID of the user who owns the uploaded file
