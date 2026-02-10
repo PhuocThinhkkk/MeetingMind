@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { AudioFileRow } from '@/types/transcriptions/transcription.db'
 import { validateAudioTime } from '@/lib/validations/audio-validations'
-import { formatDateShorted } from '@/lib/utils'
+import { formatDateShorted } from '@/lib/ui-format/time-format'
 
 type Props = {
     audioFile: AudioFileRow

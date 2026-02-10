@@ -244,8 +244,8 @@ export function RealtimeRecorder({
             <div>
               <div
                 className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${isRecording
-                    ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                    : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
+                  ? 'bg-red-500 hover:bg-red-600 animate-pulse'
+                  : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
                   }`}
               >
                 {status === 'connecting' ? (

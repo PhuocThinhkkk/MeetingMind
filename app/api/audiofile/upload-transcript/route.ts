@@ -8,6 +8,12 @@ import {
 } from '@/lib/queries/server/audio-upload-operations'
 import { createAssemblyAudioUploadWithWebhook } from '@/services/audio-upload/assembly-webhook'
 import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
+import {
+  getMonthlyUploadCount,
+  getMonthlyUsageSeconds,
+  getUserPlan,
+} from '@/lib/queries/server/limits-audio-upload-operations'
+import { checkTranscriptionAllowed } from '@/lib/limits/usage.limit'
 
 /**
  * Handle an audio file upload request, validate and persist the file, and enqueue a webhook-based processing job.
@@ -29,6 +35,27 @@ export async function POST(req: NextRequest) {
     const file = formData.get('audio_file') as File | null
 
     validateAudioFile(file)
+    const duration = await getAudioDuration(file)
+    const [totalSeconds, uploadsCount] = await Promise.all([
+      getMonthlyUsageSeconds(user.id),
+      getMonthlyUploadCount(user.id),
+    ])
+
+    const userPlan = await getUserPlan(user.id)
+    const { allowed, reason } = checkTranscriptionAllowed({
+      plan: userPlan,
+      usedSeconds: totalSeconds,
+      fileSeconds: duration,
+    })
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error: reason,
+        },
+        { status: 500 }
+      )
+    }
+
     const audioUrl = await uploadAudioFile(user.id, file)
     const job = await createAssemblyAudioUploadWithWebhook(audioUrl)
     log.info('Jobs of uploading file: ', job)
@@ -36,7 +63,7 @@ export async function POST(req: NextRequest) {
       user_id: user.id,
       name: file.name,
       file_size: file.size,
-      duration: await getAudioDuration(file),
+      duration,
       mine_tyep: file.type,
       url: audioUrl,
       assembly_job_id: job.id,
@@ -53,7 +80,7 @@ export async function POST(req: NextRequest) {
     log.error('Error in the upload server: ', e)
     return NextResponse.json(
       {
-        error: 'Server Error',
+        error: 'Servr Error',
       },
       { status: 500 }
     )
