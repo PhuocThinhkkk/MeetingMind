@@ -5,7 +5,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { formatDate } from '@/lib/utils'
+import { formatDate } from '@/lib/ui-format/time-format'
 import { QALogBase, QALogRow, TranscriptRow } from '@/types/transcriptions/transcription.db'
 import { QALog } from '@/types/utils'
 import { toast } from 'sonner'

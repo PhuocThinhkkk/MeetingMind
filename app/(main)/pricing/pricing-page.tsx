@@ -14,43 +14,16 @@ import { Badge } from '@/components/ui/badge'
 import { Check, Sparkles } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { getUserSubscription } from '@/lib/queries/browser/subscriptions'
+import { plans, PlanKey } from '@/constains/plans'
+import { PLANS } from '@/constains/limits'
 
-type PlanKey = 'free' | 'pro'
+
 
 export default function PricingSection() {
   const { user } = useAuth()
-  const [currentPlan, setCurrentPlan] = useState<PlanKey>('free')
+  const [currentPlan, setCurrentPlan] = useState<PlanKey>(PLANS.FREE)
   const [loading, setLoading] = useState(true)
 
-  const plans = [
-    {
-      key: 'free' as PlanKey,
-      name: 'Free',
-      description: 'For trying things out',
-      price: 0,
-      features: [
-        'Up to 3 hours of transcription / month',
-        'Max 30 minutes per recording',
-        'Basic translation tools',
-        'Limited calendar usage',
-      ],
-      cta: 'Get started',
-    },
-    {
-      key: 'pro' as PlanKey,
-      name: 'Pro',
-      description: 'Built for serious work',
-      price: 14.99,
-      features: [
-        'All features unlocked',
-        '50 hours of transcription / month',
-        'Unlimited recording length',
-        'Priority processing',
-      ],
-      cta: 'Upgrade to Pro',
-      featured: true,
-    },
-  ]
 
   useEffect(() => {
     fetchUserPlan()
@@ -59,28 +32,28 @@ export default function PricingSection() {
   /**
    * Fetches the current user's subscription and updates component state accordingly.
    *
-   * If there is no authenticated user, sets the plan to 'free' and returns early. Otherwise,
-   * retrieves the user's subscription and sets the current plan to 'pro' when the subscription
-   * status is 'active', or to 'free' otherwise. On error, logs the failure and sets the plan to
-   * 'free'. Always marks loading as finished when complete.
+   * If there is no authenticated user, sets the plan to PLANS.FREE and returns early. Otherwise,
+   * retrieves the user's subscription and sets the current plan to PLANS.PRO when the subscription
+   * status is 'active', or to PLANS.FREE otherwise. On error, logs the failure and sets the plan to
+   * PLANS.FREE. Always marks loading as finished when complete.
    */
   async function fetchUserPlan() {
     try {
       if (!user) {
-        setCurrentPlan('free')
+        setCurrentPlan(PLANS.FREE)
         return
       }
 
       const sub = await getUserSubscription(user.id)
 
       if (sub?.status === 'active') {
-        setCurrentPlan('pro')
+        setCurrentPlan(PLANS.PRO)
       } else {
-        setCurrentPlan('free')
+        setCurrentPlan(PLANS.FREE)
       }
     } catch (e) {
       log.error("Error when fetching user plan: ", e)
-      setCurrentPlan('free')
+      setCurrentPlan(PLANS.FREE)
     } finally {
       setLoading(false)
     }
@@ -124,15 +97,15 @@ export default function PricingSection() {
         <div className="grid md:grid-cols-2 gap-8">
           {plans.map(plan => {
             const isCurrentPlan = currentPlan === plan.key
-            const isFreePlan = plan.key === 'free'
-            const isProPlan = plan.key === 'pro'
+            const isFreePlan = plan.key === PLANS.FREE
+            const isProPlan = plan.key === PLANS.PRO
 
             return (
               <Card
                 key={plan.key}
                 className={`relative flex flex-col rounded-2xl border transition-all ${plan.featured
-                    ? 'border-primary/50 shadow-lg'
-                    : 'border-border'
+                  ? 'border-primary/50 shadow-lg'
+                  : 'border-border'
                   } ${isCurrentPlan ? 'ring-2 ring-primary' : ''}`}
               >
                 {plan.featured && (
