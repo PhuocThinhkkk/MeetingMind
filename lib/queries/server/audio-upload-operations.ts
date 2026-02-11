@@ -9,31 +9,6 @@ import {
   CreateUploadUrlResult,
 } from '@/types/transcriptions/transcription.storage.upload'
 
-/**
- * NOT USING THIS ANYMORE, CONSIDER REMOVING IN THE NEXT PR
- * Uploads an audio file to storage, creates an `audio_files` record with transcription status set to `processing`, and returns the created row.
- *
- * @param userId - ID of the user who owns the uploaded file
- * @param file - The file to upload
- * @returns The inserted `AudioFileRow` for the uploaded audio
- * @throws When the storage upload fails or when inserting the audio record into the database fails
- */
-export async function uploadAudioFile(userId: string, file: File) {
-  const ext = file.name.split('.').pop()
-  const storagePath = `uploads/${userId}/${crypto.randomUUID()}.${ext}`
-
-  const { error: uploadError } = await supabaseAdmin.storage
-    .from('audio-files')
-    .upload(storagePath, file, { contentType: file.type })
-
-  if (uploadError) throw uploadError
-
-  const { data: urlData } = supabaseAdmin.storage
-    .from('audio-files')
-    .getPublicUrl(storagePath)
-
-  return urlData.publicUrl
-}
 export async function insertAudioFile(
   audioFileInput: Database['public']['Tables']['audio_files']['Insert']
 ) {

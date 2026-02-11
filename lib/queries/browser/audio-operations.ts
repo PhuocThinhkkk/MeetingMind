@@ -1,19 +1,14 @@
 import { log } from '@/lib/logger'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
-import { AudioFile } from '@/types/transcriptions/transcription.db'
+import {
+  AudioFileRow,
+  AudioFileWithTranscriptNested,
+} from '@/types/transcriptions/transcription.db'
 
-/**
- * Retrieve a user's audio history with each item's primary transcript normalized.
- *
- * Results are ordered by creation time descending. For each audio record the
- * `transcript` field is set to the first related transcript object and is
- * guaranteed to include a `words` array (empty if the transcript had no words).
- *
- * @param userId - The user id to filter audio records by
- * @returns An array of `AudioFile` records where each `transcript` is the first related transcript object containing a `words` array
- */
-export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
+export async function getAudioHistory(
+  userId: string
+): Promise<AudioFileWithTranscriptNested[]> {
   // Check if Supabase is configured
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
@@ -25,73 +20,37 @@ export async function getAudioHistory(userId: string): Promise<AudioFile[]> {
     return []
   }
 
-  // Fetch audio files with transcripts only (no nested words)
   const { data, error } = await supabase
     .from('audio_files')
-    .select('*, transcripts(*)')
+    .select(
+      `
+      *,
+      transcript:transcripts!left(*)
+    `
+    )
     .eq('user_id', userId)
     .order('created_at', { ascending: false })
 
   if (error) {
-    log.error('Supabase Error Details:', JSON.stringify(error, null, 2))
-    log.error('Error fetching audio history from Supabase:', {
-      error,
-      message: error.message,
-      details: error.details,
-      hint: error.hint,
-      code: error.code,
-    })
+    log.error('Supabase error:', error)
     throw error
   }
+  const formatted = data?.map(a => ({
+    ...a,
+    transcript: a.transcript?.[0] ?? null,
+  }))
 
-  if (!data || data.length === 0) {
-    log.warn('No audio found! Data:', data)
-    return []
-  }
-
-  try {
-    // For each audio file, fetch the transcript words separately
-    const audiosWithWords = await Promise.all(
-      data.map(async audio => {
-        let transcript: any = { words: [] }
-
-        if (audio.transcripts && audio.transcripts.length > 0) {
-          transcript = audio.transcripts[0]
-
-          // Fetch words for this transcript separately
-          const { data: words } = await supabase
-            .from('transcription_words')
-            .select('*')
-            .eq('transcript_id', transcript.id)
-
-          transcript.words = words || []
-        }
-
-        return { ...audio, transcript }
-      })
-    )
-
-    return audiosWithWords as AudioFile[]
-  } catch (e) {
-    throw new Error(`can not format audio: ${e}`)
-  }
+  return formatted ?? []
 }
 
-/**
- * Store an audio Blob in Supabase Storage and create a corresponding metadata record in the `audio_files` table.
- *
- * Attempts to compute the audio duration; if duration calculation fails or is unavailable, the duration is set to 0. The stored record will include a public URL, rounded duration, file size, MIME type, and a transcription status of `"done"`.
- *
- * @param blob - The audio data to upload
- * @param userId - The owning user's ID used to build the storage path
- * @param name - A base name for the file; a timestamp and `.wav` extension are appended to form the stored filename
- * @returns The created `AudioFile` record inserted into `audio_files`
- * @throws If the storage upload fails or the database insert fails
- */
-
-export async function saveAudioFile(blob: Blob, userId: string, name: string) {
-  const mimeType = blob.type
-  const fileSize = blob.size
+export async function saveAudioFile(
+  file: File,
+  userId: string,
+  name: string,
+  path: string
+) {
+  const mimeType = file.type
+  const fileSize = file.size
 
   if (!mimeType || mimeType.length === 0) {
     throw new Error('Blob must have a valid MIME type')
@@ -99,28 +58,10 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
   if (!fileSize || fileSize <= 0) {
     throw new Error('Blob must have a valid file size')
   }
-  const filePath = `recordings/${userId}/${Date.now()}-${name}.wav`
-
-  const { error: uploadError } = await supabase.storage
-    .from('audio-files')
-    .upload(filePath, blob, {
-      contentType: mimeType,
-    })
-
-  if (uploadError) {
-    log.error('Upload error:', uploadError)
-    throw uploadError
-  }
-
-  const { data: publicUrlData } = supabase.storage
-    .from('audio-files')
-    .getPublicUrl(filePath)
-
-  const url = publicUrlData.publicUrl
 
   let duration
   try {
-    duration = await getAudioDuration(blob)
+    duration = await getAudioDuration(file)
   } catch (err) {
     log.error('Error when saving audio file: ', err)
   }
@@ -128,12 +69,14 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
     duration = 0
   }
 
+  uploadAudioFileUsingPath(path, file)
+
   const { data, error } = await supabase
     .from('audio_files')
     .insert({
       user_id: userId,
       name,
-      url,
+      path,
       duration: Math.round(duration),
       file_size: fileSize,
       mime_type: mimeType,
@@ -148,7 +91,21 @@ export async function saveAudioFile(blob: Blob, userId: string, name: string) {
   }
   log.info('✅ Audio file saved:', data)
 
-  return data as AudioFile
+  return data as AudioFileRow
+}
+
+export async function uploadAudioFileUsingPath(uploadUrl: string, file: File) {
+  const res = await fetch(uploadUrl, {
+    method: 'PUT',
+    headers: {
+      'Content-Type': file.type,
+    },
+    body: file,
+  })
+  if (!res.ok) {
+    log.error('Error in upload file: ', { res: await res.json() })
+    throw new Error('Can not upload file ')
+  }
 }
 
 /**
@@ -173,7 +130,7 @@ export async function updateAudioName(audioId: string, newName: string) {
   }
 
   log.info('✅ Audio name updated:', data)
-  return data as AudioFile
+  return data as AudioFileRow
 }
 
 /**

@@ -40,6 +40,9 @@ export type TranscriptWithWordNested = TranscriptRow & {
 }
 
 export type AudioFileRow = Database['public']['Tables']['audio_files']['Row']
+export type AudioFileWithTranscriptNested = AudioFileRow & {
+  transcript: TranscriptRow
+}
 export type TranscriptRow = Database['public']['Tables']['transcripts']['Row']
 export type TranscriptWordRow =
   Database['public']['Tables']['transcription_words']['Row']
