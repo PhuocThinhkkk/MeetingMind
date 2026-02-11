@@ -19,6 +19,7 @@ export async function POST(req: NextRequest) {
 
     const { path, type, name, size, duration } = await req.json()
     const sizeInStorage = await getStorageFileSize('audio-files', path)
+    log.info('audio size: ', { sizeInStorage, size })
     const plan = await getUserPlan(user.id)
     const { allowed, reason } = checkFileSizeAllowed({
       plan,
@@ -37,7 +38,7 @@ export async function POST(req: NextRequest) {
       file_size: size,
       duration,
       mine_tyep: type,
-      url: path,
+      path: path,
       assembly_job_id: job.id,
       transcription_status: 'processing',
     }

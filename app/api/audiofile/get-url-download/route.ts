@@ -1,0 +1,44 @@
+import { NextRequest, NextResponse } from 'next/server'
+import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
+import { log } from '@/lib/logger'
+import { insertAudioFile } from '@/lib/queries/server/audio-upload-operations'
+import { createAssemblyAudioUploadWithWebhook } from '@/services/audio-upload/assembly-webhook'
+import { getSignedAudioUrl } from '@/lib/queries/server/storage-operations'
+import { validateFilePathOwner } from '@/lib/validations/upload-validations'
+
+export async function POST(req: NextRequest) {
+  try {
+    const user = await getUserAuthInSupabaseToken()
+    if (!user?.id) {
+      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
+    }
+
+    const { path } = await req.json()
+    const { allowed, reason } = validateFilePathOwner(path, user.id)
+    if (!allowed) {
+      return NextResponse.json(
+        {
+          error: reason,
+        },
+        { status: 401 }
+      )
+    }
+
+    const url = await getSignedAudioUrl(path)
+
+    return NextResponse.json(
+      {
+        url,
+      },
+      { status: 200 }
+    )
+  } catch (e) {
+    log.error('Error in the upload server: ', e)
+    return NextResponse.json(
+      {
+        error: 'Server Error',
+      },
+      { status: 500 }
+    )
+  }
+}
