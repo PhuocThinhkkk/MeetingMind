@@ -1,10 +1,14 @@
+import { CreateUrlUploadBody } from '@/app/api/audiofile/create-url-upload/route'
 import { log } from '@/lib/logger'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
+import { sanitizedFileName } from '@/lib/transcript/extract-file-name'
 import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
 import {
   AudioFileRow,
+  AudioFileStatus,
   AudioFileWithTranscriptNested,
 } from '@/types/transcriptions/transcription.db'
+import { CreateUploadUrlResult } from '@/types/transcriptions/transcription.storage.upload'
 
 export async function getAudioHistory(
   userId: string
@@ -46,8 +50,7 @@ export async function getAudioHistory(
 export async function saveAudioFile(
   file: File,
   userId: string,
-  name: string,
-  path: string
+  uploadRes: CreateUploadUrlResult
 ) {
   const mimeType = file.type
   const fileSize = file.size
@@ -68,19 +71,20 @@ export async function saveAudioFile(
   if (duration == undefined) {
     duration = 0
   }
-
-  uploadAudioFileUsingPath(path, file)
+  const name = sanitizedFileName(file.name)
+  await uploadAudioFileUsingPath(uploadRes.signedUrl, file)
+  const status: AudioFileStatus = 'pending'
 
   const { data, error } = await supabase
     .from('audio_files')
     .insert({
       user_id: userId,
       name,
-      path,
+      path: uploadRes.path,
       duration: Math.round(duration),
       file_size: fileSize,
       mime_type: mimeType,
-      transcription_status: 'done',
+      transcription_status: status,
     })
     .select()
     .single()
@@ -89,7 +93,7 @@ export async function saveAudioFile(
     log.error('DB insert error:', error)
     throw error
   }
-  log.info('✅ Audio file saved:', data)
+  log.info('Audio file saved:', data)
 
   return data as AudioFileRow
 }
@@ -126,6 +130,29 @@ export async function updateAudioName(audioId: string, newName: string) {
 
   if (error) {
     log.error('❌ Error updating audio name:', error)
+    throw error
+  }
+
+  log.info('✅ Audio name updated:', data)
+  return data as AudioFileRow
+}
+
+export async function updateAudioStatus(
+  audioId: string,
+  newStatus: AudioFileStatus
+) {
+  const { data, error } = await supabase
+    .from('audio_files')
+    .update({
+      transcription_status: newStatus,
+      updated_at: new Date().toISOString(),
+    })
+    .eq('id', audioId)
+    .select()
+    .single()
+
+  if (error) {
+    log.error('❌ Error updating audio status:', error)
     throw error
   }
 

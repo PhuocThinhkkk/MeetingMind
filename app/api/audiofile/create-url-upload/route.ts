@@ -8,6 +8,13 @@ import {
   getUserPlan,
 } from '@/lib/queries/server/limits-audio-upload-operations'
 import { checkTranscriptionAllowed } from '@/lib/limits/usage.limit'
+export type CreateUrlUploadBody = {
+  name: string
+  duration: number
+  size: number
+  type: string
+  isUpload: boolean
+}
 
 export async function POST(req: NextRequest) {
   try {
@@ -16,7 +23,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { name, duration, size, type, isUpload } = await req.json()
+    const { name, duration, size, type, isUpload }: CreateUrlUploadBody =
+      await req.json()
 
     const [totalSeconds, uploadsCount] = await Promise.all([
       getMonthlyUsageSeconds(user.id),
