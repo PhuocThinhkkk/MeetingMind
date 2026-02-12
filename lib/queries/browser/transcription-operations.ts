@@ -6,6 +6,7 @@ import {
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
 import { TranscriptionWord } from '@/types/transcriptions/transcription.db'
+import { adaptRealtimeWords } from '@/lib/adapters/upload-transcript'
 
 /**
  * Save a transcript for an audio file to the database.
@@ -51,14 +52,7 @@ export async function saveTranscriptWords(
   transcriptionId: string,
   transcriptWords: RealtimeTranscriptionWord[]
 ) {
-  const rows = transcriptWords.map(word => ({
-    transcript_id: transcriptionId,
-    text: word.text,
-    confidence: word.confidence,
-    start_time: word.start,
-    end_time: word.end,
-    word_is_final: word.word_is_final,
-  }))
+  const rows = adaptRealtimeWords(transcriptWords, transcriptionId)
 
   const { data, error } = await supabase
     .from('transcription_words')

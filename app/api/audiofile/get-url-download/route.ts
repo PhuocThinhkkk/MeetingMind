@@ -6,6 +6,10 @@ import { createAssemblyAudioUploadWithWebhook } from '@/services/audio-upload/as
 import { getSignedAudioUrl } from '@/lib/queries/server/storage-operations'
 import { validateFilePathOwner } from '@/lib/validations/upload-validations'
 
+export type GetUrlDownloadBody = {
+  path: string
+}
+
 export async function POST(req: NextRequest) {
   try {
     const user = await getUserAuthInSupabaseToken()
@@ -13,7 +17,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { path } = await req.json()
+    const { path }: GetUrlDownloadBody = await req.json()
     const { allowed, reason } = validateFilePathOwner(path, user.id)
     if (!allowed) {
       return NextResponse.json(

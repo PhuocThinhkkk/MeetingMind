@@ -5,7 +5,7 @@ import {
   mixAudioStreams,
   setupAudioWorklet,
   initAudioContext,
-} from '@/lib/transcript/audioWorkletUtils'
+} from '@/lib/transcript/audio-worklet-utils'
 import { encodeWAV, mergeChunks } from '@/lib/transcript/transcript-realtime-utils'
 import {
   useState,

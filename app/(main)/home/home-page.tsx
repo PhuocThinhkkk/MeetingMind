@@ -1,6 +1,7 @@
 'use client'
 
 import { log } from '@/lib/logger'
+import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import {
@@ -16,26 +17,27 @@ import { FileAudio, Clock, MoreHorizontal } from 'lucide-react'
 import { RealtimeRecorder } from '@/components/dashboard/realtime-recorder'
 import { AudioUpload } from '@/components/dashboard/audio-upload'
 import { useAuth } from '@/hooks/use-auth'
-import { AudioFile } from '@/types/transcriptions/transcription.db'
+import { AudioFileRow, AudioFileWithTranscriptNested } from '@/types/transcriptions/transcription.db'
 import {
   getAudioHistory,
-  saveAudioFile,
 } from '@/lib/queries/browser/audio-operations'
-import { saveTranscript } from '@/lib/queries/browser/transcription-operations'
-import { saveTranscriptWords } from '@/lib/queries/browser/transcription-operations'
-import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
-import { formatDuration } from '@/lib/utils'
+import { formatDateShorted, formatDuration } from '@/lib/ui-format/time-format'
 import { FeatureLockWrapper } from '@/components/coming-soon-wrapper'
-import { TranscriptionView } from '@/components/dashboard/transcription-view'
+import { fileUploadPineline } from '@/lib/queries/browser/audio-transcript-pineline/upload-file-pineline'
+import { TranscriptionViewProvider } from '@/components/context/transcription-view-context'
+import { TranscriptionDialog } from '@/components/dashboard/transcription-view/transcription-main-view-dialog'
+import { realtimeUploadPineline } from '@/lib/queries/browser/audio-transcript-pineline/real-time-file-pineline'
+import { useRecorder } from '@/components/context/realtime-recorder-context'
+import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
 
 export default function HomePage() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const [audioFiles, setAudioFiles] = useState<AudioFile[]>([])
-  const [selectedTranscription, setSelectedTranscription] =
-    useState<AudioFile | null>(null)
+  const [audioFiles, setAudioFiles] = useState<AudioFileWithTranscriptNested[]>([])
   const [loading, setLoading] = useState(true)
+  const searchParams = useSearchParams()
   const [uploading, setUploading] = useState(false)
+  const currentAudioId = searchParams.get('audioId')
 
   useEffect(() => {
     if (!authLoading && !user) {
@@ -47,7 +49,7 @@ export default function HomePage() {
     if (user) {
       fetchAudioFiles()
     }
-  }, [user])
+  }, [currentAudioId, user])
 
   const fetchAudioFiles = async () => {
     if (!user) return
@@ -56,20 +58,13 @@ export default function HomePage() {
       setAudioFiles(data || [])
     } catch (error) {
       log.error('Error fetching audio files:', error)
-      // Set empty array on error to allow the app to continue
       setAudioFiles([])
     } finally {
       setLoading(false)
     }
   }
 
-  /**
-   * Uploads an audio file, persists it with a placeholder transcript, and updates UI state.
-   *
-   * Persists the provided file and an initial placeholder transcript for the current user, prepends the resulting audio record to the local audio list, and marks it as the selected transcription. Manages the uploading state and logs progress and errors. If the file name contains an extension or invalid characters they will be sanitized before saving.
-   *
-   * @param file - The audio File object to upload and persist
-   */
+
   async function handleFileUpload(file: File) {
     if (!user) {
       log.error('User not authenticated')
@@ -79,35 +74,9 @@ export default function HomePage() {
     setUploading(true)
     try {
       log.info('Starting file upload:', file.name)
+      const audioFile = await fileUploadPineline(file, user.id)
+      log.info("pineline of upload success: ", { audioFile })
 
-      // Convert File to Blob
-      const blob = new Blob([file], { type: file.type })
-
-      // Create placeholder transcript
-      const transcriptData = createPlaceholderTranscript()
-
-      // Sanitize filename: remove extension and invalid characters
-      const sanitizedName = file.name
-        .replace(/\.[^/.]+$/, '') // Remove file extension
-        .replace(/['"]/g, '') // Remove quotes
-        .replace(/[^\w\s-]/g, '') // Remove special characters except spaces and hyphens
-        .trim()
-
-      // Save audio and transcript
-      const audioFile = await handlingSaveAudioAndTranscript(
-        user.id,
-        blob,
-        transcriptData,
-        sanitizedName || 'Untitled'
-      )
-
-      if (audioFile) {
-        // Add to the list
-        setAudioFiles(prev => [audioFile, ...prev])
-        // Set as selected
-        setSelectedTranscription(audioFile)
-        log.info('Audio file saved successfully')
-      }
     } catch (error) {
       log.error('Error uploading file:', error)
     } finally {
@@ -115,37 +84,34 @@ export default function HomePage() {
     }
   }
 
-  /**
-   * Persist the provided real-time audio and its transcript, then add the saved record to the recent meetings list and select it.
-   *
-   * @param blob - The recorded audio Blob to persist.
-   * @param transcript - Word- and timing-level transcript data to save alongside the audio.
-   */
-  async function handleRealtimeTranscriptionComplete(
-    blob: Blob,
-    transcript: SaveTranscriptInput
-  ) {
+  async function handleRealtimeTranscriptionComplete(file: File, transcriptionWords: RealtimeTranscriptionWord[]) {
     if (!user) {
-      log.info('User not authenticated. Cannot save transcription.')
+      log.error('User not authenticated')
       return
     }
+
+    setUploading(true)
     try {
-      const data = await handlingSaveAudioAndTranscript(
-        user.id,
-        blob,
-        transcript
-      )
-      if (!data) return
-      setAudioFiles(prev => [data, ...prev])
-      setSelectedTranscription(data)
+      log.info('Starting transcript upload:', file.name)
+      const audioFile = await realtimeUploadPineline(transcriptionWords, file, user.id)
+      log.info("pineline of upload success: ", { audioFile })
+
     } catch (error) {
       log.error('Error uploading file:', error)
+    } finally {
+      setUploading(false)
     }
   }
 
-  const handleFileTranscriptionView = (file: AudioFile) => {
-    setSelectedTranscription(file)
+
+  const handleFileTranscriptionView = (file: AudioFileRow) => {
+    router.push(`/home?audioId=${file.id}`)
   }
+
+  const handleCloseDialog = () => {
+    router.push('/dashboard')
+  }
+
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -234,10 +200,10 @@ export default function HomePage() {
                             </h4>
                             <div className="flex items-center space-x-2 text-sm text-gray-500">
                               <Clock className="w-4 h-4" />
-                              <span>{formatDuration(file.duration)}</span>
+                              <span>{formatDuration(file.duration ?? 0)}</span>
                               <span>•</span>
                               <span>
-                                {new Date(file.created_at).toLocaleDateString()}
+                                {formatDateShorted(file.created_at)}
                               </span>
                             </div>
                           </div>
@@ -245,7 +211,7 @@ export default function HomePage() {
 
                         <div className="flex items-center space-x-3">
                           <Badge
-                            className={`${getStatusColor(file.transcription_status)} border`}
+                            className={`${getStatusColor(file.transcription_status ?? "unknown")} border`}
                           >
                             {file.transcription_status}
                           </Badge>
@@ -267,84 +233,15 @@ export default function HomePage() {
         </div>
       </div>
 
-      {/* Transcription View Modal */}
-      {selectedTranscription && (
-        <TranscriptionView
-          file={selectedTranscription}
-          onClose={() => setSelectedTranscription(null)}
-        />
-      )}
-    </div>
+      {currentAudioId &&
+        <TranscriptionViewProvider audioId={currentAudioId}>
+          <TranscriptionDialog
+            open={!!currentAudioId}
+            onClose={handleCloseDialog}
+          />
+        </TranscriptionViewProvider >
+      }
+
+    </div >
   )
-}
-/**
- * Persist an audio Blob and its transcript for the given user.
- *
- * @param userId - The ID of the user who owns the recording
- * @param blob - The audio data to save
- * @param transcriptWords - The word-level transcript to associate with the audio; must contain at least one entry
- * @param fileName - Optional custom name for the audio file (defaults to "Unnamed")
- * @returns The saved AudioFile with its `transcript` property populated and including `words`
- * @throws If `userId` is falsy
- * @throws If `blob` is falsy
- * @throws If `transcriptWords` is falsy or an empty array
- */
-export async function handlingSaveAudioAndTranscript(
-  userId: string,
-  blob: Blob,
-  transcriptWords: SaveTranscriptInput,
-  fileName: string = 'Unnamed'
-) {
-  if (!userId) {
-    throw new Error('pls sign in first to use our application')
-  }
-
-  if (!blob) {
-    throw new Error('The audio of the recording isnt found')
-  }
-
-  if (!transcriptWords || transcriptWords.length === 0) {
-    throw new Error('There is nothing in transcription')
-  }
-
-  const audio = await saveAudioFile(blob, userId, fileName)
-  if (audio) {
-    log.info('Audio file saved with ID:', audio)
-  }
-  const transcription = await saveTranscript(audio.id, transcriptWords)
-  if (transcription) {
-    log.info('Transcript saved with ID:', transcription)
-  }
-  const words = await saveTranscriptWords(transcription.id, transcriptWords)
-  const completedAudioFile: AudioFile = {
-    ...audio,
-    transcript: { ...transcription, words: words },
-  }
-  return completedAudioFile
-}
-
-/**
- * Create a minimal placeholder transcript used when no real transcription is available.
- *
- * Contains two placeholder word entries with timestamps, full confidence, and `word_is_final: true`.
- *
- * @returns A `SaveTranscriptInput` consisting of two placeholder words (`'Transcription'` and `'pending'`)
- */
-function createPlaceholderTranscript(): SaveTranscriptInput {
-  return [
-    {
-      text: 'Transcription',
-      start: 0,
-      end: 0.5,
-      confidence: 1,
-      word_is_final: true,
-    },
-    {
-      text: 'pending',
-      start: 0.5,
-      end: 1,
-      confidence: 1,
-      word_is_final: true,
-    },
-  ]
 }

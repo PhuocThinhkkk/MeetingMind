@@ -10,6 +10,14 @@ import { getUserPlan } from '@/lib/queries/server/limits-audio-upload-operations
 import { checkFileSizeAllowed } from '@/lib/limits/usage.limit'
 import { getSignedAudioUrl } from '@/lib/queries/server/storage-operations'
 
+export type TriggerTranscriptBody = {
+  path: string
+  type: string
+  name: string
+  size: number
+  duration: number
+}
+
 export async function POST(req: NextRequest) {
   try {
     const user = await getUserAuthInSupabaseToken()
@@ -17,7 +25,8 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { path, type, name, size, duration } = await req.json()
+    const { path, type, name, size, duration }: TriggerTranscriptBody =
+      await req.json()
     const sizeInStorage = await getStorageFileSize('audio-files', path)
     log.info('audio size: ', { sizeInStorage, size })
     const plan = await getUserPlan(user.id)
@@ -44,16 +53,19 @@ export async function POST(req: NextRequest) {
     }
     const audio = await insertAudioFile(dataInsert)
 
-    return NextResponse.json({
-      audio_id: audio.id,
-      audio,
-      status: 'processing',
-    })
+    return NextResponse.json(
+      {
+        audio_id: audio.id,
+        audio,
+        status: 'processing',
+      },
+      { status: 201 }
+    )
   } catch (e) {
     log.error('Error in the upload server: ', e)
     return NextResponse.json(
       {
-        error: 'Servr Error',
+        error: 'Server Error',
       },
       { status: 500 }
     )

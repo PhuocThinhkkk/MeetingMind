@@ -16,13 +16,15 @@ import RealTimeTranscriptionPage from './realtime-view-transcription'
 import { useRecorder } from '@/components/context/realtime-recorder-context'
 import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
 import { useAuth } from '@/hooks/use-auth'
-import { formatDuration } from '@/lib/utils'
+import { formatDuration } from '@/lib/ui-format/time-format'
 import { toast } from 'sonner'
 import { LoadingOverlay } from '../loading-overlay'
+import { blobToFile } from '@/lib/transcript/blob-to-file'
+const AUDIO_NAME_INIT = "Unknown recording name"
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (
-    audioBlob: Blob,
+    audioBlob: File,
     transcription: SaveTranscriptInput
   ) => Promise<void>
 }
@@ -102,7 +104,8 @@ export function RealtimeRecorder({
 
       log.info(`${audioBlob}`)
       const transcription = transcriptWords
-      await onTranscriptionComplete(audioBlob, transcription)
+      const file = blobToFile(audioBlob, AUDIO_NAME_INIT)
+      await onTranscriptionComplete(file, transcription)
       handleCloseAll()
       toast.success(
         'Upload your audio successfully, you can check out the history page'
@@ -165,7 +168,8 @@ export function RealtimeRecorder({
 
       log.info(`${audioBlobBackUp}`)
       const transcription = transcriptWords
-      await onTranscriptionComplete(audioBlobBackUp, transcription)
+      const file = await blobToFile(audioBlobBackUp, AUDIO_NAME_INIT)
+      await onTranscriptionComplete(file, transcription)
       handleCloseAll()
       toast.success(
         'Upload your audio successfully, you can check out the history page'
