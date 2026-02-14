@@ -1,8 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
 import { log } from '@/lib/logger'
-import { insertAudioFile } from '@/lib/queries/server/audio-upload-operations'
-import { createAssemblyAudioUploadWithWebhook } from '@/services/audio-upload/assembly-webhook'
 import { getSignedAudioUrl } from '@/lib/queries/server/storage-operations'
 import { validateFilePathOwner } from '@/lib/validations/upload-validations'
 

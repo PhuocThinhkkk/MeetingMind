@@ -1,17 +1,17 @@
 import { adaptAssemblyAIWords } from '@/lib/adapters/upload-transcript'
 import { log } from '@/lib/logger'
 import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
-import { Database } from '@/types/database.types'
-import { AudioFileRow } from '@/types/transcriptions/transcription.db'
+import {
+  AudioFileInsertInput,
+  AudioFileRow,
+} from '@/types/transcriptions/transcription.db'
 import { AssemblyAIWebhookPayload } from '@/types/transcriptions/transcription.assembly.upload'
 import {
   CreateUploadUrlParams,
   CreateUploadUrlResult,
 } from '@/types/transcriptions/transcription.storage.upload'
 
-export async function insertAudioFile(
-  audioFileInput: Database['public']['Tables']['audio_files']['Insert']
-) {
+export async function insertAudioFile(audioFileInput: AudioFileInsertInput) {
   const { data: audio, error: insertError } = await supabaseAdmin
     .from('audio_files')
     .insert(audioFileInput)
@@ -91,6 +91,22 @@ export async function findAudioFileByJobId(jobId: string) {
     .from('audio_files')
     .select('*')
     .eq('assembly_job_id', jobId)
+    .single()
+
+  if (error || !audio) {
+    throw new Error(
+      `Audio file not found for job ID: ${jobId}, error: ${JSON.stringify(error)}`
+    )
+  }
+
+  return audio as AudioFileRow
+}
+export async function updateAudioFileByJobId(audioId: string, jobId: string) {
+  const { data: audio, error } = await supabaseAdmin
+    .from('audio_files')
+    .update({ assembly_job_id: jobId })
+    .select('*')
+    .eq('id', audioId)
     .single()
 
   if (error || !audio) {

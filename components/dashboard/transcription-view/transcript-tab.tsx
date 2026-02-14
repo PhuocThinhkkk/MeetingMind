@@ -1,6 +1,6 @@
 'use client'
 
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Slider } from '@/components/ui/slider'
@@ -17,15 +17,36 @@ import {
 import { validateAudioTime } from '@/lib/validations/audio-validations'
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
 import { TranscriptSentences } from './transcript-sentences'
+import { fetchUrlDownload } from '@/lib/queries/browser/audio-transcript-pineline/utils'
+import { log } from '@/lib/logger'
 
 export function TranscriptTab() {
     const { audio: audioFile, transcript } = useTranscriptionView()
     const audioRef = useRef<HTMLAudioElement>(null)
-
+    const [audioUrl, setAudioUrl] = useState<null | string>(null)
     const [isPlaying, setIsPlaying] = useState(false)
     const [muted, setMuted] = useState(false)
     const [currentTime, setCurrentTime] = useState(0)
     const [duration, setDuration] = useState(0)
+    log.info("data: ", {
+        audioFile, audioUrl
+    })
+
+    useEffect(() => {
+        fetchAudioUrl()
+    }, [audioFile])
+
+    async function fetchAudioUrl() {
+        try {
+            if (!audioFile) {
+                return
+            }
+            const url = await fetchUrlDownload({ path: audioFile.path })
+            setAudioUrl(url)
+        } catch (e) {
+            log.error("Error when fetching presigned url: ", e)
+        }
+    }
 
     if (!transcript) {
         return <p className="text-muted-foreground">No transcript available.</p>
@@ -109,18 +130,20 @@ export function TranscriptTab() {
                         {muted ? <VolumeX /> : <Volume2 />}
                     </button>
 
-                    <audio
-                        ref={audioRef}
-                        src={audioFile.url}
-                        className="hidden"
-                        onLoadedMetadata={() =>
-                            audioRef.current && setDuration(audioRef.current.duration)
-                        }
-                        onTimeUpdate={() =>
-                            audioRef.current && setCurrentTime(audioRef.current.currentTime)
-                        }
-                        onEnded={() => setIsPlaying(false)}
-                    />
+                    {audioUrl &&
+                        <audio
+                            ref={audioRef}
+                            src={audioUrl}
+                            className="hidden"
+                            onLoadedMetadata={() =>
+                                audioRef.current && setDuration(audioRef.current.duration)
+                            }
+                            onTimeUpdate={() =>
+                                audioRef.current && setCurrentTime(audioRef.current.currentTime)
+                            }
+                            onEnded={() => setIsPlaying(false)}
+                        />
+                    }
                 </div>
             </CardHeader>
 
