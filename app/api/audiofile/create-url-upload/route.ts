@@ -51,7 +51,7 @@ export async function POST(req: NextRequest) {
       isUpload
     )
 
-    return NextResponse.json({ result }, { status: 201 })
+    return NextResponse.json(result, { status: 201 })
   } catch (e) {
     log.error('Error in the upload server: ', e)
     return NextResponse.json(

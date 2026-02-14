@@ -1,4 +1,3 @@
-import { CreateUrlUploadBody } from '@/app/api/audiofile/create-url-upload/route'
 import { log } from '@/lib/logger'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { sanitizedFileName } from '@/lib/transcript/extract-file-name'
@@ -99,6 +98,7 @@ export async function saveAudioFile(
 }
 
 export async function uploadAudioFileUsingPath(uploadUrl: string, file: File) {
+  log.info('upload file to url: ', { uploadUrl })
   const res = await fetch(uploadUrl, {
     method: 'PUT',
     headers: {
@@ -107,7 +107,7 @@ export async function uploadAudioFileUsingPath(uploadUrl: string, file: File) {
     body: file,
   })
   if (!res.ok) {
-    log.error('Error in upload file: ', { res: await res.json() })
+    log.error('Error in upload file to storage: ', { res })
     throw new Error('Can not upload file ')
   }
 }

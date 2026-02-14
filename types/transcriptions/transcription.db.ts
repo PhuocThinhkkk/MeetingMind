@@ -41,7 +41,8 @@ export type TranscriptWithWordNested = TranscriptRow & {
 
 export type AudioFileRow = Database['public']['Tables']['audio_files']['Row']
 export type AudioFileStatus = 'pending' | 'processing' | 'done' | 'failed'
-
+export type AudioFileInsertInput =
+  Database['public']['Tables']['audio_files']['Insert']
 export type AudioFileWithTranscriptNested = AudioFileRow & {
   transcript: TranscriptRow
 }

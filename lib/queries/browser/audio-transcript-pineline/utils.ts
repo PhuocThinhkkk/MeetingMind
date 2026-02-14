@@ -1,12 +1,13 @@
 import { saveAudioFile } from '@/lib/queries/browser/audio-operations'
 import { CreateUrlUploadBody } from '@/app/api/audiofile/create-url-upload/route'
 import { CreateUploadUrlResult } from '@/types/transcriptions/transcription.storage.upload'
-import { TriggerTranscriptBody } from '@/app/api/audiofile/trigger-transcript/route'
+import { TriggerTranscriptBody } from '@/app/api/audiofile/[audioId]/trigger-transcript/route'
 import { GetUrlDownloadBody } from '@/app/api/audiofile/get-url-download/route'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
+import { log } from '@/lib/logger'
 
 async function fetchPresignedUrl(input: CreateUrlUploadBody) {
-  const res = await fetch('/api/audiofiles/create-url-upload', {
+  const res = await fetch('/api/audiofile/create-url-upload', {
     method: 'POST',
     body: JSON.stringify(input),
   })
@@ -16,6 +17,7 @@ async function fetchPresignedUrl(input: CreateUrlUploadBody) {
     )
   }
   const data: CreateUploadUrlResult = await res.json()
+  log.info('presigned url res: ', data)
   return data
 }
 
@@ -29,8 +31,11 @@ export async function fetchPresignedUrlAndUpload(
   return { path: uploadRes.path, audio: audio }
 }
 
-export async function fetchTriggerTranscript(input: TriggerTranscriptBody) {
-  const res = await fetch('/api/audiofiles/trigger-transcript', {
+export async function fetchTriggerTranscript(
+  audioId: string,
+  input: TriggerTranscriptBody
+) {
+  const res = await fetch(`/api/audiofile/${audioId}/trigger-transcript`, {
     method: 'POST',
     body: JSON.stringify(input),
   })
@@ -44,7 +49,7 @@ export async function fetchTriggerTranscript(input: TriggerTranscriptBody) {
 }
 
 export async function fetchUrlDownload(input: GetUrlDownloadBody) {
-  const res = await fetch('/api/audiofiles/get-url-download', {
+  const res = await fetch('/api/audiofile/get-url-download', {
     method: 'POST',
     body: JSON.stringify(input),
   })
@@ -53,8 +58,8 @@ export async function fetchUrlDownload(input: GetUrlDownloadBody) {
       `Error when fetching url download: ${(await res.json()).error}`
     )
   }
-  const data: CreateUploadUrlResult = await res.json()
-  return data
+  const data = await res.json()
+  return data.url
 }
 
 export async function waitForTranscriptionDone(audioId: string): Promise<void> {

@@ -19,7 +19,7 @@ export async function realtimeUploadPineline(
       type: file.type,
       size: file.size,
       duration: await getAudioDuration(file),
-      isUpload: true,
+      isUpload: false,
       path: undefined,
     }
     const { path, audio } = await fetchPresignedUrlAndUpload(

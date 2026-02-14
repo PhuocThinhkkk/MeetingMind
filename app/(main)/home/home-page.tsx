@@ -76,6 +76,7 @@ export default function HomePage() {
       log.info('Starting file upload:', file.name)
       const audioFile = await fileUploadPineline(file, user.id)
       log.info("pineline of upload success: ", { audioFile })
+      handleFileTranscriptionView(audioFile.audio)
 
     } catch (error) {
       log.error('Error uploading file:', error)
@@ -95,6 +96,7 @@ export default function HomePage() {
       log.info('Starting transcript upload:', file.name)
       const audioFile = await realtimeUploadPineline(transcriptionWords, file, user.id)
       log.info("pineline of upload success: ", { audioFile })
+      handleFileTranscriptionView(audioFile.audio)
 
     } catch (error) {
       log.error('Error uploading file:', error)
@@ -109,7 +111,7 @@ export default function HomePage() {
   }
 
   const handleCloseDialog = () => {
-    router.push('/dashboard')
+    router.push('/home')
   }
 
 

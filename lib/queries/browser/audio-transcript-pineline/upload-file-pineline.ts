@@ -27,7 +27,7 @@ export async function fileUploadPineline(file: File, userId: string) {
       ...presigedUrlInput,
       path,
     }
-    await fetchTriggerTranscript(triggerTranscriptInput)
+    await fetchTriggerTranscript(audio.id, triggerTranscriptInput)
     await waitForTranscriptionDone(audio.id)
     await triggerAnalyze(audio.id)
     return { audio }
