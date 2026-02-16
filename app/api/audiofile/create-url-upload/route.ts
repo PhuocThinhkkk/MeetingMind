@@ -16,6 +16,17 @@ export type CreateUrlUploadBody = {
   isUpload: boolean
 }
 
+/**
+ * Handle POST requests to create a signed audio upload URL after authenticating the user and validating monthly usage/plan limits.
+ *
+ * @param req - Next.js request whose JSON body must match `CreateUrlUploadBody` with:
+ *   - `name`: file name string
+ *   - `duration`: file duration in seconds
+ *   - `size`: file size in bytes
+ *   - `type`: MIME type string
+ *   - `isUpload`: boolean indicating upload mode
+ * @returns On success (201): an object containing the created upload URL and related metadata. On error (401 or 500): an object with an `error` string describing the failure. 
+ */
 export async function POST(req: NextRequest) {
   try {
     const user = await getUserAuthInSupabaseToken()

@@ -5,6 +5,16 @@ const AUDIO_NAME_INIT = 'Unknown name'
 import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
 
 export type UploadState = 'idle' | 'uploading' | 'error'
+/**
+ * Controls the audio upload lifecycle and exposes actions to upload, retry failed uploads using a backup, and dismiss error state.
+ *
+ * @param onUpload - Callback invoked with a File and transcription to perform the actual upload; it should return a promise that resolves when the upload completes.
+ * @returns An object with:
+ *  - `state`: the current upload state (`'idle' | 'uploading' | 'error'`),
+ *  - `upload(blob, transcription)`: starts an upload for the given audio `Blob` and transcription,
+ *  - `retry(transcription)`: retries the last failed upload using an internal backup `Blob`,
+ *  - `dismiss()`: resets the state to `'idle'`.
+ */
 export function useUploadController(
   onUpload: (file: File, transcription: SaveTranscriptInput) => Promise<void>
 ) {

@@ -36,6 +36,12 @@ export function TranscriptTab() {
         fetchAudioUrl()
     }, [audioFile])
 
+    /**
+     * Obtains a presigned download URL for the current audio file and stores it in component state.
+     *
+     * If no audio file is available, the function returns without side effects.
+     * Errors encountered while fetching the URL are caught and logged.
+     */
     async function fetchAudioUrl() {
         try {
             if (!audioFile) {
@@ -72,6 +78,12 @@ export function TranscriptTab() {
         audioRef.current.currentTime = (val[0] / 100) * duration
     }
 
+    /**
+     * Format a time given in seconds as "M:SS".
+     *
+     * @param sec - Time in seconds.
+     * @returns The formatted time string with minutes (no leading zeros) and seconds padded to two digits, e.g. "2:05".
+     */
     function formatTime(sec: number) {
         const m = Math.floor(sec / 60)
         const s = Math.floor(sec % 60)

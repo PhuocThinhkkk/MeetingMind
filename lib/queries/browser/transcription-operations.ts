@@ -89,6 +89,13 @@ export async function getTranscriptByAudioId(audioId: string) {
   return data
 }
 
+/**
+ * Fetches the transcript and its nested `transcription_words` for a given audio ID.
+ *
+ * @param audioId - The audio file identifier to look up the transcript for.
+ * @returns The transcript record including a `transcription_words` array of word tokens.
+ * @throws Error if the database query fails or no transcript is found.
+ */
 export async function getTranscriptWordNestedByAudioId(audioId: string) {
   const { data, error } = await supabase
     .from('transcripts')

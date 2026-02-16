@@ -11,13 +11,13 @@ import { buildMeetingSummaryPrompt } from '@/types/llm/prompt-builder'
 import { MeetingExtractionResult } from '@/types/llm/llm-abstract'
 
 /**
- * Generates a structured meeting summary and events from an audio transcription and persists them to the database.
+ * Generate a structured meeting summary and events from an audio transcription and persist them.
  *
- * Authenticates the requester, verifies ownership and transcription readiness for the specified audio file, avoids duplicate processing, extracts structured JSON (summary and events) from the transcript using the OpenAI chat model, saves the summary and events to the database, and returns the persisted summary and events on success.
+ * Authenticates the requester, verifies ownership and that transcription is ready for the specified audio file, extracts a parsed summary and events from the transcript, saves the results to the database, and returns the persisted summary and events.
  *
  * @param req - The incoming Next.js request
- * @param params - Route parameters object; `params.id` is the audio file ID to analyze
- * @returns On success, a JSON object with `success: true`, `summary` (summary fields: `text`, `highlights`, `todo`, `key_topics`, `sentiment`), and `events` (array of event objects). On failure, a JSON object with an `error` message and an appropriate HTTP status code (e.g., 401, 404, 409).
+ * @param params - Promise resolving to route parameters; `params.audioId` is the audio file ID to analyze
+ * @returns On success, an object `{ success: true, summary, events }`. On failure, an error object with an appropriate HTTP status (e.g., 401, 404, 409, 500).
  * @throws Error if no transcription record is found for the audio file
  */
 export async function POST(

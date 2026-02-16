@@ -2,6 +2,14 @@ import { MeetingExtractionResult } from '@/types/llm/llm-abstract'
 import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
 import { log } from '@/lib/logger'
 
+/**
+ * Deletes any existing events for the given audio ID, inserts the provided events for that audio ID, and returns the inserted rows.
+ *
+ * @param audioId - The identifier of the audio recording to associate events with
+ * @param eventsArray - Array of event records to insert (each with title, description, start_time, end_time, and location)
+ * @returns The rows inserted into the `events` table
+ * @throws Rethrows the database error if the insert operation fails
+ */
 export async function insertManyEventsByAudioId(
   audioId: string,
   eventsArray: MeetingExtractionResult['events']
@@ -32,6 +40,13 @@ export async function insertManyEventsByAudioId(
   }
   return data
 }
+/**
+ * Fetches all event records associated with the given audio ID from the `events` table.
+ *
+ * @param audioId - The audio identifier used to filter event rows
+ * @returns The rows from the `events` table that match `audioId`
+ * @throws The Supabase error if the query fails
+ */
 export async function getAllEventsByAudioId(audioId: string) {
   const { data, error } = await supabaseAdmin
     .from('events')
@@ -49,6 +64,12 @@ export async function getAllEventsByAudioId(audioId: string) {
   return data
 }
 
+/**
+ * Remove all event rows for the given audio ID from the `events` table.
+ *
+ * @param audioId - The audio identifier whose associated events will be deleted
+ * @throws The Supabase error object if the delete operation fails
+ */
 async function deleteAllExistingEventsByAudioId(audioId: string) {
   const { error } = await supabaseAdmin
     .from('events')

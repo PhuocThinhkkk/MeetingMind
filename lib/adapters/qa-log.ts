@@ -7,6 +7,14 @@ export type QARelation = {
   audio_id: string
   transcript_id: string
 }
+/**
+ * Attach relation metadata to each QA log entry and produce insert-ready records.
+ *
+ * @param qaLog - Array of QA log entries to adapt into insert records
+ * @param relation - Object supplying `user_id` and `audio_id` to associate with each entry
+ * @returns An array of `QALogInsert` objects where each input QA entry is augmented with the relation's `user_id` and `audio_id`
+ * @throws Error if `qaLog` is falsy or has no elements
+ */
 export function adaptQA(qaLog: QALog[], relation: QARelation): QALogInsert[] {
   if (!qaLog || qaLog.length === 0) {
     log.error('qa logs array error:  ', { qaLog })
