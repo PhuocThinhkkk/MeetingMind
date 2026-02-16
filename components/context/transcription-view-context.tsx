@@ -16,8 +16,25 @@ import type {
 import type { EventItemRow, SummaryRow, AudioFileRow } from '@/types/transcriptions/transcription.db'
 
 /**
- * Feature hook for Transcription View
- * Owns fetching + local mutations (QA logs)
+ * Manages loading and local state for transcription data associated with an audio ID.
+ *
+ * Loads audio metadata, transcript, summary, events, and QA logs and exposes helpers to
+ * refetch data and perform local-first QA log mutations.
+ *
+ * @param audioId - The audio identifier whose transcription data should be loaded.
+ * @returns An object containing:
+ *  - `audioId` — the provided audio identifier
+ *  - `loading` — whether a fetch is in progress
+ *  - `error` — any error encountered while fetching
+ *  - `audio` — the loaded audio file metadata or `null`
+ *  - `transcript` — the loaded transcript or `null`
+ *  - `summary` — the loaded summary or `null`
+ *  - `events` — the loaded events array
+ *  - `qaLogs` — the loaded QA logs array
+ *  - `refetchAll` — function to re-run the full fetch
+ *  - `setQaLogs` — function to replace the QA logs array
+ *  - `appendQaLog` — function to prepend a QA log (optimistic/local-first)
+ *  - `refreshQaLogs` — function to re-fetch QA logs
  */
 export function useTranscriptionViewData(audioId: string) {
     const [loading, setLoading] = useState(false)
@@ -169,6 +186,12 @@ export function TranscriptionViewProvider({
     )
 }
 
+/**
+ * Returns the current TranscriptionViewContext value from the nearest TranscriptionViewProvider.
+ *
+ * @returns The context value containing audioId, audio, transcript, summary, events, qaLogs, loading, error, and QA helper methods (`appendQaLog`, `setQaLogs`, `refreshQaLogs`).
+ * @throws Error if called outside of a TranscriptionViewProvider.
+ */
 export function useTranscriptionView() {
     const ctx = useContext(TranscriptionViewContext)
     if (!ctx) {

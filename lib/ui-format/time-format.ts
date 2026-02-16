@@ -20,8 +20,8 @@ export function convertFloat32ToInt16(buffer: Float32Array) {
 /**
  * Delays execution for the specified number of milliseconds.
  *
- * @param timeout - Delay duration in milliseconds (default: 5000)
- * @returns A promise that resolves with no value after the delay
+ * @param timeout - Delay duration in milliseconds. Defaults to 5000.
+ * @returns No value.
  */
 export function waitFor(timeout = 5000): Promise<void> {
   return new Promise(resolve => {
@@ -82,6 +82,12 @@ export function formatDate(dateString: string | null): string {
     minute: '2-digit',
   })
 }
+/**
+ * Formats an ISO date string into a short en-US date (e.g., "Feb 14, 2026").
+ *
+ * @param dateString - The ISO date string to format; may be `null`.
+ * @returns A short formatted date string like `"Feb 14, 2026"`, or `"Unknown Time"` when `dateString` is `null` or `undefined`
+ */
 export function formatDateShorted(dateString: string | null): string {
   if (!dateString) {
     log.warn('Date is null or underfined', dateString)

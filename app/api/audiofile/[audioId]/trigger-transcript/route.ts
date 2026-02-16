@@ -18,6 +18,13 @@ export type TriggerTranscriptBody = {
   size: number
   duration: number
 }
+/**
+ * Handle POST requests that trigger transcription for an existing audio file and start an upload job.
+ *
+ * @param req - The incoming Next.js request containing a JSON body with `path`, `size`, and `duration`.
+ * @param params - An object with a promised `audioId` parameter identifying the audio record.
+ * @returns A NextResponse JSON payload. On success (201) returns `{ status: "processing", audio: <updated audio object> }`. On failure returns `{ error: "<message>" }` with an appropriate HTTP status (401 for unauthorized or plan limits, 404 for not found, 500 for server error).
+ */
 export async function POST(
   req: NextRequest,
   { params }: { params: Promise<{ audioId: string }> }

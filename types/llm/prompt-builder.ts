@@ -4,6 +4,11 @@ export type PromptBuilder = {
   prompt: string
 }
 
+/**
+ * Builds a prompt that instructs an AI to extract a meeting summary and calendar events from a transcript and to output only valid JSON.
+ *
+ * @returns An object with a `prompt` string that embeds the provided transcript and specifies the required JSON schema for `summary` (including `text`, `highlights`, `todo`, `key_topics`, and `sentiment`) and `events` (objects with `title`, `description`, `start_time`, `end_time`, and `location`).
+ */
 export function buildMeetingSummaryPrompt(transcript: string): PromptBuilder {
   return {
     prompt: `
@@ -35,6 +40,21 @@ Return:
 `,
   }
 }
+/**
+ * Constructs a prompt that asks an LLM to answer a specific question using a meeting transcript and optional past QA context.
+ *
+ * The prompt instructs the model to output only valid JSON with the schema:
+ * {
+ *   "question": "<the provided question>",
+ *   "answer": "<model's answer or \"Not enough information.\">",
+ *   "confidence_score": <number>
+ * }
+ *
+ * @param transcript - The meeting transcript to be used as the source of truth.
+ * @param question - The question to answer based on the transcript.
+ * @param passQA - Optional past question/answer context; when provided it is serialized to JSON and included as "Past conversation".
+ * @returns An object with a `prompt` string that embeds the transcript, question, and past conversation and instructs the model to return the specified JSON structure.
+ */
 export function buildQAPrompt(
   transcript: string,
   question: string,

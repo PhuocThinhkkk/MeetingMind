@@ -8,6 +8,12 @@ export type GetUrlDownloadBody = {
   path: string
 }
 
+/**
+ * Handle POST requests to return a signed download URL for an audio file owned by the authenticated user.
+ *
+ * @param req - The incoming NextRequest whose JSON body must contain `{ path: string }`.
+ * @returns A NextResponse with `{ url }` and status 200 on success; `{ error: reason }` with status 401 when unauthorized; or `{ error: 'Server Error' }` with status 500 on unexpected failure.
+ */
 export async function POST(req: NextRequest) {
   try {
     const user = await getUserAuthInSupabaseToken()

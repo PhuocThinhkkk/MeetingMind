@@ -9,6 +9,13 @@ import {
 } from '@/types/transcriptions/transcription.db'
 import { CreateUploadUrlResult } from '@/types/transcriptions/transcription.storage.upload'
 
+/**
+ * Retrieve a user's audio files with their associated transcript (first transcript or `null`), ordered newest first.
+ *
+ * @param userId - The ID of the user whose audio history to fetch
+ * @returns An array of `AudioFileWithTranscriptNested` where each item's `transcript` is the first related transcript object or `null`; returns an empty array if Supabase is not configured or no records are found
+ * @throws The Supabase error when the database query fails
+ */
 export async function getAudioHistory(
   userId: string
 ): Promise<AudioFileWithTranscriptNested[]> {
@@ -35,6 +42,19 @@ export async function getAudioHistory(
   return formatted ?? []
 }
 
+/**
+ * Save a newly uploaded audio file to storage and create its database record with metadata.
+ *
+ * Attempts to determine the file duration, uploads the file using the provided signed URL,
+ * and inserts a row into `audio_files` with the sanitized name, path, duration, size, MIME type,
+ * and an initial transcription status of `pending`.
+ *
+ * @param file - The audio File to upload (its `name`, `type`, and `size` are used)
+ * @param userId - The ID of the user who owns the file
+ * @param uploadRes - Result from creating an upload URL; must contain `signedUrl` for upload and `path` to store in the DB
+ * @returns The inserted `AudioFileRow` for the saved audio file
+ * @throws Error if the file has an invalid MIME type or file size, if the upload fails, or if the database insert fails
+ */
 export async function saveAudioFile(
   file: File,
   userId: string,
@@ -86,6 +106,13 @@ export async function saveAudioFile(
   return data as AudioFileRow
 }
 
+/**
+ * Uploads a file to a pre-signed storage URL using an HTTP PUT request.
+ *
+ * @param uploadUrl - The pre-signed URL to upload the file to.
+ * @param file - The File to upload; its MIME type is used for the `Content-Type` header.
+ * @throws Error - If the upload HTTP response is not OK.
+ */
 export async function uploadAudioFileUsingPath(uploadUrl: string, file: File) {
   log.info('upload file to url: ', { uploadUrl })
   const res = await fetch(uploadUrl, {
@@ -104,10 +131,10 @@ export async function uploadAudioFileUsingPath(uploadUrl: string, file: File) {
 /**
  * Update an audio file's name and refresh its `updated_at` timestamp in the database.
  *
- * @param audioId - The ID of the audio file to update
- * @param newName - The new name to assign to the audio file
- * @returns The updated `AudioFile` record
- * @throws Supabase error when the update operation fails
+ * @param audioId - ID of the audio file to update
+ * @param newName - New name for the audio file
+ * @returns The updated `AudioFileRow`
+ * @throws The Supabase error returned when the update operation fails
  */
 export async function updateAudioName(audioId: string, newName: string) {
   const { data, error } = await supabase
@@ -126,6 +153,13 @@ export async function updateAudioName(audioId: string, newName: string) {
   return data as AudioFileRow
 }
 
+/**
+ * Update an audio file's transcription status and refresh its updated_at timestamp.
+ *
+ * @param audioId - ID of the audio file to update
+ * @param newStatus - New transcription status to set for the audio file
+ * @returns The updated `AudioFileRow`
+ */
 export async function updateAudioStatus(
   audioId: string,
   newStatus: AudioFileStatus

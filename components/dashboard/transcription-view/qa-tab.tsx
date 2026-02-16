@@ -31,6 +31,12 @@ export function QATab() {
 
     const now = new Date()
 
+    /**
+     * Normalize a QA log into the UI shape used for rendering.
+     *
+     * @param log - A QA log in any accepted input form (QALog, QALogRow, or QALogBase)
+     * @returns An object with `question`, `answer`, and `created_at` (ISO string). If `log` contains `created_at` it is used; otherwise the current time is returned as an ISO string.
+     */
     function toQALogUI(log: QALogInit): QALogUI {
         return {
             question: log.question,
@@ -159,4 +165,3 @@ export function QATab() {
         </Card>
     )
 }
-

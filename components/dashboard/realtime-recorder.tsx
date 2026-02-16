@@ -69,9 +69,10 @@ export function RealtimeRecorder({
   }
 
   /**
-   * Stops the active recording, uploads the captured audio with its transcription, and finalizes UI state.
+   * Stop the active recording, upload the captured audio with its transcription, and finalize the recorder UI.
    *
-   * If an audio blob is produced it will be backed up and passed, along with the current transcription words, to `onTranscriptionComplete`. On successful upload the component state is reset and a success toast is shown. On failure the function logs the error, shows an error toast, leaves a retryable backup, and sets the retry state.
+   * If no audio is available, displays a destructive toast and aborts. Otherwise uploads the audio and transcription;
+   * when the upload completes and the controller is idle the component UI is reset.
    */
   async function handleStopRecording() {
     const audioBlob = stopRecording()

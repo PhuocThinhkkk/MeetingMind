@@ -5,6 +5,14 @@ const COMMA_MIN_PAUSE = 400
 const COMMA_MAX_PAUSE = 500
 const SENTENCE_PAUSE_THRESHOLD = 800
 
+/**
+ * Split a sequence of timed words into sentences and normalize each sentence.
+ *
+ * Splitting uses inter-word pauses and existing punctuation to infer commas and sentence boundaries; each resulting sentence is normalized (capitalizes the first word, normalizes the pronoun "I", fixes comma spacing, and ensures ending punctuation).
+ *
+ * @param words - Array of word objects (each should include `text`, `start_time`, and `end_time`) to split into sentences
+ * @returns An array of sentences, where each sentence is an array of normalized `Word` objects
+ */
 export function splitWordsIntoSentences(words: Word[] = []) {
   if (!words.length) return []
 
@@ -55,6 +63,15 @@ export function splitWordsIntoSentences(words: Word[] = []) {
   return sentences
 }
 
+/**
+ * Produce a normalized copy of a sentence represented as an array of word objects.
+ *
+ * The returned array is a shallow-cloned transformation of `words` with these normalizations applied in order:
+ * capitalize the first word, normalize the pronoun "I", remove spaces before commas, and ensure the sentence ends with punctuation.
+ *
+ * @param words - The sentence as an array of word objects; the input array and its objects are not mutated.
+ * @returns A new array of word objects representing the normalized sentence.
+ */
 function normalizeSentence(words: Word[]): Word[] {
   let result = words.map(w => ({ ...w })) // clone
 
@@ -66,6 +83,12 @@ function normalizeSentence(words: Word[]): Word[] {
   return result
 }
 
+/**
+ * Capitalize the first word of a sentence.
+ *
+ * @param words - Array of word objects representing a sentence; the array is mutated in place.
+ * @returns The input array with the first word's `text` updated so its initial character is uppercase. If the array is empty, it is returned unchanged.
+ */
 function capitalizeFirstWord(words: Word[]): Word[] {
   if (!words.length) return words
 
@@ -78,6 +101,14 @@ function capitalizeFirstWord(words: Word[]): Word[] {
   return words
 }
 
+/**
+ * Normalize occurrences of the pronoun "I" in a sequence of word objects.
+ *
+ * Converts standalone "i" to "I" and transforms tokens that start with "i'" or "i’" (e.g., "i'm", "i’ve") to start with "I" while preserving the rest of the token.
+ *
+ * @param words - The array of word objects to normalize
+ * @returns A new array of word objects with the pronoun "I" capitalized where applicable
+ */
 function capitalizePronounI(words: Word[]): Word[] {
   return words.map(w => {
     let text = w.text
@@ -91,6 +122,12 @@ function capitalizePronounI(words: Word[]): Word[] {
   })
 }
 
+/**
+ * Remove any spaces immediately preceding commas in each word's text.
+ *
+ * @param words - The list of word objects to normalize
+ * @returns The updated list of words with spaces before commas removed in each `text`
+ */
 function normalizeComma(words: Word[]): Word[] {
   return words.map(w => {
     let text = w.text
@@ -102,6 +139,11 @@ function normalizeComma(words: Word[]): Word[] {
   })
 }
 
+/**
+ * Ensure the last word in the array ends with a sentence-ending punctuation mark.
+ *
+ * @returns The input `words` array where the final word's `text` is appended with `.` if it did not already end with `.`, `!`, or `?`.
+ */
 function ensureEndingPunctuation(words: Word[]): Word[] {
   if (!words.length) return words
 
