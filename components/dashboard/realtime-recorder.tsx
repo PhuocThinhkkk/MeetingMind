@@ -14,15 +14,15 @@ import {
 } from 'lucide-react'
 import RealTimeTranscriptionPage from './realtime-view-transcription'
 import { useRecorder } from '@/components/context/realtime-recorder-context'
-import { SaveTranscriptInput } from '@/types/transcription.db'
-import { useAuth } from '@/hooks/use-auth'
-import { formatDuration } from '@/lib/utils'
-import { toast } from 'sonner'
+import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
+import { formatDuration } from '@/lib/ui-format/time-format'
+import { toast } from '@/hooks/use-toast'
 import { LoadingOverlay } from '../loading-overlay'
+import { useUploadController } from '@/hooks/use-upload-controller'
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (
-    audioBlob: Blob,
+    audioBlob: File,
     transcription: SaveTranscriptInput
   ) => Promise<void>
 }
@@ -36,10 +36,8 @@ interface RealtimeRecorderProps {
 export function RealtimeRecorder({
   onTranscriptionComplete,
 }: RealtimeRecorderProps) {
-  const { user } = useAuth()
   const [showTranscription, setShowTranscription] = useState(false)
-  const [isStopping, setIsStopping] = useState(false)
-  const [audioBlobBackUp, setAudioBlobBackUp] = useState<Blob | null>(null)
+  const uploadCtrl = useUploadController(onTranscriptionComplete)
   const {
     transcriptWords,
     translateWords,
@@ -51,7 +49,6 @@ export function RealtimeRecorder({
     status,
   } = useRecorder()
   const [duration, setDuration] = useState(0)
-  const [isRetry, setIsRetry] = useState(false)
 
   useEffect(() => {
     if (!sessionStartTime || !isRecording) {
@@ -72,48 +69,27 @@ export function RealtimeRecorder({
   }
 
   /**
-   * Stops the active recording, uploads the captured audio with its transcription, and finalizes UI state.
+   * Stop the active recording, upload the captured audio with its transcription, and finalize the recorder UI.
    *
-   * If an audio blob is produced it will be backed up and passed, along with the current transcription words, to `onTranscriptionComplete`. On successful upload the component state is reset and a success toast is shown. On failure the function logs the error, shows an error toast, leaves a retryable backup, and sets the retry state.
+   * If no audio is available, displays a destructive toast and aborts. Otherwise uploads the audio and transcription;
+   * when the upload completes and the controller is idle the component UI is reset.
    */
   async function handleStopRecording() {
-    try {
-      if (isStopping) {
-        log.warn('Already stopping the recording, please wait.')
-        return
-      }
-      setIsStopping(true)
-      if (!user) {
-        log.error('User not authenticated')
-        setIsStopping(false)
-        return
-      }
-
-      let audioBlob = stopRecording()
-      if (audioBlob) {
-        setAudioBlobBackUp(audioBlob)
-      }
-
-      if (!audioBlob) {
-        log.error('No audio blob available on stop recording')
-        setIsStopping(false)
-        return
-      }
-
-      log.info(`${audioBlob}`)
-      const transcription = transcriptWords
-      await onTranscriptionComplete(audioBlob, transcription)
+    const audioBlob = stopRecording()
+    if (!audioBlob) {
+      toast({
+        title: "Error",
+        description: "Audio not found when stop recording.",
+        variant: 'destructive'
+      })
+      return
+    }
+    await uploadCtrl.upload(audioBlob, transcriptWords)
+    if (uploadCtrl.state === 'idle') {
       handleCloseAll()
-      toast.success(
-        'Upload your audio successfully, you can check out the history page'
-      )
-    } catch (e) {
-      log.error(`${e}`)
-      toast.error('Can not upload your audio')
-      setIsStopping(false)
-      setIsRetry(true)
     }
   }
+
 
   /**
    * Reset recorder-related state to idle and hide any open transcription UI.
@@ -121,62 +97,10 @@ export function RealtimeRecorder({
    * Clears the retry flag and backed-up audio blob, hides the live transcription view, resets the session start time, and clears the stopping state.
    */
   function handleCloseAll() {
-    setIsRetry(false)
-    setAudioBlobBackUp(null)
     setShowTranscription(false)
     setSessionStartTime(null)
-    setIsStopping(false)
-    setShowTranscription(false)
   }
 
-  /**
-   * Retry uploading the most recently recorded audio and process its transcription.
-   *
-   * Attempts to resend a saved audio blob and its transcription; on success clears recorder state and shows a success notification, on failure sets the retry state and shows an error notification.
-   *
-   * Early exits:
-   * - If a stop/upload is already in progress, the retry is aborted.
-   * - If the user is not authenticated, the retry is aborted.
-   * - If there is no saved audio blob, the retry sets the retry state and is aborted.
-   *
-   * Side effects:
-   * - Toggles internal stopping and retry flags.
-   * - Triggers notifications for success or failure.
-   */
-  async function handleRetry() {
-    try {
-      if (isStopping) {
-        log.warn('Already stopping the recording, please wait.')
-        return
-      }
-      setIsStopping(true)
-      if (!user) {
-        log.error('User not authenticated')
-        setIsStopping(false)
-        return
-      }
-
-      if (!audioBlobBackUp) {
-        log.error('No audio blob available on stop recording')
-        setIsRetry(true)
-        setIsStopping(false)
-        return
-      }
-
-      log.info(`${audioBlobBackUp}`)
-      const transcription = transcriptWords
-      await onTranscriptionComplete(audioBlobBackUp, transcription)
-      handleCloseAll()
-      toast.success(
-        'Upload your audio successfully, you can check out the history page'
-      )
-    } catch (e) {
-      log.error(`${e}`)
-      toast.error('Can not upload your audio')
-      setIsStopping(false)
-      setIsRetry(true)
-    }
-  }
 
   /**
    * Selects the Tailwind CSS class string used for the status badge based on the current recorder status.
@@ -243,11 +167,10 @@ export function RealtimeRecorder({
 
             <div>
               <div
-                className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
-                  isRecording
-                    ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                    : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
-                }`}
+                className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${isRecording
+                  ? 'bg-red-500 hover:bg-red-600 animate-pulse'
+                  : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
+                  }`}
               >
                 {status === 'connecting' ? (
                   <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
@@ -329,12 +252,11 @@ export function RealtimeRecorder({
         />
       </Card>
       <LoadingOverlay
-        isLoading={isStopping}
+        state={uploadCtrl.state}
         message="We are uploading your audio pls wait for a bit."
-        isRetry={isRetry}
-        retryMessage="There was something wrong when uploading your audio, please try again."
-        onRetry={handleRetry}
-        onDismiss={handleCloseAll}
+        errorMessage="There was something wrong when uploading your audio, please try again."
+        onRetry={() => uploadCtrl.retry(transcriptWords)}
+        onDismiss={uploadCtrl.dismiss}
       />
     </>
   )

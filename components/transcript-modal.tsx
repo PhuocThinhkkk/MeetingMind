@@ -10,8 +10,8 @@ import { TranscriptDetails } from '@/components/transcript-details'
 import { useRouter } from 'next/navigation'
 import { FileAudio, Clock, HardDrive } from 'lucide-react'
 import { StatusBadge } from '@/components/status-badge'
-import { AudioFile } from '@/types/transcription.db'
-import { formatDate, formatDuration, formatFileSize } from '@/lib/utils'
+import { AudioFile } from '@/types/transcriptions/transcription.db'
+import { formatDate, formatDuration, formatFileSize } from '@/lib/ui-format/time-format'
 import { useState, useRef } from 'react'
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
@@ -21,6 +21,7 @@ type TranscriptModalProps = {
 }
 
 /**
+ * THIS FILE GONNA BE REMOVE SOON
  * Render a modal dialog showing details and transcript for an audio file.
  *
  * Displays the audio title, creation date, transcription status, metadata (duration, file size, MIME type),
@@ -220,7 +221,9 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
 
             <audio
               ref={audioRef}
-              src={audio.url}
+              src={
+                // @ts-ignore
+                audio.url}
               className="hidden"
               onEnded={handleEnded}
               onLoadedMetadata={handleLoadedMetadata}

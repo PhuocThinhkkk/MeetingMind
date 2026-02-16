@@ -5,7 +5,7 @@ import {
   deleteAudioById,
 } from '@/lib/queries/browser/audio-operations'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
-import { getAudioDuration } from '@/lib/transcriptionUtils'
+import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
