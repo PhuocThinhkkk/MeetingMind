@@ -53,7 +53,7 @@ export async function POST(req: NextRequest) {
         {
           error: reason,
         },
-        { status: 500 }
+        { status: 403 }
       )
     }
 

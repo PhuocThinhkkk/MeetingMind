@@ -5,7 +5,7 @@ export type AudioFile = {
   id: string
   user_id: string
   name: string
-  url: string
+  path: string
   duration: number
   file_size: number
   mime_type: string
@@ -44,7 +44,7 @@ export type AudioFileStatus = 'pending' | 'processing' | 'done' | 'failed'
 export type AudioFileInsertInput =
   Database['public']['Tables']['audio_files']['Insert']
 export type AudioFileWithTranscriptNested = AudioFileRow & {
-  transcript: TranscriptRow
+  transcript?: TranscriptRow
 }
 export type TranscriptRow = Database['public']['Tables']['transcripts']['Row']
 export type TranscriptWordRow =

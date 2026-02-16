@@ -34,7 +34,7 @@ export function TranscriptTab() {
 
     useEffect(() => {
         fetchAudioUrl()
-    }, [audioFile])
+    }, [audioFile.id])
 
     /**
      * Obtains a presigned download URL for the current audio file and stores it in component state.

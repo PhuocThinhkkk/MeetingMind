@@ -62,11 +62,12 @@ export async function fetchTriggerTranscript(
     body: JSON.stringify(input),
   })
   if (!res.ok) {
+    const body = await res.json().catch(() => null)
     throw new Error(
-      `Error when trigger transcript: ${(await res.json()).error}`
+      `Error when creating url upload: ${body?.error ?? res.statusText}`
     )
   }
-  const data: CreateUploadUrlResult = await res.json()
+  const data: TriggerTranscriptBody = await res.json()
   return data
 }
 

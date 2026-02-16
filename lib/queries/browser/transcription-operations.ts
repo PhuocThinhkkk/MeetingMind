@@ -33,11 +33,13 @@ export async function saveTranscript(
     })
     .select()
     .single()
-  if (error) {
-    log.error('Error saving transcript:', error)
+
+  if (error || !data) {
+    log.error('Error saving transcript:', { error, data })
     throw error
   }
-  return data as Transcript
+
+  return data
 }
 
 /**
