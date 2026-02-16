@@ -21,6 +21,7 @@ type TranscriptModalProps = {
 }
 
 /**
+ * THIS FILE GONNA BE REMOVE SOON
  * Render a modal dialog showing details and transcript for an audio file.
  *
  * Displays the audio title, creation date, transcription status, metadata (duration, file size, MIME type),
@@ -220,7 +221,9 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
 
             <audio
               ref={audioRef}
-              src={audio.url}
+              src={
+                // @ts-ignore
+                audio.url}
               className="hidden"
               onEnded={handleEnded}
               onLoadedMetadata={handleLoadedMetadata}

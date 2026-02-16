@@ -1,4 +1,7 @@
 export function validateFilePathOwner(path: string, userId: string) {
+  if (path.includes('..') || path.includes('//')) {
+    return { allowed: false, reason: 'Invalid path.' }
+  }
   if (
     !path.startsWith(`uploads/${userId}/`) &&
     !path.startsWith(`recordings/${userId}/`)

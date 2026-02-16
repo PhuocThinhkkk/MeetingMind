@@ -12,17 +12,6 @@ import { CreateUploadUrlResult } from '@/types/transcriptions/transcription.stor
 export async function getAudioHistory(
   userId: string
 ): Promise<AudioFileWithTranscriptNested[]> {
-  // Check if Supabase is configured
-  if (
-    !process.env.NEXT_PUBLIC_SUPABASE_URL ||
-    !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
-  ) {
-    log.error(
-      '❌ Supabase not configured! Please set NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY in .env.local'
-    )
-    return []
-  }
-
   const { data, error } = await supabase
     .from('audio_files')
     .select(
@@ -40,7 +29,7 @@ export async function getAudioHistory(
   }
   const formatted = data?.map(a => ({
     ...a,
-    transcript: a.transcript?.[0] ?? null,
+    transcript: a.transcript?.[0],
   }))
 
   return formatted ?? []
@@ -107,7 +96,7 @@ export async function uploadAudioFileUsingPath(uploadUrl: string, file: File) {
     body: file,
   })
   if (!res.ok) {
-    log.error('Error in upload file to storage: ', { res })
+    log.error('Error in upload file to storage.')
     throw new Error('Can not upload file ')
   }
 }

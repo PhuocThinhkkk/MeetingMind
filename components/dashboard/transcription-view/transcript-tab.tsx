@@ -34,7 +34,7 @@ export function TranscriptTab() {
 
     useEffect(() => {
         fetchAudioUrl()
-    }, [audioFile])
+    }, [audioFile.id])
 
     async function fetchAudioUrl() {
         try {
