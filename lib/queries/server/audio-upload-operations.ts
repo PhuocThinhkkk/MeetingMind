@@ -11,6 +11,13 @@ import {
   CreateUploadUrlResult,
 } from '@/types/transcriptions/transcription.storage.upload'
 
+/**
+ * Insert a new row into the `audio_files` table and return the inserted record.
+ *
+ * @param audioFileInput - Object containing fields for the new audio file record
+ * @returns The inserted `AudioFileRow`
+ * @throws Error if the insert fails or the inserted row is not returned
+ */
 export async function insertAudioFile(audioFileInput: AudioFileInsertInput) {
   const { data: audio, error: insertError } = await supabaseAdmin
     .from('audio_files')
@@ -24,6 +31,14 @@ export async function insertAudioFile(audioFileInput: AudioFileInsertInput) {
   return audio as AudioFileRow
 }
 
+/**
+ * Create a signed storage upload URL and return its path, token, and content type.
+ *
+ * @param params - Object containing `userId`, `fileName`, and `fileType` used to build the storage path and response
+ * @param isUpload - If `true`, places the file under `uploads/{userId}`, otherwise under `recordings/{userId}`
+ * @returns An object with `path` (storage path), `signedUrl` (temporary upload URL), `token` (upload token), and `contentType` (original file type)
+ * @throws Error if creating the signed upload URL fails
+ */
 export async function createAudioUploadUrl(
   params: CreateUploadUrlParams,
   isUpload: boolean
@@ -54,6 +69,14 @@ export async function createAudioUploadUrl(
   }
 }
 
+/**
+ * Retrieve the size in bytes of a file stored at the specified bucket path.
+ *
+ * @param bucket - The storage bucket name
+ * @param path - The full path to the file including filename
+ * @returns The file size in bytes, or `0` if the size metadata is unavailable
+ * @throws When the storage request fails or the specified file is not found
+ */
 export async function getStorageFileSize(
   bucket: string,
   path: string
@@ -101,6 +124,14 @@ export async function findAudioFileByJobId(jobId: string) {
 
   return audio as AudioFileRow
 }
+/**
+ * Set the AssemblyAI job ID on an existing audio file record.
+ *
+ * @param audioId - The ID of the audio file to update
+ * @param jobId - The AssemblyAI job ID to associate with the audio file
+ * @returns The updated audio file row
+ * @throws Error if the audio file does not exist or the update failed
+ */
 export async function updateAudioFileByJobId(audioId: string, jobId: string) {
   const { data: audio, error } = await supabaseAdmin
     .from('audio_files')
@@ -118,6 +149,13 @@ export async function updateAudioFileByJobId(audioId: string, jobId: string) {
   return audio as AudioFileRow
 }
 
+/**
+ * Fetches the audio_files row for the given audio ID.
+ *
+ * @param audioId - The ID of the audio file to retrieve
+ * @returns The matching audio file row, or `undefined` if no row exists for the provided ID
+ * @throws The original error if the database query fails
+ */
 export async function getAudioById(audioId: string) {
   const { data: audio, error: e } = await supabaseAdmin
     .from('audio_files')
@@ -132,11 +170,11 @@ export async function getAudioById(audioId: string) {
 }
 
 /**
- * Finalize an audio record by saving its transcript and marking its transcription status as done.
+ * Finalizes an audio record by saving its transcript and word-level transcription, then marks its transcription_status as 'done'.
  *
- * @param audio - The audio record to update; its `id` is used to link the transcript and update status.
- * @param transcript - Transcript data with shape `{ text: string, language_code?: string, confidence?: number }`.
- * @throws The database insert error when inserting the transcript fails.
+ * @param audio - Audio record whose `id` is used to link the created transcript and to update the audio row.
+ * @param transcript - AssemblyAI transcript payload; `text`, optional `language_code`, `confidence`, and `words` are used to create records.
+ * @throws The database insertion error if inserting the transcript or the transcription words fails.
  */
 export async function updateAudioComplete(
   audio: AudioFileRow,

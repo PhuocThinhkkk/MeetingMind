@@ -1,5 +1,13 @@
 import { log } from '@/lib/logger'
 
+/**
+ * Registers an audio file with AssemblyAI and configures a webhook for transcript delivery.
+ *
+ * @param audioUrl - The publicly accessible URL of the audio file to transcribe
+ * @returns The AssemblyAI transcript job object returned by the API
+ * @throws Error if the environment variables ASSEMBLY_API_KEY, NEXT_PUBLIC_APP_URL, or ASSEMBLY_WEBHOOK_SECRET are missing
+ * @throws Error if AssemblyAI responds with a non-2xx status (error message includes the HTTP status)
+ */
 export async function createAssemblyAudioUploadWithWebhook(audioUrl: string) {
   const [ASSEMBLY_KEY, BASE_URL, WEBHOOK_SECRET] = [
     process.env.ASSEMBLY_API_KEY,

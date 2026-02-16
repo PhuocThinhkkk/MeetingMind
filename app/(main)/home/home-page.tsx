@@ -65,6 +65,14 @@ export default function HomePage() {
   }
 
 
+  /**
+   * Upload an audio file for the current user and open its transcription view on success.
+   *
+   * While the upload is in progress this sets the uploading state to true and ensures it is reset when finished.
+   * If no authenticated user is available the function returns without performing an upload.
+   *
+   * @param file - The audio `File` to upload.
+   */
   async function handleFileUpload(file: File) {
     if (!user) {
       log.error('User not authenticated')
@@ -85,6 +93,14 @@ export default function HomePage() {
     }
   }
 
+  /**
+   * Uploads a completed realtime transcription (audio file and word-level transcript) and opens its transcription view.
+   *
+   * This sets the uploading state while the upload is in progress and navigates to the uploaded audio's transcription view on success.
+   *
+   * @param file - The recorded audio File to upload
+   * @param transcriptionWords - Array of word-level realtime transcription entries to include with the upload
+   */
   async function handleRealtimeTranscriptionComplete(file: File, transcriptionWords: RealtimeTranscriptionWord[]) {
     if (!user) {
       log.error('User not authenticated')

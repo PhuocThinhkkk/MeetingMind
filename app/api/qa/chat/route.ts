@@ -5,6 +5,11 @@ import { getLLM } from '@/types/llm/llm-factory'
 import { buildQAPrompt } from '@/types/llm/prompt-builder'
 import { QALogResult } from '@/types/llm/llm-abstract'
 
+/**
+ * Handles POST requests to analyze a transcript and answer a question using an LLM.
+ *
+ * @returns On success, a 200 JSON response with `{ success: true, answer, qa }`. Responds with 401 when unauthorized, 400 for missing `question` or `transcript`, and 500 on server error.
+ */
 export async function POST(req: NextRequest) {
   try {
     const user = await getUserAuthInSupabaseToken()

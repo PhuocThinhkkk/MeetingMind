@@ -7,6 +7,13 @@ import {
   waitForTranscriptionDone,
 } from './utils'
 import { log } from '@/lib/logger'
+/**
+ * Orchestrates uploading an audio file, triggering its transcription, waiting for transcription to finish, and initiating analysis.
+ *
+ * @param file - The audio File to upload and process.
+ * @param userId - Identifier of the user performing the upload.
+ * @returns An object containing `audio` — the uploaded audio metadata as returned by the upload service.
+ */
 export async function fileUploadPineline(file: File, userId: string) {
   try {
     const sanitizedName = sanitizedFileName(file.name)

@@ -1,6 +1,13 @@
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { log } from '@/lib/logger'
 
+/**
+ * Retrieve events and the first summary record associated with an audio ID.
+ *
+ * @param audioId - The audio identifier to filter events and summaries by.
+ * @returns An object with `summary` set to the first matching summary record (or `undefined`) and `events` as the array of matching event records.
+ * @throws If a database query for events or summaries fails, the corresponding error is thrown.
+ */
 export async function getEventAndSumariesByAudioId(audioId: string) {
   const { data: events, error: eventError } = await supabase
     .from('events')

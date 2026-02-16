@@ -10,11 +10,12 @@ const ALLOWED_AUDIO_TYPES = [
 const allowedExtensions = ['.mp3', '.wav', '.webm', '.m4a', '.mp4']
 
 /**
- * Asserts that the provided value is a File and that its MIME type is an allowed audio type.
+ * Validate that the provided value is a File representing an allowed audio file.
  *
  * @param file - The uploaded file to validate; may be `null`.
  * @throws `Error` with message "No file upload" if `file` is `null` or `undefined`.
- * @throws `Error` with message "Invalid file type" if `file.type` is not in the allowed audio MIME types.
+ * @throws `Error` with message "Invalid file type" if `file.type` is not one of the allowed audio MIME types.
+ * @throws `Error` with message "Invalid file extension" if the file's extension is not in the allowed extensions list.
  */
 export function validateAudioFile(file: File | null): asserts file is File {
   if (!file) {
