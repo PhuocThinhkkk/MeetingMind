@@ -5,7 +5,7 @@ import { useState } from 'react'
 import { StatusBadge } from '@/components/status-badge'
 import { useRouter } from 'next/navigation'
 import TimeDisplay from '@/components/time-display'
-import { AudioFile } from '@/types/transcriptions/transcription.db'
+import { AudioFileRow } from '@/types/transcriptions/transcription.db'
 import { formatDuration, formatFileSize } from '@/lib/ui-format/time-format'
 import { FileAudio, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -38,7 +38,7 @@ import {
 import { toast } from 'sonner'
 
 type CompactAudioCardProps = {
-  audio: AudioFile
+  audio: AudioFileRow
 }
 
 /**
@@ -56,7 +56,7 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
   const [showRenameDialog, setShowRenameDialog] = useState(false)
 
   const handleClick = () => {
-    router.push(`?audioId=${audio.id}`)
+    router.push(`?audioId=${audio.id}`, { scroll: false })
   }
 
   const handleRename = (e: React.MouseEvent) => {
@@ -114,11 +114,11 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
         </div>
 
         <div className="flex items-start gap-3 pl-0">
-          <StatusBadge status={audio.transcription_status} />
+          <StatusBadge status={audio.transcription_status ?? "unknown"} />
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <TimeDisplay dateString={audio.created_at} />
-            <span>{formatDuration(audio.duration)}</span>
-            <span>{formatFileSize(audio.file_size)}</span>
+            <TimeDisplay dateString={audio.created_at ?? "Unknown time"} />
+            <span>{formatDuration(audio.duration ?? 0)}</span>
+            <span>{formatFileSize(audio.file_size ?? 0)}</span>
           </div>
         </div>
       </Card>
@@ -153,7 +153,7 @@ function ConfirmDeletingDialog({
 }: {
   showDeleteDialog: boolean
   setShowDeleteDialog: (arg: boolean) => void
-  audio: AudioFile
+  audio: AudioFileRow
 }) {
   const { audios, setAudios } = useAudio()
   /**
@@ -220,7 +220,7 @@ function RenameInputDialog({
 }: {
   showRenameDialog: boolean
   setShowRenameDialog: (arg: boolean) => void
-  audio: AudioFile
+  audio: AudioFileRow
 }) {
   const { setAudios } = useAudio()
   const [newName, setNewName] = useState(audio.name)

@@ -1,11 +1,11 @@
 'use client'
 
 import React from 'react'
-import { AudioFile } from '@/types/transcriptions/transcription.db'
+import { AudioFileRow } from '@/types/transcriptions/transcription.db'
 
 type AudioContextType = {
-  audios: AudioFile[]
-  setAudios: React.Dispatch<React.SetStateAction<AudioFile[]>>
+  audios: AudioFileRow[]
+  setAudios: React.Dispatch<React.SetStateAction<AudioFileRow[]>>
 }
 
 const AudioContext = React.createContext<AudioContextType | undefined>(
@@ -19,7 +19,7 @@ const AudioContext = React.createContext<AudioContextType | undefined>(
  * @returns The React element that supplies the audio context to its descendants
  */
 export function AudioProvider({ children }: { children: React.ReactNode }) {
-  const [audios, setAudios] = React.useState<AudioFile[]>([])
+  const [audios, setAudios] = React.useState<AudioFileRow[]>([])
 
   return (
     <AudioContext.Provider value={{ audios, setAudios }}>

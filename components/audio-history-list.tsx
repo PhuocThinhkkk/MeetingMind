@@ -1,10 +1,10 @@
 'use client'
 
 import { CompactAudioCard } from '@/components/compact-audio-card'
-import { AudioFile } from '@/types/transcriptions/transcription.db'
+import { AudioFileRow } from '@/types/transcriptions/transcription.db'
 
 type AudioHistoryListProps = {
-  audioHistory: AudioFile[]
+  audioHistory: AudioFileRow[]
 }
 
 /**
@@ -12,7 +12,7 @@ type AudioHistoryListProps = {
  *
  * Groups items into labeled day buckets ("Today", "Yesterday", a short date, or "Unknown Date"), sorts those day groups by date descending, and renders each group's audios as CompactAudioCard entries.
  *
- * @param audioHistory - Array of AudioFile objects to display in the history list.
+ * @param audioHistory - Array of AudioFileRow objects to display in the history list.
  * @returns The JSX element containing the grouped and sorted audio history.
  */
 export function AudioHistoryList({ audioHistory }: AudioHistoryListProps) {
@@ -49,11 +49,11 @@ export function AudioHistoryList({ audioHistory }: AudioHistoryListProps) {
 /**
  * Group audio files into labeled day buckets (e.g., "Today", "Yesterday", a locale-formatted date, or "Unknown Date").
  *
- * @param audioFiles - Array of AudioFile objects to group; items with missing or invalid `created_at` are assigned to the "Unknown Date" bucket.
- * @returns An object mapping day label strings to arrays of AudioFile objects for that label. Dates are formatted using the "en-US" locale with a short month and numeric day; the year is included only when it differs from the current year.
+ * @param audioFiles - Array of AudioFileRow objects to group; items with missing or invalid `created_at` are assigned to the "Unknown Date" bucket.
+ * @returns An object mapping day label strings to arrays of AudioFileRow objects for that label. Dates are formatted using the "en-US" locale with a short month and numeric day; the year is included only when it differs from the current year.
  */
-function groupByDay(audioFiles: AudioFile[]) {
-  const groups: { [key: string]: AudioFile[] } = {}
+function groupByDay(audioFiles: AudioFileRow[]) {
+  const groups: { [key: string]: AudioFileRow[] } = {}
 
   audioFiles.forEach(audio => {
     if (!audio.created_at) {

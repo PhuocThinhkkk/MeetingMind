@@ -6,8 +6,8 @@ import SideBarHeader from '@/components/side-bar-header'
 export default function HistoryPage() {
   return (
     <>
-      <SideBarHeader header="Transcription History" />
-      <div className="container mx-auto px-4 py-2 max-w-6xl">
+      <SideBarHeader header="Audio History" />
+      <div className="container mx-auto px-12 py-2 ">
         {' '}
         <div className="mb-4"></div>
         <Suspense fallback={<div>Loading...</div>}>

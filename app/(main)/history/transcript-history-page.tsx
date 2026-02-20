@@ -3,14 +3,16 @@ import { AudioHistoryList } from '@/components/audio-history-list'
 import { log } from '@/lib/logger'
 import { useAuth } from '@/hooks/use-auth'
 import { HistoryToolbar } from '@/components/history-toolbar'
-import { TranscriptModal } from '@/components/transcript-modal'
 import { getAudioHistory } from '@/lib/queries/browser/audio-operations'
 import React from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import { useAudio } from '@/components/context/audios-list-context'
+import { TranscriptionViewProvider } from '@/components/context/transcription-view-context'
+import { TranscriptionDialog } from '@/components/dashboard/transcription-view/transcription-main-view-dialog'
 
 export default function TranscriptHistoryPage() {
   const { audios, setAudios } = useAudio()
+  const router = useRouter()
   const { user } = useAuth()
 
   React.useEffect(() => {
@@ -72,7 +74,7 @@ export default function TranscriptHistoryPage() {
       const mappedStatus =
         statusMap[selectedStatus] || selectedStatus.toLowerCase()
       filtered = filtered.filter(
-        audio => audio.transcription_status.toLowerCase() === mappedStatus
+        audio => audio.transcription_status?.toLowerCase() === mappedStatus
       )
     }
 
@@ -85,6 +87,11 @@ export default function TranscriptHistoryPage() {
     ? audios.find(audio => audio.id === audioId)
     : null
 
+
+  async function handleCloseDialog() {
+    router.push("/history", { scroll: false })
+  }
+
   return (
     <>
       <HistoryToolbar
@@ -95,7 +102,14 @@ export default function TranscriptHistoryPage() {
       />
 
       <AudioHistoryList audioHistory={filteredAudios} />
-      {selectedAudio && <TranscriptModal audio={selectedAudio} />}
+      {selectedAudio &&
+        <TranscriptionViewProvider audioId={selectedAudio.id}>
+          <TranscriptionDialog
+            open={!!selectedAudio.id}
+            onClose={handleCloseDialog}
+          />
+        </TranscriptionViewProvider >
+      }
     </>
   )
 }
