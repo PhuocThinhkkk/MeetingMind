@@ -33,3 +33,13 @@ export async function getEventAndSumariesByAudioId(audioId: string) {
 
   return result
 }
+
+export async function getAllEventsByUserId() {
+  const { data: events, error } = await supabase.from('events').select('*')
+
+  if (error) {
+    log.error('query events error: ', { error, events })
+    throw error
+  }
+  return events
+}
