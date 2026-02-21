@@ -52,6 +52,8 @@ export type TranscriptWordRow =
 export type SummaryRow = Database['public']['Tables']['summaries']['Row']
 export type EventItemRow = Database['public']['Tables']['events']['Row']
 export type QALogRow = Database['public']['Tables']['qa_logs']['Row']
+export type GoogleTokenRow =
+  Database['public']['Tables']['google_tokens']['Row']
 
 export type TranscriptionDataUpload = {
   audioFile: AudioFileRow

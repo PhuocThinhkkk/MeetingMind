@@ -84,3 +84,19 @@ async function deleteAllExistingEventsByAudioId(audioId: string) {
     throw error
   }
 }
+export async function getEventById(eventId: string) {
+  const { data, error } = await supabaseAdmin
+    .from('events')
+    .select('*')
+    .eq('id', eventId)
+    .single()
+
+  if (!data || error) {
+    log.error('Error when query event: ', {
+      eventId,
+      error,
+    })
+    throw error
+  }
+  return data
+}
