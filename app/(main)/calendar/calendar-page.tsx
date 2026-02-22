@@ -1,5 +1,5 @@
 "use client"
-import CalendarEntry from "@/components/calendar/calendar-page";
+import CalendarEntry from "@/components/calendar/calendar-entry";
 import { useAuth } from "@/hooks/use-auth";
 import { toast } from "@/hooks/use-toast";
 import { getAllEventsByUserId } from "@/lib/queries/browser/events-sumaries-operations";

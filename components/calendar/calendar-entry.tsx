@@ -1,15 +1,38 @@
 'use client'
 
-import { useState, useMemo } from 'react'
+import { useState, useMemo, useEffect } from 'react'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import DatePicker from './date-picker'
 import DailyEvents from './daily-events'
 import NextEvent from './next-event'
 import UnsyncedEvents from './unsynced-events'
-import type { EventItemRow } from '@/types/transcriptions/transcription.db'
+import { GoogleTokenRow, type EventItemRow } from '@/types/transcriptions/transcription.db'
+import { getTokenByUserId } from '@/lib/queries/browser/calendar-token-operations'
+import { useAuth } from '@/hooks/use-auth'
+import GoogleSyncProfile from './gg-sync-profile'
+import { log } from '@/lib/logger'
 
 export default function CalendarEntry({ events }: { events: EventItemRow[] }) {
   const [selectedDate, setSelectedDate] = useState(new Date())
+  const [tokenCalendar, setTokenCalendar] = useState<GoogleTokenRow | null>(null)
+  const { user } = useAuth()
+
+
+  useEffect(() => {
+    fetchUserCalendarToken()
+  }, [user?.id])
+
+  async function fetchUserCalendarToken() {
+    try {
+      if (!user?.id) return
+      const token = await getTokenByUserId(user.id)
+      if (token) {
+        setTokenCalendar(token)
+      }
+    } catch (e) {
+      log.error("Error when query token: ", e)
+    }
+  }
 
   const selectedDateEvents = useMemo(() => {
     return events.filter(event => {
@@ -20,17 +43,19 @@ export default function CalendarEntry({ events }: { events: EventItemRow[] }) {
         eventDate.getFullYear() === selectedDate.getFullYear()
       )
     })
-  }, [selectedDate])
+  }, [selectedDate, events])
 
   const upcomingEvents = useMemo(() => {
     return events
       .filter(event => new Date(event.start_time) >= new Date())
       .sort((a, b) => new Date(a.start_time).getTime() - new Date(b.start_time).getTime())
-  }, [])
+  }, [events])
 
   const unsyncedEvents = useMemo(() => {
     return events.filter(event => !event.added_to_google_calendar)
-  }, [])
+  }, [events])
+
+  log.info("event: ", { unsyncedEvents, upcomingEvents, events })
 
   return (
     <div className="mx-auto max-w-8xl">
@@ -54,6 +79,9 @@ export default function CalendarEntry({ events }: { events: EventItemRow[] }) {
               <NextEvent event={upcomingEvents[0]} />
             </div>
           )}
+          <div className="rounded-2xl bg-white p-6 shadow-sm border border-slate-200">
+            <GoogleSyncProfile token={tokenCalendar} />
+          </div>
         </div>
 
         {/* Right Panel - Unsynced Events */}
