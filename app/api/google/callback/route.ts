@@ -6,6 +6,24 @@ import { NextResponse } from 'next/server'
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')
+  const error = searchParams.get('error')
+
+  if (error) {
+    log.error('OAuth error:', error)
+    return NextResponse.json(
+      { error: 'OAuth authorization failed' },
+      { status: 400 }
+    )
+  }
+
+  if (!code) {
+    log.error('Missing authorization code')
+    return NextResponse.json(
+      { error: 'Missing authorization code' },
+      { status: 400 }
+    )
+  }
+
   const user = await getUserAuthInSupabaseToken()
 
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -20,7 +38,24 @@ export async function GET(req: Request) {
     }),
   })
 
+  if (!tokenRes.ok) {
+    const errorBody = await tokenRes.text()
+    log.error('Token exchange failed:', errorBody)
+    return NextResponse.json(
+      { error: 'Failed to exchange authorization code' },
+      { status: 500 }
+    )
+  }
+
   const tokens = await tokenRes.json()
+
+  if (!tokens.access_token) {
+    log.error('Invalid token response:', tokens)
+    return NextResponse.json(
+      { error: 'Invalid token response from Google' },
+      { status: 500 }
+    )
+  }
 
   await supabaseAdmin.from('google_tokens').upsert({
     user_id: user!.id,

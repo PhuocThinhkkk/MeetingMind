@@ -1,11 +1,23 @@
 import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
 import { EventItemRow } from '@/types/transcriptions/transcription.db'
 
-export async function updateRefreshTokenSupabase(refreshed: any) {
-  const { error } = await supabaseAdmin.from('google_tokens').update({
-    access_token: refreshed.access_token,
-    expiry_date: Date.now() + refreshed.expires_in * 1000,
-  })
+interface RefreshedToken {
+  access_token: string
+  expires_in: number
+  id_token: string
+}
+export async function updateRefreshTokenSupabase(
+  userId: string,
+  refreshed: RefreshedToken
+) {
+  const { error } = await supabaseAdmin
+    .from('google_tokens')
+    .update({
+      access_token: refreshed.access_token,
+      expiry_date: Date.now() + refreshed.expires_in * 1000,
+    })
+    .eq('user_id', userId)
+
   if (error) {
     throw error
   }

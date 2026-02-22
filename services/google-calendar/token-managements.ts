@@ -8,7 +8,16 @@ import {
   updateRefreshTokenSupabase,
 } from '@/lib/queries/server/google-token-operations'
 
-export async function refreshAccessToken(refreshToken: string) {
+export type GoogleRefreshTokenResponse = {
+  access_token: string
+  expires_in: number
+  scope: string
+  token_type: 'Bearer'
+  id_token: string
+}
+export async function refreshAccessToken(
+  refreshToken: string
+): Promise<GoogleRefreshTokenResponse> {
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -20,7 +29,15 @@ export async function refreshAccessToken(refreshToken: string) {
     }),
   })
 
-  return res.json()
+  if (!res.ok) {
+    const error = await res.json()
+    throw new Error(
+      `Failed to refresh token: ${error.error_description ?? res.statusText}`
+    )
+  }
+
+  const data = await res.json()
+  return data as GoogleRefreshTokenResponse
 }
 
 export async function sendToGoogleCalendar(
@@ -41,13 +58,16 @@ export async function sendToGoogleCalendar(
     }
   )
 }
-export async function refreshTokenIfExpired(token: GoogleTokenRow) {
+export async function refreshTokenIfExpired(
+  userId: string,
+  token: GoogleTokenRow
+) {
   let accessToken = token.access_token
   if (Date.now() > token.expiry_date) {
     const refreshed = await refreshAccessToken(token.refresh_token)
 
     accessToken = refreshed.access_token
-    updateRefreshTokenSupabase(refreshed)
+    await updateRefreshTokenSupabase(userId, refreshed)
   }
   return accessToken
 }

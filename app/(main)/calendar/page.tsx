@@ -2,7 +2,7 @@ import { Suspense } from 'react'
 import SideBarHeader from '@/components/side-bar-header'
 import CalendarPage from './calendar-page'
 
-export default function HistoryPage() {
+export default function CalendarPageContainer() {
     return (
         <>
             <SideBarHeader header="Calendar" />

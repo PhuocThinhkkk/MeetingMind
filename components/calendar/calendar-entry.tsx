@@ -55,7 +55,6 @@ export default function CalendarEntry({ events }: { events: EventItemRow[] }) {
     return events.filter(event => !event.added_to_google_calendar)
   }, [events])
 
-  log.info("event: ", { unsyncedEvents, upcomingEvents, events })
 
   return (
     <div className="mx-auto max-w-8xl">

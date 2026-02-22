@@ -71,7 +71,7 @@ function RenderUnsyncedEvent({ event, setSyncedIds }: { event: EventItemRow, set
   const handleSync = async (eventId: string) => {
     try {
       setLoading(true)
-      const res = await fetch(`api/google/sync?event_id=${eventId}`, { method: "POST", credentials: "include" })
+      const res = await fetch(`/api/google/sync?event_id=${eventId}`, { method: "POST", credentials: "include" })
       if (!res.ok) {
         throw new Error("unable to sync event")
       }

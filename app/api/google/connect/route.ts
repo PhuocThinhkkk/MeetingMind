@@ -28,11 +28,10 @@ export async function GET(req: NextRequest) {
   // Store state in cookie to verify in callback
   response.cookies.set('google_oauth_state', state, {
     httpOnly: true,
-    secure: true,
+    secure: process.env.NODE_ENV === 'production',
     sameSite: 'lax',
     path: '/',
-    maxAge: 60 * 10, // 10 minutes
+    maxAge: 60 * 10, // 10 minutes,
   })
-
   return response
 }

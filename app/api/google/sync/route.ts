@@ -21,12 +21,16 @@ export async function POST(req: NextRequest) {
     }
 
     const token = await getTokenByUserId(user.id)
-    const access_token = await refreshTokenIfExpired(token)
+    const access_token = await refreshTokenIfExpired(user.id, token)
     const event = await getEventById(eventId)
-    await addEventToGoogleCalendar(access_token, event)
+    if (!event) {
+      return NextResponse.json({ error: 'Event not found' }, { status: 404 })
+    }
+    // TODO: handle query audio then verify
 
-    return Response.json({ success: true }, { status: 201 })
+    await addEventToGoogleCalendar(access_token, event)
+    return NextResponse.json({ success: true }, { status: 201 })
   } catch (e) {
-    return Response.json({ error: 'Sever error' }, { status: 500 })
+    return NextResponse.json({ error: 'Server error' }, { status: 500 })
   }
 }

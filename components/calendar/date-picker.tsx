@@ -68,6 +68,7 @@ export default function DatePicker({ selectedDate, onSelectDate }: DatePickerPro
             size="sm"
             onClick={handlePrevMonth}
             className="hover:cursor-pointer h-8 w-8 p-0"
+            aria-label="Previous month"
           >
             <ChevronLeft className="h-4 w-4" />
           </Button>
@@ -76,6 +77,7 @@ export default function DatePicker({ selectedDate, onSelectDate }: DatePickerPro
             size="sm"
             onClick={handleNextMonth}
             className="h-8 w-8 p-0"
+            aria-label="Next month"
           >
             <ChevronRight className="h-4 w-4" />
           </Button>
