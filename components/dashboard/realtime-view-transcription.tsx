@@ -48,7 +48,7 @@ export default function RealTimeTranscriptionPage({
     null
   )
   const [showTranscript, setShowTranscript] = useState(true)
-  const [showTranslate, setShowTranslate] = useState(true)
+  const [showTranslate, setShowTranslate] = useState(false)
 
   useEffect(() => {
     if (isVisible) {
@@ -151,6 +151,7 @@ export default function RealTimeTranscriptionPage({
         </div>
 
         {/* Action Buttons */}
+        {/*
         <div className="px-6 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -197,6 +198,7 @@ export default function RealTimeTranscriptionPage({
             </FeatureLockWrapper>
           </div>
         </div>
+*/}
 
         {/* Transcript/Translate Toggle */}
         <div className="px-6 pb-4 border-t pt-4">
@@ -211,15 +213,17 @@ export default function RealTimeTranscriptionPage({
                 <FileText className="w-3 h-3 mr-1" />
                 Transcript
               </Button>
-              <Button
+              {/*
+                < Button
                 variant={showTranslate ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setShowTranslate(!showTranslate)}
-                className="h-8"
+              size="sm"
+              onClick={() => setShowTranslate(!showTranslate)}
+              className="h-8"
               >
-                <Languages className="w-3 h-3 mr-1" />
-                Translate
-              </Button>
+              <Languages className="w-3 h-3 mr-1" />
+              Translate
+            </Button>
+*/}
             </div>
           </div>
         </div>
@@ -337,54 +341,56 @@ export default function RealTimeTranscriptionPage({
       </div>
 
       {/* Word Actions Panel */}
-      {selectedWordIndex !== null && showTranscript && (
-        <div className="px-8 py-4 border-t bg-gray-50">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center space-x-4">
-              <span className="text-lg font-medium text-gray-700">
-                "{words[selectedWordIndex]?.text}"
-              </span>
-              <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
-                Confidence:{' '}
-                {((words[selectedWordIndex]?.confidence || 0) * 100).toFixed(1)}
-                %
-              </span>
-              <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
-                {words[selectedWordIndex]?.start.toFixed(2)}s -{' '}
-                {words[selectedWordIndex]?.end.toFixed(2)}s
-              </span>
-            </div>
-            <div className="flex items-center space-x-3">
-              <Button
-                variant={
-                  highlightedWords.has(selectedWordIndex)
-                    ? 'default'
-                    : 'outline'
-                }
-                onClick={() => toggleHighlight(selectedWordIndex)}
-                size="sm"
-              >
-                <Highlighter className="w-3 h-3 mr-1" />
-                {highlightedWords.has(selectedWordIndex)
-                  ? 'Remove Highlight'
-                  : 'Highlight'}
-              </Button>
-              <Button
-                variant={
-                  questionedWords.has(selectedWordIndex) ? 'default' : 'outline'
-                }
-                onClick={() => toggleQuestion(selectedWordIndex)}
-                size="sm"
-              >
-                <HelpCircle className="w-3 h-3 mr-1" />
-                {questionedWords.has(selectedWordIndex)
-                  ? 'Remove Question'
-                  : 'Question'}
-              </Button>
+      {
+        selectedWordIndex !== null && showTranscript && (
+          <div className="px-8 py-4 border-t bg-gray-50">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center space-x-4">
+                <span className="text-lg font-medium text-gray-700">
+                  "{words[selectedWordIndex]?.text}"
+                </span>
+                <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
+                  Confidence:{' '}
+                  {((words[selectedWordIndex]?.confidence || 0) * 100).toFixed(1)}
+                  %
+                </span>
+                <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
+                  {words[selectedWordIndex]?.start.toFixed(2)}s -{' '}
+                  {words[selectedWordIndex]?.end.toFixed(2)}s
+                </span>
+              </div>
+              <div className="flex items-center space-x-3">
+                <Button
+                  variant={
+                    highlightedWords.has(selectedWordIndex)
+                      ? 'default'
+                      : 'outline'
+                  }
+                  onClick={() => toggleHighlight(selectedWordIndex)}
+                  size="sm"
+                >
+                  <Highlighter className="w-3 h-3 mr-1" />
+                  {highlightedWords.has(selectedWordIndex)
+                    ? 'Remove Highlight'
+                    : 'Highlight'}
+                </Button>
+                <Button
+                  variant={
+                    questionedWords.has(selectedWordIndex) ? 'default' : 'outline'
+                  }
+                  onClick={() => toggleQuestion(selectedWordIndex)}
+                  size="sm"
+                >
+                  <HelpCircle className="w-3 h-3 mr-1" />
+                  {questionedWords.has(selectedWordIndex)
+                    ? 'Remove Question'
+                    : 'Question'}
+                </Button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Bottom Controls */}
       <div className="p-8 border-t bg-white">
@@ -419,6 +425,6 @@ export default function RealTimeTranscriptionPage({
           </Button>
         </div>
       </div>
-    </div>
+    </div >
   )
 }

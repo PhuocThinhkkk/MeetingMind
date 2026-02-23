@@ -108,13 +108,13 @@ export async function getTranscriptWordNestedByAudioId(audioId: string) {
 `
     )
     .eq('audio_id', audioId)
-    .single()
 
   if (error) {
     throw new Error('Error when getting transcript words: ' + error.message)
   }
-  if (!data) {
-    throw new Error('No transcript found.')
+  if (!data?.[0]) {
+    log.error('No transcript found.')
+    return null
   }
-  return data
+  return data[0]
 }

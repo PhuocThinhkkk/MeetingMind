@@ -2,28 +2,29 @@
 
 import { useEffect, useState } from 'react'
 import { GoogleTokenRow } from '@/types/transcriptions/transcription.db'
-import { getGoogleUserProfile, UserInforGoogleCalendar } from '@/services/google-calendar/user-profile'
+import { requestGoogleUserProfile, UserInforGoogleCalendar } from '@/services/google-calendar/user-profile'
 import { Loader2, Calendar, Link2 } from 'lucide-react'
 import Image from 'next/image'
+import { log } from '@/lib/logger'
 
 interface Props {
     token?: GoogleTokenRow | null
 }
 
 export default function GoogleSyncProfile({ token }: Props) {
-    const [profile, setProfile] = useState<UserInforGoogleCalendar | null>(null)
+    const [profile, setProfile] = useState<UserInforGoogleCalendar | null | undefined>(undefined)
     const [loading, setLoading] = useState(false)
 
     useEffect(() => {
         if (!token?.access_token) return
 
         const fetchProfile = async () => {
+            setLoading(true)
             try {
-                setLoading(true)
-                const data = await getGoogleUserProfile(token.access_token)
+                const data = await requestGoogleUserProfile()
                 setProfile(data)
             } catch (error) {
-                console.error(error)
+                log.error("Error when get google profile: ", { error })
             } finally {
                 setLoading(false)
             }

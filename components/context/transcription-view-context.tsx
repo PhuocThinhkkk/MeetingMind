@@ -80,7 +80,7 @@ export function useTranscriptionViewData(audioId: string) {
 
     /** QA helpers (local-first, optimistic friendly) */
     const appendQaLog = useCallback((qaLog: QALogRow) => {
-        setQaLogs(prev => [qaLog, ...prev])
+        setQaLogs(prev => [...prev, qaLog])
     }, [])
 
     const replaceQaLogs = useCallback((logs: QALogRow[]) => {
@@ -128,8 +128,8 @@ type TranscriptionViewContextValue = {
     audioId: string
 
     audio: TranscriptionDataUpload['audioFile']
-    transcript: TranscriptionDataUpload['transcript']
-    summary?: TranscriptionDataUpload['summary'] | null
+    transcript: TranscriptionDataUpload['transcript'] | null
+    summary: TranscriptionDataUpload['summary'] | null
     events: TranscriptionDataUpload['events']
     qaLogs: TranscriptionDataUpload['qaLogs']
 
@@ -159,7 +159,7 @@ export function TranscriptionViewProvider({
         return null // or return <ErrorFallback error={view.error} />
     }
 
-    if (view.loading || !view.audio || !view.transcript) {
+    if (view.loading || !view.audio) {
         return null // or <Skeleton />
     }
     const value: TranscriptionViewContextValue = {

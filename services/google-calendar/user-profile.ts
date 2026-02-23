@@ -19,7 +19,19 @@ export async function getGoogleUserProfile(accessToken: string) {
   const data = await res.json()
   return data as UserInforGoogleCalendar
 }
+export async function requestGoogleUserProfile() {
+  const res = await fetch('/api/google/get-profile', {
+    method: 'POST',
+    credentials: 'include',
+  })
 
+  if (!res.ok) {
+    throw new Error('Failed to send req for Google profile')
+  }
+
+  const data = await res.json()
+  return data as UserInforGoogleCalendar
+}
 export type UserInforGoogleCalendar = {
   sub: string
   name: string
