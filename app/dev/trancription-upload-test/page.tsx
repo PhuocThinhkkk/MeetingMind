@@ -8,6 +8,7 @@ import { TranscriptionDataUpload } from '@/types/transcriptions/transcription.db
 import { getAudioById } from '@/lib/queries/browser/audio-operations'
 import { getTranscriptByAudioId, getTranscriptWordNestedByAudioId } from '@/lib/queries/browser/transcription-operations'
 import { getQaLogsByAudioId } from '@/lib/queries/browser/qa-log-operations'
+import { TranscriptionViewProvider } from '@/components/context/transcription-view-context'
 
 export default function TranscriptionTestPage() {
     const [open, setOpen] = useState(false)
@@ -116,11 +117,13 @@ export default function TranscriptionTestPage() {
             </p>
 
             {data && (
-                <TranscriptionDialog
-                    open={open}
-                    onClose={() => setOpen(false)}
-                    data={data}
-                />
+                <TranscriptionViewProvider audioId={data?.audioFile.id}>
+                    <TranscriptionDialog
+                        open={open}
+                        onClose={() => setOpen(false)}
+
+                    />
+                </TranscriptionViewProvider>
             )}
         </div>
     )
