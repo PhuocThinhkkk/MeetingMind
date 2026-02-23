@@ -22,6 +22,11 @@ export default function CalendarEntry({ events }: { events: EventItemRow[] }) {
     fetchUserCalendarToken()
   }, [user?.id])
 
+  /**
+   * Retrieve the current user's Google Calendar token and store it in component state.
+   *
+   * If there is no authenticated user id, the function returns without side effects.
+   */
   async function fetchUserCalendarToken() {
     try {
       if (!user?.id) return

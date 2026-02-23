@@ -8,6 +8,12 @@ import {
 } from '@/services/google-calendar/token-managements'
 import { NextRequest, NextResponse } from 'next/server'
 
+/**
+ * Adds the specified event to the authenticated user's Google Calendar using the `event_id` query parameter.
+ *
+ * @param req - Incoming NextRequest; must include `event_id` in the URL search params and an authenticated Supabase user session.
+ * @returns A NextResponse whose JSON body is `{ success: true }` with status `201` on success; on failure a JSON `{ error: string }` with an appropriate status code (`400`, `403`, `404`, or `500`) describing the error.
+ */
 export async function POST(req: NextRequest) {
   try {
     const searchParams = req.nextUrl.searchParams

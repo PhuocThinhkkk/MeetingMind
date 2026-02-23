@@ -5,6 +5,13 @@ import { GoogleTokenResponse } from '@/types/google-response/google.response.typ
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
+/**
+ * Handle Google's OAuth callback: validate state, exchange the authorization code for tokens,
+ * persist the tokens for the authenticated user, and redirect to the configured URL on success.
+ *
+ * @param req - Incoming request containing OAuth callback query parameters `code`, `state`, and `error`
+ * @returns A Response that redirects to the configured post-integration URL on success, or a JSON error response with an appropriate HTTP status on failure
+ */
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')

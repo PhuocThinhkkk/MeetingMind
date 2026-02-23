@@ -1,6 +1,11 @@
 import { NextRequest, NextResponse } from 'next/server'
 import crypto from 'crypto'
 
+/**
+ * Initiates Google OAuth2 authorization by generating a CSRF state, building the authorization URL, and redirecting the client to Google's consent screen.
+ *
+ * @returns A Next.js response that redirects to the Google OAuth2 authorization URL and includes an `httpOnly` cookie `google_oauth_state` containing the generated CSRF state (secure in production, SameSite=lax, path='/', maxAge=600 seconds).
+ */
 export async function GET(req: NextRequest) {
   // Generate CSRF protection state
   const state = crypto.randomBytes(16).toString('hex')

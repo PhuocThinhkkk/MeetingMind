@@ -34,6 +34,12 @@ export async function getEventAndSumariesByAudioId(audioId: string) {
   return result
 }
 
+/**
+ * Retrieve all event records from the events table.
+ *
+ * @returns An array of event records retrieved from the database.
+ * @throws The underlying database error when the query fails (the error is logged before being rethrown).
+ */
 export async function getAllEventsByUserId() {
   const { data: events, error } = await supabase.from('events').select('*')
 

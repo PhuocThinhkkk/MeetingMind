@@ -13,6 +13,11 @@ export default function CalendarPage() {
         fetchAllEvents()
     }, [user?.id])
 
+    /**
+     * Fetches calendar events for the current authenticated user and updates component state.
+     *
+     * If there is no authenticated user, the function returns without side effects. On error, it displays a destructive toast containing the error message.
+     */
     async function fetchAllEvents() {
         try {
             if (!user) return
