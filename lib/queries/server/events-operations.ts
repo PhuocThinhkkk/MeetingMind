@@ -65,9 +65,9 @@ export async function getAllEventsByAudioId(audioId: string) {
 }
 
 /**
- * Remove all event rows for the given audio ID from the `events` table.
+ * Delete all event rows for the specified audio ID from the `events` table.
  *
- * @param audioId - The audio identifier whose associated events will be deleted
+ * @param audioId - Audio identifier whose associated events will be deleted
  * @throws The Supabase error object if the delete operation fails
  */
 async function deleteAllExistingEventsByAudioId(audioId: string) {
@@ -83,4 +83,27 @@ async function deleteAllExistingEventsByAudioId(audioId: string) {
     })
     throw error
   }
+}
+/**
+ * Fetches a single event record by its identifier.
+ *
+ * @param eventId - The event's identifier to retrieve
+ * @returns The event row that matches `eventId`
+ * @throws When the database query fails or no matching event is found
+ */
+export async function getEventById(eventId: string) {
+  const { data, error } = await supabaseAdmin
+    .from('events')
+    .select('*')
+    .eq('id', eventId)
+    .single()
+
+  if (error) {
+    log.error('Error when query event: ', {
+      eventId,
+      error,
+    })
+    throw error
+  }
+  return data
 }
