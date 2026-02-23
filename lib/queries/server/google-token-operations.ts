@@ -15,7 +15,7 @@ export async function updateRefreshTokenSupabase(
     .from('google_tokens')
     .update({
       access_token: refreshed.access_token,
-      expiry_date: Date.now()  refreshed.expires_in * 1000,
+      expiry_date: Date.now() + refreshed.expires_in * 1000,
     })
     .eq('user_id', userId)
 
@@ -56,17 +56,15 @@ export async function createUserToken(
   userId: string,
   tokens: GoogleTokenResponse
 ) {
-  const { error } = await supabaseAdmin
-    .from('google_tokens')
-    .upsert(
-      {
-        user_id: userId,
-        access_token: tokens.access_token,
-        refresh_token: tokens.refresh_token,
-        expiry_date: Date.now() + tokens.expires_in * 1000,
-      },
-      { onConflict: 'user_id' }
-    )
+  const { error } = await supabaseAdmin.from('google_tokens').upsert(
+    {
+      user_id: userId,
+      access_token: tokens.access_token,
+      refresh_token: tokens.refresh_token,
+      expiry_date: Date.now() + tokens.expires_in * 1000,
+    },
+    { onConflict: 'user_id' }
+  )
 
   if (error) {
     throw error
