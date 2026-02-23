@@ -1,6 +1,7 @@
 import { getEventById } from '@/lib/queries/server/events-operations'
 import { getTokenByUserId } from '@/lib/queries/server/google-token-operations'
 import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
+import { validateEventAndUserIdOnServer } from '@/lib/validations/event-validations'
 import {
   addEventToGoogleCalendar,
   refreshTokenIfExpired,
@@ -26,7 +27,13 @@ export async function POST(req: NextRequest) {
     if (!event) {
       return NextResponse.json({ error: 'Event not found' }, { status: 404 })
     }
-    // TODO: handle query audio then verify
+    const { allowed, reason } = await validateEventAndUserIdOnServer(
+      user.id,
+      event
+    )
+    if (!allowed) {
+      return NextResponse.json({ error: reason }, { status: 401 })
+    }
 
     await addEventToGoogleCalendar(access_token, event)
     return NextResponse.json({ success: true }, { status: 201 })

@@ -40,13 +40,32 @@ export async function refreshAccessToken(
   return data as GoogleRefreshTokenResponse
 }
 
+export type GoogleCalendarEventResponse = {
+  id: string
+  summary?: string
+  description?: string
+  status: 'confirmed' | 'tentative' | 'cancelled'
+  htmlLink: string
+  created: string
+  updated: string
+  start?: {
+    date?: string
+    dateTime?: string
+    timeZone?: string
+  }
+  end?: {
+    date?: string
+    dateTime?: string
+    timeZone?: string
+  }
+}
 export async function sendToGoogleCalendar(
   accessToken: string,
   event: EventItemRow
 ) {
   const googleEvent = toAllDayEvent(event)
 
-  await fetch(
+  const res = await fetch(
     'https://www.googleapis.com/calendar/v3/calendars/primary/events',
     {
       method: 'POST',
@@ -57,6 +76,13 @@ export async function sendToGoogleCalendar(
       body: JSON.stringify(googleEvent),
     }
   )
+  if (!res.ok) {
+    const errorBody = await res.text()
+    throw new Error(`Google Calendar error: ${errorBody}`)
+  }
+
+  const data = await res.json()
+  return data as GoogleCalendarEventResponse
 }
 export async function refreshTokenIfExpired(
   userId: string,

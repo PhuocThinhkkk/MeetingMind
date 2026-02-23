@@ -1,12 +1,22 @@
 import { log } from '@/lib/logger'
+import { createUserToken } from '@/lib/queries/server/google-token-operations'
 import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
-import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
+import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')
   const error = searchParams.get('error')
+  const state = searchParams.get('state')
+  const storedState = (await cookies()).get('google_oauth_state')?.value
+
+  if (!state || !storedState || state !== storedState) {
+    return NextResponse.json(
+      { error: 'Invalid state parameter' },
+      { status: 400 }
+    )
+  }
 
   if (error) {
     log.error('OAuth error:', error)
@@ -25,6 +35,9 @@ export async function GET(req: Request) {
   }
 
   const user = await getUserAuthInSupabaseToken()
+  if (!user?.id) {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  }
 
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
@@ -47,7 +60,7 @@ export async function GET(req: Request) {
     )
   }
 
-  const tokens = await tokenRes.json()
+  const tokens = (await tokenRes.json()) as GoogleTokenResponse
 
   if (!tokens.access_token) {
     log.error('Invalid token response:', tokens)
@@ -57,12 +70,8 @@ export async function GET(req: Request) {
     )
   }
 
-  await supabaseAdmin.from('google_tokens').upsert({
-    user_id: user!.id,
-    access_token: tokens.access_token,
-    refresh_token: tokens.refresh_token,
-    expiry_date: Date.now() + tokens.expires_in * 1000,
-  })
+  await createUserToken(user.id, tokens)
+
   const redirect_url = process.env.REDIRECT_URL_AFTER_GOOGLE_INTEGRATION
   if (!redirect_url) {
     log.error('redirect url not found!')

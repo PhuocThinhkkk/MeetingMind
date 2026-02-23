@@ -1,5 +1,9 @@
 import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
-import { EventItemRow } from '@/types/transcriptions/transcription.db'
+import { GoogleRefreshTokenResponse } from '@/services/google-calendar/token-managements'
+import {
+  EventItemRow,
+  GoogleTokenRow,
+} from '@/types/transcriptions/transcription.db'
 
 interface RefreshedToken {
   access_token: string
@@ -52,4 +56,16 @@ export async function updateEventAddedToGoogleInSupabase(event: EventItemRow) {
     .from('events')
     .update({ added_to_google_calendar: true })
     .eq('id', event.id)
+}
+
+export async function createUserToken(
+  userId: string,
+  tokens: GoogleTokenResponse
+) {
+  await supabaseAdmin.from('google_tokens').upsert({
+    user_id: userId,
+    access_token: tokens.access_token,
+    refresh_token: tokens.refresh_token,
+    expiry_date: Date.now() + tokens.expires_in * 1000,
+  })
 }
