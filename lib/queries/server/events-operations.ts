@@ -91,7 +91,7 @@ export async function getEventById(eventId: string) {
     .eq('id', eventId)
     .single()
 
-  if (!data || error) {
+  if (error) {
     log.error('Error when query event: ', {
       eventId,
       error,

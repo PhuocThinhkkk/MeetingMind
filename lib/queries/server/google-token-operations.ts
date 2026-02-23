@@ -1,9 +1,6 @@
 import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
-import { GoogleRefreshTokenResponse } from '@/services/google-calendar/token-managements'
-import {
-  EventItemRow,
-  GoogleTokenRow,
-} from '@/types/transcriptions/transcription.db'
+import { GoogleTokenResponse } from '@/types/google-response/google.response.type'
+import { EventItemRow } from '@/types/transcriptions/transcription.db'
 
 interface RefreshedToken {
   access_token: string
@@ -18,7 +15,7 @@ export async function updateRefreshTokenSupabase(
     .from('google_tokens')
     .update({
       access_token: refreshed.access_token,
-      expiry_date: Date.now() + refreshed.expires_in * 1000,
+      expiry_date: Date.now()  refreshed.expires_in * 1000,
     })
     .eq('user_id', userId)
 
@@ -33,9 +30,6 @@ export async function getTokenByUserId(userId: string) {
     .eq('user_id', userId)
     .single()
 
-  if (!token) {
-    throw new Error(`Token not found for userId:  ${userId}`)
-  }
   return token
 }
 export async function getTokenById(tokenId: string) {
@@ -62,10 +56,19 @@ export async function createUserToken(
   userId: string,
   tokens: GoogleTokenResponse
 ) {
-  await supabaseAdmin.from('google_tokens').upsert({
-    user_id: userId,
-    access_token: tokens.access_token,
-    refresh_token: tokens.refresh_token,
-    expiry_date: Date.now() + tokens.expires_in * 1000,
-  })
+  const { error } = await supabaseAdmin
+    .from('google_tokens')
+    .upsert(
+      {
+        user_id: userId,
+        access_token: tokens.access_token,
+        refresh_token: tokens.refresh_token,
+        expiry_date: Date.now() + tokens.expires_in * 1000,
+      },
+      { onConflict: 'user_id' }
+    )
+
+  if (error) {
+    throw error
+  }
 }
