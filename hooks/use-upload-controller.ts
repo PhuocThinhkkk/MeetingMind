@@ -49,7 +49,7 @@ export function useUploadController(
   const retry = async (transcription: SaveTranscriptInput) => {
     if (!backupBlob) {
       toast({
-        title: 'failed',
+        title: 'Failed to upload audio.',
         description: 'There is no backup audio found!',
         variant: 'destructive',
       })
@@ -58,12 +58,14 @@ export function useUploadController(
     await upload(backupBlob, transcription)
   }
 
-  const dismiss = () => {
+  const dismiss = (handleClose: () => void) => {
     setState('idle')
+    handleClose()
   }
 
   return {
     state,
+    setState,
     upload,
     retry,
     dismiss,

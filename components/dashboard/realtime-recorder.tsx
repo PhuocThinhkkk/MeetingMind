@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { log } from '@/lib/logger'
 import { Badge } from '@/components/ui/badge'
 import {
   Mic,
@@ -19,6 +18,7 @@ import { formatDuration } from '@/lib/ui-format/time-format'
 import { toast } from '@/hooks/use-toast'
 import { LoadingOverlay } from '../loading-overlay'
 import { useUploadController } from '@/hooks/use-upload-controller'
+import { log } from '@/lib/logger'
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (
@@ -64,8 +64,12 @@ export function RealtimeRecorder({
   }, [sessionStartTime, isRecording])
 
   async function handleStartRecording() {
-    await startRecording()
-    setShowTranscription(true)
+    try {
+      await startRecording()
+      setShowTranscription(true)
+    } catch (e: any) {
+      toast({ title: "Error start recording.", description: e.message, variant: "destructive" })
+    }
   }
 
   /**
@@ -75,19 +79,18 @@ export function RealtimeRecorder({
    * when the upload completes and the controller is idle the component UI is reset.
    */
   async function handleStopRecording() {
-    const audioBlob = stopRecording()
-    if (!audioBlob) {
-      toast({
-        title: "Error",
-        description: "Audio not found when stop recording.",
-        variant: 'destructive'
-      })
-      return
-    }
-    await uploadCtrl.upload(audioBlob, transcriptWords)
-    if (uploadCtrl.state === 'idle') {
-      handleCloseAll()
-    }
+    try {
+      const audioBlob = stopRecording()
+      if (!audioBlob) {
+        log.error("no audio found")
+        uploadCtrl.setState("error")
+        return
+      }
+      await uploadCtrl.upload(audioBlob, transcriptWords)
+      if (uploadCtrl.state === 'idle') {
+        handleCloseAll()
+      }
+    } catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }) }
   }
 
 
@@ -256,7 +259,7 @@ export function RealtimeRecorder({
         message="We are uploading your audio pls wait for a bit."
         errorMessage="There was something wrong when uploading your audio, please try again."
         onRetry={() => uploadCtrl.retry(transcriptWords)}
-        onDismiss={uploadCtrl.dismiss}
+        onDismiss={() => { uploadCtrl.dismiss(handleCloseAll) }}
       />
     </>
   )

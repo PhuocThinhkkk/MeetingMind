@@ -138,7 +138,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!systemStream && !micStream) {
       log.error('No audio streams available')
       updateStatus('error')
-      return
+      throw new Error("Enable at least one audio stream to use recording.")
     }
     const mixedStream = await mixAudioStreams(
       audioContext,

@@ -57,10 +57,7 @@ export default function RealTimeTranscriptionPage({
   }, [isVisible])
 
   const handleExit = () => {
-    setIsAnimating(false)
-    setTimeout(() => {
-      onExit()
-    }, 300)
+    onExit()
   }
 
   const toggleHighlight = (index: number) => {
