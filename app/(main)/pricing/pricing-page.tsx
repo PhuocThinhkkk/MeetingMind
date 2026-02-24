@@ -137,8 +137,8 @@ export default function PricingSection() {
                       Included
                     </Button>
                   ) : (
-                    <Button onClick={fetchCheckoutSession} className="mb-6">
-                      Upgrade to Pro
+                    <Button disabled className="mb-6">
+                      Comming soon
                     </Button>
                   )}
 

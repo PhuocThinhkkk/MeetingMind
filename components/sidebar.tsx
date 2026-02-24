@@ -17,7 +17,7 @@ import {
   SidebarMenuItem,
   SidebarRail,
 } from '@/components/ui/sidebar'
-import { Home, Calendar, History, AudioLines } from 'lucide-react'
+import { Home, Calendar, History, AudioLines, Wallet } from 'lucide-react'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { FeatureLockWrapper } from './coming-soon-wrapper'
 
@@ -40,7 +40,7 @@ const navItems = [
   {
     title: 'Pricing',
     url: 'pricing',
-    icon: History,
+    icon: Wallet,
   },
 ]
 /**
