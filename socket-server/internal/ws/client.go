@@ -1,9 +1,9 @@
 package ws
 
 import (
+	"log"
 	"sync"
 	"time"
-	"log"
 
 	"github.com/gorilla/websocket"
 )
@@ -32,7 +32,7 @@ func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn
 		TranslateWord:  make(chan *TranslateWriter),
 		Mu:             sync.Mutex{},
 		StartTime:      time.Now(),
-		ExpiresAt:      time.Now().Add(20 * time.Minute), 
+		ExpiresAt:      time.Now().Add(30 * time.Minute), 
 	}
 }
 
