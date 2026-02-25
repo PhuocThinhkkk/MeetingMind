@@ -94,7 +94,7 @@ export async function saveAudioFile(
       mime_type: mimeType,
       transcription_status: status,
     })
-    .select()
+    .select('*')
     .single()
 
   if (error) {
@@ -179,7 +179,7 @@ export async function updateAudioStatus(
     throw error
   }
 
-  log.info('✅ Audio name updated:', data)
+  log.info('✅ Audio status updated:', data)
   return data as AudioFileRow
 }
 

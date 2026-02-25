@@ -34,7 +34,7 @@ export type TranscriptionWord = {
   text: string
   confidence: number
 }
-export type SaveTranscriptInput = RealtimeTranscriptionWord[]
+export type SaveTranscriptInput = RealtimeTranscriptionWord[] | null | undefined
 export type TranscriptWithWordNested = TranscriptRow & {
   transcription_words: TranscriptWordRow[]
 }

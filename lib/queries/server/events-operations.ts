@@ -20,7 +20,7 @@ export async function insertManyEventsByAudioId(
     audio_id: audioId,
     title: event.title,
     description: event.description,
-    start_time: event.start_time,
+    start_time: event.start_time ?? new Date().toISOString(),
     end_time: event.end_time,
     location: event.location,
   }))

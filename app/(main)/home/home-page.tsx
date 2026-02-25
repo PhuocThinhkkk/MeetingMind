@@ -17,7 +17,7 @@ import { FileAudio, Clock, MoreHorizontal } from 'lucide-react'
 import { RealtimeRecorder } from '@/components/dashboard/realtime-recorder'
 import { AudioUpload } from '@/components/dashboard/audio-upload'
 import { useAuth } from '@/hooks/use-auth'
-import { AudioFileRow, AudioFileWithTranscriptNested } from '@/types/transcriptions/transcription.db'
+import { AudioFileRow, AudioFileWithTranscriptNested, SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
 import {
   getAudioHistory,
 } from '@/lib/queries/browser/audio-operations'
@@ -101,7 +101,7 @@ export default function HomePage() {
    * @param file - The recorded audio File to upload
    * @param transcriptionWords - Array of word-level realtime transcription entries to include with the upload
    */
-  async function handleRealtimeTranscriptionComplete(file: File, transcriptionWords: RealtimeTranscriptionWord[]) {
+  async function handleRealtimeTranscriptionComplete(file: File, transcriptionWords: SaveTranscriptInput) {
     if (!user) {
       log.error('User not authenticated')
       return

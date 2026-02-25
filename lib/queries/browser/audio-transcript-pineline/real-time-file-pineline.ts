@@ -7,6 +7,9 @@ import {
   saveTranscript,
   saveTranscriptWords,
 } from '@/lib/queries/browser/transcription-operations'
+import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
+import { updateAudioComplete } from '../../server/audio-upload-operations'
+import { updateAudioStatus } from '../audio-operations'
 /**
  * Uploads a local audio file, saves its realtime transcript and words, and triggers analysis for the uploaded audio.
  *
@@ -16,7 +19,7 @@ import {
  * @returns An object containing the saved `audio` record
  */
 export async function realtimeUploadPineline(
-  transcriptWords: RealtimeTranscriptionWord[],
+  transcriptWords: SaveTranscriptInput,
   file: File,
   userId: string
 ) {
@@ -55,13 +58,17 @@ export async function realtimeUploadPineline(
  * @param audioId - Identifier of the audio record the transcript belongs to
  */
 export async function handlingSaveAudioAndTranscript(
-  transcriptWords: RealtimeTranscriptionWord[],
+  transcriptWords: SaveTranscriptInput,
   audioId: string
 ) {
   const transcription = await saveTranscript(audioId, transcriptWords)
   if (transcription) {
     log.info('Transcript saved with ID:', transcription)
   }
-  const words = await saveTranscriptWords(transcription.id, transcriptWords)
+  let words
+  if (transcriptWords) {
+    words = await saveTranscriptWords(transcription.id, transcriptWords)
+  }
+  await updateAudioStatus(audioId, 'done')
   log.info('Success storing transcript and words: ', { transcription, words })
 }

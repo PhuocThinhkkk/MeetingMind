@@ -86,7 +86,7 @@ export default function TranscriptionTestPage() {
 
         const data = {
             audioFile,
-            transcript,
+            transcript: transcript === null ? undefined : transcript,
             summary,
             events,
             qaLogs: qaLogs ?? [],
