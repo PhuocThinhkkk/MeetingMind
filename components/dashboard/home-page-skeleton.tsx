@@ -1,5 +1,5 @@
-import { Card, CardContent, CardHeader } from "@/components/ui/card"
-import { Skeleton } from "@/components/ui/skeleton"
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Skeleton } from '@/components/ui/skeleton'
 
 export default function DashboardSkeleton() {
   return (
@@ -7,7 +7,6 @@ export default function DashboardSkeleton() {
       <div className="flex">
         <div className="flex-1 p-6">
           <div className="max-w-7xl mx-auto space-y-8">
-            
             {/* Header */}
             <div className="space-y-3">
               <Skeleton className="h-6 w-72" />
@@ -16,7 +15,6 @@ export default function DashboardSkeleton() {
 
             {/* Upload + Recorder Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              
               <Card>
                 <CardHeader>
                   <Skeleton className="h-5 w-40" />
@@ -39,7 +37,6 @@ export default function DashboardSkeleton() {
                   </div>
                 </CardContent>
               </Card>
-
             </div>
 
             {/* Recent Meetings */}
@@ -50,7 +47,7 @@ export default function DashboardSkeleton() {
               </CardHeader>
 
               <CardContent className="space-y-4">
-                {[1, 2, 3, 4].map((i) => (
+                {[1, 2, 3, 4].map(i => (
                   <div
                     key={i}
                     className="flex items-center justify-between p-4 border rounded-lg"
@@ -71,7 +68,6 @@ export default function DashboardSkeleton() {
                 ))}
               </CardContent>
             </Card>
-
           </div>
         </div>
       </div>

@@ -17,13 +17,10 @@ import { getUserSubscription } from '@/lib/queries/browser/subscriptions'
 import { plans, PlanKey } from '@/constains/plans'
 import { PLANS } from '@/constains/limits'
 
-
-
 export default function PricingSection() {
   const { user } = useAuth()
   const [currentPlan, setCurrentPlan] = useState<PlanKey>(PLANS.FREE)
   const [loading, setLoading] = useState(true)
-
 
   useEffect(() => {
     fetchUserPlan()
@@ -52,7 +49,7 @@ export default function PricingSection() {
         setCurrentPlan(PLANS.FREE)
       }
     } catch (e) {
-      log.error("Error when fetching user plan: ", e)
+      log.error('Error when fetching user plan: ', e)
       setCurrentPlan(PLANS.FREE)
     } finally {
       setLoading(false)
@@ -103,10 +100,11 @@ export default function PricingSection() {
             return (
               <Card
                 key={plan.key}
-                className={`relative flex flex-col rounded-2xl border transition-all ${plan.featured
-                  ? 'border-primary/50 shadow-lg'
-                  : 'border-border'
-                  } ${isCurrentPlan ? 'ring-2 ring-primary' : ''}`}
+                className={`relative flex flex-col rounded-2xl border transition-all ${
+                  plan.featured
+                    ? 'border-primary/50 shadow-lg'
+                    : 'border-border'
+                } ${isCurrentPlan ? 'ring-2 ring-primary' : ''}`}
               >
                 {plan.featured && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">

@@ -87,9 +87,8 @@ export default function TranscriptHistoryPage() {
     ? audios.find(audio => audio.id === audioId)
     : null
 
-
   async function handleCloseDialog() {
-    router.push("/history", { scroll: false })
+    router.push('/history', { scroll: false })
   }
 
   return (
@@ -102,14 +101,14 @@ export default function TranscriptHistoryPage() {
       />
 
       <AudioHistoryList audioHistory={filteredAudios} />
-      {selectedAudio &&
+      {selectedAudio && (
         <TranscriptionViewProvider audioId={selectedAudio.id}>
           <TranscriptionDialog
             open={!!selectedAudio.id}
             onClose={handleCloseDialog}
           />
-        </TranscriptionViewProvider >
-      }
+        </TranscriptionViewProvider>
+      )}
     </>
   )
 }

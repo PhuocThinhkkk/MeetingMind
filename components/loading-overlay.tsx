@@ -4,7 +4,6 @@ import { UploadState } from '@/hooks/use-upload-controller'
 import { createPortal } from 'react-dom'
 import { Button } from './ui/button'
 
-
 interface LoadingOverlayProps {
   state: UploadState
   message?: string

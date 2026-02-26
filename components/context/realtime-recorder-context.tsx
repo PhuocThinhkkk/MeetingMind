@@ -6,7 +6,10 @@ import {
   setupAudioWorklet,
   initAudioContext,
 } from '@/lib/transcript/audio-worklet-utils'
-import { encodeWAV, mergeChunks } from '@/lib/transcript/transcript-realtime-utils'
+import {
+  encodeWAV,
+  mergeChunks,
+} from '@/lib/transcript/transcript-realtime-utils'
 import {
   useState,
   useRef,
@@ -22,7 +25,10 @@ import {
   RealtimeTranslateResponse,
 } from '@/types/transcriptions/transcription.ws'
 
-import { resampleTo16kHz, float32ToInt16 } from '@/lib/transcript/transcript-realtime-utils'
+import {
+  resampleTo16kHz,
+  float32ToInt16,
+} from '@/lib/transcript/transcript-realtime-utils'
 import { useAuth } from '@/hooks/use-auth'
 import { serverCheck } from '@/lib/utils/server-check'
 
@@ -131,7 +137,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     try {
       await serverCheck()
     } catch (e: any) {
-      updateStatus("error")
+      updateStatus('error')
       log.error(e)
       throw e
     }
@@ -146,7 +152,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     if (!systemStream && !micStream) {
       log.error('No audio streams available')
       updateStatus('error')
-      throw new Error("Enable at least one audio stream to use recording.")
+      throw new Error('Enable at least one audio stream to use recording.')
     }
     const mixedStream = await mixAudioStreams(
       audioContext,

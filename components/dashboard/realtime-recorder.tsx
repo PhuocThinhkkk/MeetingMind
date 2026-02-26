@@ -69,7 +69,11 @@ export function RealtimeRecorder({
       await startRecording()
       setShowTranscription(true)
     } catch (e: any) {
-      toast({ title: "Error start recording.", description: e.message, variant: "destructive" })
+      toast({
+        title: 'Error start recording.',
+        description: e.message,
+        variant: 'destructive',
+      })
     }
   }
 
@@ -83,17 +87,18 @@ export function RealtimeRecorder({
     try {
       const audioBlob = stopRecording()
       if (!audioBlob) {
-        log.error("no audio found")
-        uploadCtrl.setState("error")
+        log.error('no audio found')
+        uploadCtrl.setState('error')
         return
       }
       await uploadCtrl.upload(audioBlob, transcriptWords)
       if (uploadCtrl.state === 'idle') {
         handleCloseAll()
       }
-    } catch (e: any) { toast({ title: "Error", description: e.message, variant: "destructive" }) }
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' })
+    }
   }
-
 
   /**
    * Reset recorder-related state to idle and hide any open transcription UI.
@@ -104,7 +109,6 @@ export function RealtimeRecorder({
     setShowTranscription(false)
     setSessionStartTime(null)
   }
-
 
   /**
    * Selects the Tailwind CSS class string used for the status badge based on the current recorder status.
@@ -171,10 +175,11 @@ export function RealtimeRecorder({
 
             <div>
               <div
-                className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${isRecording
-                  ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                  : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
-                  }`}
+                className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
+                  isRecording
+                    ? 'bg-red-500 hover:bg-red-600 animate-pulse'
+                    : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
+                }`}
               >
                 {status === 'connecting' ? (
                   <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
@@ -260,7 +265,9 @@ export function RealtimeRecorder({
         message="We are uploading your audio pls wait for a bit."
         errorMessage="There was something wrong when uploading your audio, please try again."
         onRetry={() => uploadCtrl.retry(transcriptWords)}
-        onDismiss={() => { uploadCtrl.dismiss(handleCloseAll) }}
+        onDismiss={() => {
+          uploadCtrl.dismiss(handleCloseAll)
+        }}
       />
     </>
   )

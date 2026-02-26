@@ -17,10 +17,12 @@ import { FileAudio, Clock, MoreHorizontal } from 'lucide-react'
 import { RealtimeRecorder } from '@/components/dashboard/realtime-recorder'
 import { AudioUpload } from '@/components/dashboard/audio-upload'
 import { useAuth } from '@/hooks/use-auth'
-import { AudioFileRow, AudioFileWithTranscriptNested, SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
 import {
-  getAudioHistory,
-} from '@/lib/queries/browser/audio-operations'
+  AudioFileRow,
+  AudioFileWithTranscriptNested,
+  SaveTranscriptInput,
+} from '@/types/transcriptions/transcription.db'
+import { getAudioHistory } from '@/lib/queries/browser/audio-operations'
 import { formatDateShorted, formatDuration } from '@/lib/ui-format/time-format'
 import { FeatureLockWrapper } from '@/components/coming-soon-wrapper'
 import { fileUploadPineline } from '@/lib/queries/browser/audio-transcript-pineline/upload-file-pineline'
@@ -31,7 +33,9 @@ import { realtimeUploadPineline } from '@/lib/queries/browser/audio-transcript-p
 export default function HomePageEntry() {
   const { user, loading: authLoading } = useAuth()
   const router = useRouter()
-  const [audioFiles, setAudioFiles] = useState<AudioFileWithTranscriptNested[]>([])
+  const [audioFiles, setAudioFiles] = useState<AudioFileWithTranscriptNested[]>(
+    []
+  )
   const searchParams = useSearchParams()
   const [uploading, setUploading] = useState(false)
   const currentAudioId = searchParams.get('audioId')
@@ -59,7 +63,6 @@ export default function HomePageEntry() {
     }
   }
 
-
   /**
    * Upload an audio file for the current user and open its transcription view on success.
    *
@@ -78,9 +81,8 @@ export default function HomePageEntry() {
     try {
       log.info('Starting file upload:', file.name)
       const audioFile = await fileUploadPineline(file, user.id)
-      log.info("pineline of upload success: ", { audioFile })
+      log.info('pineline of upload success: ', { audioFile })
       handleFileTranscriptionView(audioFile.audio)
-
     } catch (error) {
       log.error('Error uploading file:', error)
     } finally {
@@ -96,7 +98,10 @@ export default function HomePageEntry() {
    * @param file - The recorded audio File to upload
    * @param transcriptionWords - Array of word-level realtime transcription entries to include with the upload
    */
-  async function handleRealtimeTranscriptionComplete(file: File, transcriptionWords: SaveTranscriptInput) {
+  async function handleRealtimeTranscriptionComplete(
+    file: File,
+    transcriptionWords: SaveTranscriptInput
+  ) {
     if (!user) {
       log.error('User not authenticated')
       return
@@ -105,17 +110,19 @@ export default function HomePageEntry() {
     setUploading(true)
     try {
       log.info('Starting transcript upload:', file.name)
-      const audioFile = await realtimeUploadPineline(transcriptionWords, file, user.id)
-      log.info("pineline of upload success: ", { audioFile })
+      const audioFile = await realtimeUploadPineline(
+        transcriptionWords,
+        file,
+        user.id
+      )
+      log.info('pineline of upload success: ', { audioFile })
       handleFileTranscriptionView(audioFile.audio)
-
     } catch (error) {
       log.error('Error uploading file:', error)
     } finally {
       setUploading(false)
     }
   }
-
 
   const handleFileTranscriptionView = (file: AudioFileRow) => {
     router.push(`/home?audioId=${file.id}`)
@@ -124,7 +131,6 @@ export default function HomePageEntry() {
   const handleCloseDialog = () => {
     router.push('/home')
   }
-
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -207,16 +213,14 @@ export default function HomePageEntry() {
                               <Clock className="w-4 h-4" />
                               <span>{formatDuration(file.duration ?? 0)}</span>
                               <span>•</span>
-                              <span>
-                                {formatDateShorted(file.created_at)}
-                              </span>
+                              <span>{formatDateShorted(file.created_at)}</span>
                             </div>
                           </div>
                         </div>
 
                         <div className="flex items-center space-x-3">
                           <Badge
-                            className={`${getStatusColor(file.transcription_status ?? "unknown")} border`}
+                            className={`${getStatusColor(file.transcription_status ?? 'unknown')} border`}
                           >
                             {file.transcription_status}
                           </Badge>
@@ -238,15 +242,14 @@ export default function HomePageEntry() {
         </div>
       </div>
 
-      {currentAudioId &&
+      {currentAudioId && (
         <TranscriptionViewProvider audioId={currentAudioId}>
           <TranscriptionDialog
             open={!!currentAudioId}
             onClose={handleCloseDialog}
           />
-        </TranscriptionViewProvider >
-      }
-
-    </div >
+        </TranscriptionViewProvider>
+      )}
+    </div>
   )
 }
