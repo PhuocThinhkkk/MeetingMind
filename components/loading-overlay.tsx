@@ -25,9 +25,9 @@ export function LoadingOverlay({
     <>
       {state === 'uploading' && (
         <>
-          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-[49]" />
+          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-[99]" />
 
-          <div className="fixed inset-0 flex items-center justify-center z-[50]">
+          <div className="fixed inset-0 flex items-center justify-center z-[100]">
             <div className="flex flex-col items-center gap-4">
               {/* Spinner */}
               <div className="relative w-12 h-12">

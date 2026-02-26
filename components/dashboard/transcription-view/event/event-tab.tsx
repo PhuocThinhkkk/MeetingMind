@@ -52,7 +52,7 @@ export function EventsTab() {
         <CardDescription>AI-detected meetings and deadlines</CardDescription>
       </CardHeader>
 
-      <CardContent className="space-y-4">
+      <CardContent className="space-y-2 max-h-[55vh] overflow-y-auto pr-2">
         {events.length === 0 ? (
           <div className="text-center py-8 text-gray-500">
             <Calendar className="w-10 h-10 mx-auto mb-3 opacity-50" />

@@ -24,7 +24,7 @@ export function SummaryTab() {
           <CardHeader>
             <CardTitle className="text-lg">Key Highlights</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="max-h-[30vh] overflow-y-auto pr-2">
             <ul className="space-y-2">
               {summary.highlights?.map((item, i) => (
                 <li key={i} className="flex items-start">
@@ -40,7 +40,7 @@ export function SummaryTab() {
           <CardHeader>
             <CardTitle className="text-lg">Action Items</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="max-h-[30vh] overflow-y-auto pr-2">
             <ul className="space-y-2">
               {summary.todo?.map((item, i) => (
                 <li key={i} className="flex items-start">
@@ -51,7 +51,7 @@ export function SummaryTab() {
             </ul>
           </CardContent>
         </Card>
-      </div>
-    </div>
+      </div >
+    </div >
   )
 }

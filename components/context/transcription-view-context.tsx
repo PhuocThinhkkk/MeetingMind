@@ -66,11 +66,13 @@ export function useTranscriptionViewData(audioId: string) {
           getTranscriptWordNestedByAudioId(audioId),
         ])
 
+
       setAudio(audioData)
       setSummary(analyzed.summary)
       setEvents(analyzed.events)
       setQaLogs(qaLogsData)
       setTranscript(transcriptData)
+      log.info("Transcript view fetch all.")
     } catch (e) {
       log.error('useTranscriptionViewData error', e)
       setError(e)
