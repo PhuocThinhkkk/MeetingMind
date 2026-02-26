@@ -123,7 +123,7 @@ export function QATab() {
 
       <CardContent className="flex flex-col flex-1 gap-4">
         {/* Chat history */}
-        <ScrollArea className="h-[450px] pr-4">
+        <ScrollArea className="h-[350px] pr-4">
           {qaLogs.length === 0 ? (
             <p className="text-sm text-gray-500">No questions yet.</p>
           ) : (
