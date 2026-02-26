@@ -47,7 +47,7 @@ export default function GoogleSyncProfile({ token }: Props) {
         return (
             <div className="rounded-2xl border bg-white p-6 shadow-sm hover:shadow-md transition">
                 <div className="flex flex-col items-center text-center space-y-4">
-                    <Calendar className="w-10 h-10 text-red-500" />
+                    <Calendar className="w-10 h-10 text-blue-500" />
 
                     <div>
                         <h3 className="text-lg font-semibold">
@@ -60,7 +60,7 @@ export default function GoogleSyncProfile({ token }: Props) {
 
                     <button
                         onClick={() => window.location.href = '/api/google/connect'}
-                        className="flex items-center gap-2 px-5 py-2 rounded-xl bg-black text-white hover:bg-gray-800 transition"
+                        className="hover:cursor-pointer flex items-center gap-2 px-5 py-2 rounded-sm bg-blue-700 text-white hover:bg-blue-800 transition"
                     >
                         <Link2 className="w-4 h-4" />
                         Sign in with Google
