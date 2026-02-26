@@ -66,7 +66,7 @@ export async function handlingSaveAudioAndTranscript(
     log.info('Transcript saved with ID:', transcription)
   }
   let words
-  if (transcriptWords) {
+  if (transcriptWords && transcriptWords.length > 0) {
     words = await saveTranscriptWords(transcription.id, transcriptWords)
   }
   await updateAudioStatus(audioId, 'done')
