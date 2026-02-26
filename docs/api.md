@@ -1,9 +1,9 @@
-
 # API Reference
 
 This document describes the APIs and interfaces available in MeetingMind.
 
 ## Table of Contents
+
 - [WebSocket API](#websocket-api)
 - [Database API](#database-api)
 - [Audio Operations](#audio-operations)
@@ -23,6 +23,7 @@ This document describes the APIs and interfaces available in MeetingMind.
 ### Client → Server Messages
 
 #### Audio Chunk (Binary)
+
 ```
 Type: Binary Message
 Format: int16 PCM audio data
@@ -32,13 +33,15 @@ Chunk Size: 1800 bytes (900 samples, ~56.25ms)
 ```
 
 **Example** (from browser):
+
 ```typescript
-websocket.send(audioBuffer); // ArrayBuffer of int16 PCM data
+websocket.send(audioBuffer) // ArrayBuffer of int16 PCM data
 ```
 
 ### Server → Client Messages
 
 #### Transcript Response (JSON)
+
 ```typescript
 {
   "type": "transcript",
@@ -56,6 +59,7 @@ websocket.send(audioBuffer); // ArrayBuffer of int16 PCM data
 ```
 
 **Example Response:**
+
 ```json
 {
   "type": "transcript",
@@ -80,21 +84,23 @@ websocket.send(audioBuffer); // ArrayBuffer of int16 PCM data
 ```
 
 #### Begin Message
+
 ```typescript
 {
   "type": "begin"
 }
 ```
+
 Sent when the transcription session starts.
 
 #### Translation Response (JSON)
+
 ```typescript
 {
   "type": "translate",
   "words": string
 }
 ```
-
 
 ## Rate Limiting
 
@@ -107,25 +113,28 @@ Sent when the transcription session starts.
 All database operations on client require authentication through Supabase Auth.
 
 **Example:**
+
 ```typescript
-const { data: { user } } = await supabase.auth.getUser();
+const {
+  data: { user },
+} = await supabase.auth.getUser()
 if (user) {
-  const history = await getAudioHistory(user.id);
+  const history = await getAudioHistory(user.id)
 }
 ```
 
-
 ## Error Responses
 
-
 ### Database Errors
+
 Supabase errors follow this structure:
+
 ```typescript
 {
   error: {
-    message: string;
-    code: string;
-    details: string;
+    message: string
+    code: string
+    details: string
   }
 }
 ```
@@ -135,4 +144,3 @@ Supabase errors follow this structure:
 - [Real-time Transcription](./real-time-transcription.md)
 - [WebSocket Backend](./socket-server.md)
 - [Database & Supabase](./database.md)
-

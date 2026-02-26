@@ -11,7 +11,7 @@ The socket server is written in Go and acts as a bridge between the Next.js fron
 ```
 
 (binary chunk)→ Go Server (binary chunk)→   AssemblyAI WebSocket
-                ↓        <-(transcript words)   
+                ↓        <-(transcript words)
                 ↓  → send transcript state to client
                 →  process the translation (will implement) →send translate to client
 
@@ -21,21 +21,41 @@ The socket server is written in Go and acts as a bridge between the Next.js fron
 
 ```
 socket-server/
-├── main.go                    # Entry point
-├── ws/                        # WebSocket package
-│   ├── server.go              # WebSocket server setup
-│   ├── handler.go             # WebSocket message handling
-│   ├── client.go              # Client connection management
-│   ├── assemblyConn.go        # AssemblyAI connection
-│   ├── models.go              # Data models
-│   ├── transcript.go          # Transcript processing
-│   └── translate.go           # Translation handling
-├── client/                    # Test client
+├── client/                     # Test client
+│   ├── hello.pcm
+│   ├── hello.wav
 │   └── main.go
-├── Dockerfile                 # Container configuration
-├── .env.example               # Environment template
-├── go.mod                     # Go dependencies
-└── go.sum                     # Dependency checksums
+├── Dockerfile                  # Container configuration
+├── go.mod                      # Go dependencies
+├── go.sum                      # Dependency checksums
+├── internal/
+│   ├── config/
+│   │   └── loadEnv.go          # Environment variable loader
+│   ├── database/
+│   │   └── init.go             # Database initialization
+│   ├── handler/
+│   │   └── healthCheck.go      # Health check handler
+│   ├── middleware/
+│   │   ├── authenticated.go    # JWT authentication middleware
+│   │   ├── log.go              # Request logging
+│   │   └── rate-limit.go       # Rate limiting
+│   ├── models/
+│   │   └── user.go             # User model
+│   ├── service/
+│   │   └── users.go            # User query logic
+│   ├── validation/
+│   │   └── supabaseJwt.go      # Supabase JWT validation
+│   └── ws/                     # WebSocket package
+│       ├── assemblyConn.go     # AssemblyAI connection
+│       ├── client.go           # WebSocket client connection management
+│       ├── handler.go          # WebSocket message handling
+│       ├── models.go           # WS-related data models
+│       ├── server.go           # WS server setup
+│       ├── transcript.go       # Transcript processing
+│       └── translate.go        # Translation handling
+├── main.go                     # Server entry point
+└── Readme.md                   # Project documentation
+
 ```
 
 ## Server Setup (`main.go`)
@@ -43,33 +63,42 @@ socket-server/
 The main server initializes on a configurable port and provides two endpoints:
 
 ```go
-http.HandleFunc("/", healthCheck)      // Health check endpoint
-http.HandleFunc("/ws", ws.RunServer)   // WebSocket endpoint
+mux.Handle("/", handler.HealthCheck())        // Health check endpoint
+mux.Handle("/ws", http.HandlerFunc(ws.RunServer)) // WebSocket endpoint
+
 ```
 
 ### Configuration
 
-Environment variables are loaded from `.env` file:
-- `PORT` - Server port (default: 9090)
-- `FRONTEND_URL` - Allowed CORS origin
-- `ASSEMBLYAI_API_KEY` - AssemblyAI API key (required)
-- `IS_PROD` - Production mode flag
+Environment variables are loaded from `.env`:
+
+| Variable           | Description                         | Required |
+| ------------------ | ----------------------------------- | -------- |
+| PORT               | Server port                         | Yes      |
+| FRONTEND_URL       | Allowed CORS origin                 | Yes      |
+| ASSEMBLYAI_API_KEY | API key for AssemblyAI              | Yes      |
+| SUPABASE_JWT_KEY   | Supabase JWT secret key             | Yes      |
+| DATABASE_URL       | Database connection URL             | Yes      |
+| IS_PROD            | Production mode flag (`true`/empty) | No       |
 
 ### Binding Address
+
 - Development (`IS_PROD` empty or not "true"): Binds to `0.0.0.0:PORT`
 - Production (`IS_PROD=true`): Binds to `:PORT`
 
 ## WebSocket Endpoints
 
 ### Health Check
+
 ```
 GET /
 Response: "server is good"
 ```
 
 ### WebSocket Connection
+
 ```
-WS /ws
+WS /ws?token=<jwt_token>
 ```
 
 Establishes a bidirectional WebSocket connection for audio streaming and transcription.
@@ -77,6 +106,7 @@ Establishes a bidirectional WebSocket connection for audio streaming and transcr
 ## Data Models (`ws/models.go`)
 
 ### Response Types
+
 ```go
 const (
     TRANSCRIPT_RESPONSE = "transcript"
@@ -85,6 +115,7 @@ const (
 ```
 
 ### AssemblyResponseWord
+
 ```go
 type AssemblyResponseWord struct {
     Start       int     `json:"start"`
@@ -96,6 +127,7 @@ type AssemblyResponseWord struct {
 ```
 
 ### AssemblyResponseTurn
+
 ```go
 type AssemblyRessponseTurn struct {
     TurnOrder           int                    `json:"turn_order"`
@@ -108,6 +140,7 @@ type AssemblyRessponseTurn struct {
 ```
 
 ### Error Handling
+
 - Maximum error count: `MaxErr = 10`
 - Connection closed after reaching max errors
 - Graceful cleanup on disconnection
@@ -115,16 +148,19 @@ type AssemblyRessponseTurn struct {
 ## Message Types
 
 ### Client → Server
+
 - **Binary Messages** - Raw PCM audio data (int16, 16kHz, mono)
 - Chunks should be 1800 bytes (900 samples, ~56.25ms)
 
 ### Server → Client
+
 - **Transcript Messages** - JSON with partial/final transcription
 - **Translate Messages** - Translation results (if enabled)
 
 ## CORS Configuration
 
 The server checks origin for WebSocket connections:
+
 ```go
 CheckOrigin: func(r *http.Request) bool {
     if testing {
@@ -139,6 +175,7 @@ CheckOrigin: func(r *http.Request) bool {
 ## Running the Server
 
 ### Local Development
+
 ```bash
 cd socket-server
 cp .env.example .env
@@ -147,6 +184,7 @@ go run main.go
 ```
 
 ### Using Docker
+
 ```bash
 cd socket-server
 docker build -t meetingmind-socket .
@@ -156,35 +194,46 @@ docker run --env-file .env -p 9090:9090 meetingmind-socket
 ## Environment Variables
 
 Create a `.env` file in the `socket-server/` directory:
+
 ```env
 PORT=9090
 FRONTEND_URL=http://localhost:3000
 ASSEMBLYAI_API_KEY=your_assemblyai_api_key_here
+SUPABASE_JWT_KEY=your_supabase_jwt_key_here
+DATABASE_URL=your_database_url_here
 IS_PROD=false
 ```
 
 ## Dependencies
 
 Key dependencies (from `go.mod`):
+
 - `github.com/gorilla/websocket` - WebSocket implementation
 - `github.com/joho/godotenv` - Environment variable loading
 
 Install with:
+
 ```bash
 go mod download
+
 ```
+
+## Authentication
+
+WebSocket connections require a valid JWT token passed as a query parameter:
+
+```
+/ws?token=<jwt_token>
+The token is validated against the Supabase JWT secret.
+```
+
+## Rate Limiting
+
+- Limits 20 minutes of audio streaming per connection
 
 ## Testing
 
 A test client is available in `client/main.go` for debugging the WebSocket connection.
-
-## Production Deployment
-
-1. Set `IS_PROD=true` in environment
-2. Configure `FRONTEND_URL` to your production domain
-3. Use proper process manager (systemd, Docker, etc.)
-4. Implement proper logging and monitoring
-5. Use reverse proxy (nginx, Caddy) for SSL termination
 
 ## Performance Considerations
 
@@ -198,5 +247,3 @@ A test client is available in `client/main.go` for debugging the WebSocket conne
 - [Real-time Transcription](./real-time-transcription.md)
 - [Architecture](./architecture.md)
 - [Setup](./setup.md)
-
-

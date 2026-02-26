@@ -1,6 +1,6 @@
-"use client";
-import { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button";
+'use client'
+import { useState, useEffect } from 'react'
+import { Button } from '@/components/ui/button'
 import {
   X,
   Square,
@@ -10,16 +10,16 @@ import {
   Calendar,
   Sparkles,
   Languages,
-} from "lucide-react";
-import { RealtimeTranscriptionWord } from "@/types/transcription.ws";
-import { FeatureLockWrapper } from "../coming-soon-wrapper";
+} from 'lucide-react'
+import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
+import { FeatureLockWrapper } from '../coming-soon-wrapper'
 
 interface RealTimeTranscriptionPageProps {
-  transcriptionWords?: RealtimeTranscriptionWord[];
-  translationWords?: string[];
-  isVisible?: boolean;
-  onExit?: () => void | Promise<void>;
-  onStopRecording?: () => void | Promise<void>;
+  transcriptionWords?: RealtimeTranscriptionWord[]
+  translationWords?: string[]
+  isVisible?: boolean
+  onExit?: () => void | Promise<void>
+  onStopRecording?: () => void | Promise<void>
 }
 
 /**
@@ -39,96 +39,91 @@ export default function RealTimeTranscriptionPage({
   onExit = async () => {},
   onStopRecording = async () => {},
 }: RealTimeTranscriptionPageProps) {
-  const [isAnimating, setIsAnimating] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false)
   const [highlightedWords, setHighlightedWords] = useState<Set<number>>(
-    new Set(),
-  );
-  const [questionedWords, setQuestionedWords] = useState<Set<number>>(
-    new Set(),
-  );
+    new Set()
+  )
+  const [questionedWords, setQuestionedWords] = useState<Set<number>>(new Set())
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(
-    null,
-  );
-  const [showTranscript, setShowTranscript] = useState(true);
-  const [showTranslate, setShowTranslate] = useState(true);
+    null
+  )
+  const [showTranscript, setShowTranscript] = useState(true)
+  const [showTranslate, setShowTranslate] = useState(false)
 
   useEffect(() => {
     if (isVisible) {
-      setIsAnimating(true);
+      setIsAnimating(true)
     }
-  }, [isVisible]);
+  }, [isVisible])
 
   const handleExit = () => {
-    setIsAnimating(false);
-    setTimeout(() => {
-      onExit();
-    }, 300);
-  };
+    onExit()
+  }
 
   const toggleHighlight = (index: number) => {
-    const newHighlighted = new Set(highlightedWords);
+    const newHighlighted = new Set(highlightedWords)
     if (newHighlighted.has(index)) {
-      newHighlighted.delete(index);
+      newHighlighted.delete(index)
     } else {
-      newHighlighted.add(index);
+      newHighlighted.add(index)
     }
-    setHighlightedWords(newHighlighted);
-    setSelectedWordIndex(null);
-  };
+    setHighlightedWords(newHighlighted)
+    setSelectedWordIndex(null)
+  }
 
   const toggleQuestion = (index: number) => {
-    const newQuestioned = new Set(questionedWords);
+    const newQuestioned = new Set(questionedWords)
     if (newQuestioned.has(index)) {
-      newQuestioned.delete(index);
+      newQuestioned.delete(index)
     } else {
-      newQuestioned.add(index);
+      newQuestioned.add(index)
     }
-    setQuestionedWords(newQuestioned);
-    setSelectedWordIndex(null);
-  };
+    setQuestionedWords(newQuestioned)
+    setSelectedWordIndex(null)
+  }
 
   // TODO: handle this later
   const getConfidenceColor = (confidence: number) => {
-    return "text-black";
-    if (confidence >= 0.8) return "text-green-600";
-    if (confidence >= 0.6) return "text-yellow-600";
-    return "text-red-600";
-  };
+    return 'text-black'
+    if (confidence >= 0.8) return 'text-green-600'
+    if (confidence >= 0.6) return 'text-yellow-600'
+    return 'text-red-600'
+  }
 
   const getWordClassName = (index: number, word: RealtimeTranscriptionWord) => {
-    let className = `inline-block px-0 py-1 m-1 rounded-lg cursor-pointer transition-all duration-200 text-sm ${getConfidenceColor(word.confidence)}`;
+    let className = `inline-block px-0 py-1 m-1 rounded-lg cursor-pointer transition-all duration-200 text-sm ${getConfidenceColor(word.confidence)}`
 
     if (highlightedWords.has(index)) {
-      className += " bg-yellow-200 border-2 border-yellow-400 shadow-sm";
+      className += ' bg-yellow-200 border-2 border-yellow-400 shadow-sm'
     } else if (questionedWords.has(index)) {
-      className += " bg-red-100 border-2 border-red-400 shadow-sm";
+      className += ' bg-red-100 border-2 border-red-400 shadow-sm'
     } else if (selectedWordIndex === index) {
-      className += " bg-blue-100 border-2 border-blue-400 shadow-sm";
+      className += ' bg-blue-100 border-2 border-blue-400 shadow-sm'
     } else {
       className +=
-        " hover:bg-gray-100 border-2 border-transparent hover:shadow-sm";
+        ' hover:bg-gray-100 border-2 border-transparent hover:shadow-sm'
     }
 
-    return className;
-  };
+    return className
+  }
 
   const handleCloseTranscript = () => {
-    setShowTranscript(false);
-  };
+    setShowTranscript(false)
+  }
 
   const handleCloseTranslate = () => {
-    setShowTranslate(false);
-  };
+    setShowTranslate(false)
+  }
 
-  const bothPanelsOpen = showTranscript && showTranslate;
-  const onlyOnePanel = showTranscript !== showTranslate;
+  const bothPanelsOpen = showTranscript && showTranslate
+  const onlyOnePanel = showTranscript !== showTranslate
 
-  if (!isVisible) return null;
+  if (!isVisible) return null
 
   return (
     <div
       className={`fixed inset-0 z-50 bg-white flex flex-col transform transition-all duration-300 ease-out ${
-        isAnimating ? "translate-y-0" : "translate-y-full"
+        isAnimating ? 'translate-y-0' : 'translate-y-full'
       }`}
     >
       {/* Header */}
@@ -154,6 +149,7 @@ export default function RealTimeTranscriptionPage({
         </div>
 
         {/* Action Buttons */}
+        {/*
         <div className="px-6 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -200,13 +196,14 @@ export default function RealTimeTranscriptionPage({
             </FeatureLockWrapper>
           </div>
         </div>
+*/}
 
         {/* Transcript/Translate Toggle */}
         <div className="px-6 pb-4 border-t pt-4">
           <div className="flex items-center space-x-4">
             <div className="flex items-center space-x-2">
               <Button
-                variant={showTranscript ? "default" : "outline"}
+                variant={showTranscript ? 'default' : 'outline'}
                 size="sm"
                 onClick={() => setShowTranscript(!showTranscript)}
                 className="h-8"
@@ -214,15 +211,17 @@ export default function RealTimeTranscriptionPage({
                 <FileText className="w-3 h-3 mr-1" />
                 Transcript
               </Button>
-              <Button
-                variant={showTranslate ? "default" : "outline"}
-                size="sm"
-                onClick={() => setShowTranslate(!showTranslate)}
-                className="h-8"
+              {/*
+                < Button
+                variant={showTranslate ? 'default' : 'outline'}
+              size="sm"
+              onClick={() => setShowTranslate(!showTranslate)}
+              className="h-8"
               >
-                <Languages className="w-3 h-3 mr-1" />
-                Translate
-              </Button>
+              <Languages className="w-3 h-3 mr-1" />
+              Translate
+            </Button>
+*/}
             </div>
           </div>
         </div>
@@ -234,7 +233,7 @@ export default function RealTimeTranscriptionPage({
           {/* Transcript Panel */}
           {showTranscript && (
             <div
-              className={`${bothPanelsOpen ? "w-1/2" : "w-full"} border-r border-gray-200 flex flex-col`}
+              className={`${bothPanelsOpen ? 'w-1/2' : 'w-full'} border-r border-gray-200 flex flex-col`}
             >
               <div className="flex items-center justify-between p-4 border-b bg-gray-50">
                 <h2 className="font-semibold text-gray-900">Transcript</h2>
@@ -270,7 +269,7 @@ export default function RealTimeTranscriptionPage({
                         className={getWordClassName(index, word)}
                         onClick={() =>
                           setSelectedWordIndex(
-                            selectedWordIndex === index ? null : index,
+                            selectedWordIndex === index ? null : index
                           )
                         }
                         title={`Confidence: ${(word.confidence * 100).toFixed(1)}% | ${word.start.toFixed(2)}s - ${word.end.toFixed(2)}s`}
@@ -293,7 +292,7 @@ export default function RealTimeTranscriptionPage({
           {/* Translate Panel */}
           {showTranslate && (
             <div
-              className={`${bothPanelsOpen ? "w-1/2" : "w-full"} flex flex-col`}
+              className={`${bothPanelsOpen ? 'w-1/2' : 'w-full'} flex flex-col`}
             >
               <div className="flex items-center justify-between p-4 border-b bg-gray-50">
                 <div className="flex items-center space-x-2">
@@ -329,8 +328,8 @@ export default function RealTimeTranscriptionPage({
                 ) : (
                   <div className="text-lg leading-relaxed text-gray-800">
                     {translationWords.length > 0
-                      ? translationWords.join(" ")
-                      : " Translating..."}
+                      ? translationWords.join(' ')
+                      : ' Translating...'}
                   </div>
                 )}
               </div>
@@ -348,12 +347,12 @@ export default function RealTimeTranscriptionPage({
                 "{words[selectedWordIndex]?.text}"
               </span>
               <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
-                Confidence:{" "}
+                Confidence:{' '}
                 {((words[selectedWordIndex]?.confidence || 0) * 100).toFixed(1)}
                 %
               </span>
               <span className="text-sm text-gray-500 bg-white px-3 py-1 rounded-full">
-                {words[selectedWordIndex]?.start.toFixed(2)}s -{" "}
+                {words[selectedWordIndex]?.start.toFixed(2)}s -{' '}
                 {words[selectedWordIndex]?.end.toFixed(2)}s
               </span>
             </div>
@@ -361,28 +360,28 @@ export default function RealTimeTranscriptionPage({
               <Button
                 variant={
                   highlightedWords.has(selectedWordIndex)
-                    ? "default"
-                    : "outline"
+                    ? 'default'
+                    : 'outline'
                 }
                 onClick={() => toggleHighlight(selectedWordIndex)}
                 size="sm"
               >
                 <Highlighter className="w-3 h-3 mr-1" />
                 {highlightedWords.has(selectedWordIndex)
-                  ? "Remove Highlight"
-                  : "Highlight"}
+                  ? 'Remove Highlight'
+                  : 'Highlight'}
               </Button>
               <Button
                 variant={
-                  questionedWords.has(selectedWordIndex) ? "default" : "outline"
+                  questionedWords.has(selectedWordIndex) ? 'default' : 'outline'
                 }
                 onClick={() => toggleQuestion(selectedWordIndex)}
                 size="sm"
               >
                 <HelpCircle className="w-3 h-3 mr-1" />
                 {questionedWords.has(selectedWordIndex)
-                  ? "Remove Question"
-                  : "Question"}
+                  ? 'Remove Question'
+                  : 'Question'}
               </Button>
             </div>
           </div>
@@ -396,7 +395,7 @@ export default function RealTimeTranscriptionPage({
             <div className="flex items-center space-x-2">
               <div className="w-3 h-3 bg-green-500 rounded-full" />
               <span>
-                {words.filter((w) => w.word_is_final).length} final words
+                {words.filter(w => w.word_is_final).length} final words
               </span>
             </div>
             {highlightedWords.size > 0 && (
@@ -423,5 +422,5 @@ export default function RealTimeTranscriptionPage({
         </div>
       </div>
     </div>
-  );
+  )
 }

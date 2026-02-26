@@ -2,9 +2,9 @@ name: CI Pipeline
 
 on:
   push:
-    branches: [ "main", "develop", "**/release/**" ]
+    branches: ['main', 'develop', '**/release/**']
   pull_request:
-    branches: [ "main", "develop" ]
+    branches: ['main', 'develop']
 
 jobs:
   node:
@@ -23,20 +23,20 @@ jobs:
           cache: 'npm'
 
       - name: Install dependencies
-        run: npm ci 
+        run: npm ci
 
       - name: Run Tests
         env:
-            NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:1234' }}
-            NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'fake-key' }}
-        run: npx jest 
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:1234' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'fake-key' }}
+        run: npx jest
 
       - name: Build Next.js
         env:
-            NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:1234' }}
-            NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'fake-key' }}
+          NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL || 'http://localhost:1234' }}
+          NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'fake-key' }}
         run: npm run build
-          
+
   go:
     runs-on: ubuntu-latest
 
@@ -61,8 +61,10 @@ jobs:
         env:
           PORT: 9090
           FRONTEND_URL: http://localhost:3000
-
           ASSEMBLYAI_API_KEY: ${{ secrets.ASSEMBLYAI_API_KEY || 'fake-key' }}
+          SUPABASE_JWT_KEY: ${{ secrets.SUPABASE_JWT_KEY || 'fake-key' }}
+          DATABASE_URL: ${{ secrets.DATABASE_URL || 'postgresql://user:password@localhost:5432/dbname' }}
+
         run: |
           go run . &
           sleep 5

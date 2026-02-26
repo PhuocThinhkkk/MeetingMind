@@ -1,5 +1,5 @@
-@import "tailwindcss";
-@import "tw-animate-css";
+@import 'tailwindcss';
+@import 'tw-animate-css';
 
 @custom-variant dark (&:is(.dark *));
 @theme inline {
@@ -23,7 +23,9 @@
   --color-ring: var(--ring);
   --color-input: var(--input);
   --color-border: var(--border);
+  --color-border-destructive: var(--border-destructive);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
   --color-muted-foreground: var(--muted-foreground);
@@ -46,13 +48,13 @@
   --success: 142 76% 36%;
   --success-foreground: 355 7% 97%;
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
+  --background: oklch(0.985 0.002 285);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
   --card-foreground: oklch(0.141 0.005 285.823);
   --popover: oklch(1 0 0);
   --popover-foreground: oklch(0.141 0.005 285.823);
-  --primary: oklch(0.21 0.006 285.885);
+  --primary: oklch(0.35 0.04 260);
   --primary-foreground: oklch(0.985 0 0);
   --secondary: oklch(0.967 0.001 286.375);
   --secondary-foreground: oklch(0.21 0.006 285.885);
@@ -60,8 +62,10 @@
   --muted-foreground: oklch(0.552 0.016 285.938);
   --accent: oklch(0.967 0.001 286.375);
   --accent-foreground: oklch(0.21 0.006 285.885);
-  --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.92 0.004 286.32);
+  --destructive: oklch(66.023% 0.18805 31.271);
+  --destructive-foreground: oklch(0.985 0 0);
+  --border: oklch(0.88 0.004 286.32);
+  --border-destructive: oklch(0.88 0.004 286.32);
   --input: oklch(0.92 0.004 286.32);
   --ring: oklch(0.705 0.015 286.067);
   --chart-1: oklch(0.8 0.13 212);

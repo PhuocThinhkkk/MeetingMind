@@ -1,0 +1,32 @@
+language: en-US
+
+project:
+  language: TypeScript
+  framework: Next.js
+
+reviews:
+  profile: chill
+  auto_review:
+    enabled: true
+    base_branches:
+      - main
+      - develop
+  high_level_summary: true
+  path_instructions:
+    - path: '**/*.tsx'
+      instructions: |
+        - Focus on logic, performance, and functional issues only
+        - Do not suggest adding JSDoc docstrings to simple React components
+
+code_generation:
+  style: minimal
+  docstrings:
+    language: en-US
+    path_instructions:
+      - path: '**/*.tsx'
+        instructions: |
+          Do not generate or suggest JSDoc docstrings for simple React components
+
+ignore:
+  - '**/*.lock'
+  - 'node_modules/**'

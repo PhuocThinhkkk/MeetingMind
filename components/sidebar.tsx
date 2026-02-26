@@ -1,10 +1,10 @@
-"use client";
-import type * as React from "react";
-import { log } from "@/lib/logger";
-import { usePathname } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
-import { useState, useEffect } from "react";
-import { supabase } from "@/lib/supabase";
+'use client'
+import type * as React from 'react'
+import { log } from '@/lib/logger'
+import { usePathname } from 'next/navigation'
+import { useAuth } from '@/hooks/use-auth'
+import { useState, useEffect } from 'react'
+import { supabase } from '@/lib/supabase-init/supabase-browser'
 import {
   Sidebar,
   SidebarContent,
@@ -16,28 +16,33 @@ import {
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarRail,
-} from "@/components/ui/sidebar";
-import { Home, Calendar, History, AudioLines } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { FeatureLockWrapper } from "./coming-soon-wrapper";
+} from '@/components/ui/sidebar'
+import { Home, Calendar, History, AudioLines, Wallet } from 'lucide-react'
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
+import { FeatureLockWrapper } from './coming-soon-wrapper'
 
 const navItems = [
   {
-    title: "Home",
-    url: "home",
+    title: 'Home',
+    url: 'home',
     icon: Home,
   },
   {
-    title: "Calendar",
-    url: "#",
+    title: 'Calendar',
+    url: 'calendar',
     icon: Calendar,
   },
   {
-    title: "History",
-    url: "history",
+    title: 'History',
+    url: 'history',
     icon: History,
   },
-];
+  {
+    title: 'Pricing',
+    url: 'pricing',
+    icon: Wallet,
+  },
+]
 /**
  * Load a user profile from the `users` table for the given user ID.
  *
@@ -46,17 +51,17 @@ const navItems = [
  */
 async function fetchUserProfile(userId: string) {
   const { data, error } = await supabase
-    .from("users")
-    .select("*")
-    .eq("id", userId)
-    .single();
+    .from('users')
+    .select('*')
+    .eq('id', userId)
+    .single()
 
   if (error) {
-    log.error("Error fetching user profile:", error);
-    return null;
+    log.error('Error fetching user profile:', error)
+    return null
   }
 
-  return data;
+  return data
 }
 
 /**
@@ -65,13 +70,13 @@ async function fetchUserProfile(userId: string) {
  * @returns A Sidebar element populated with the current user's avatar, name, and email (when available), a navigation menu whose active item is derived from the current pathname, and a footer with product branding.
  */
 export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
-  const [user, setUser] = useState<any>(null);
+  const [user, setUser] = useState<any>(null)
 
-  const pathName = usePathname();
-  const auth = useAuth();
+  const pathName = usePathname()
+  const auth = useAuth()
   useEffect(() => {
-    loadUserProfile();
-  }, [auth.user]);
+    loadUserProfile()
+  }, [auth.user])
 
   /**
    * Load the authenticated user's profile into component state or clear it when unauthenticated.
@@ -80,11 +85,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
    */
   async function loadUserProfile() {
     if (auth.user) {
-      log.info("fetching user profile", auth.user.id);
-      const res = await fetchUserProfile(auth.user.id);
-      setUser(res);
+      log.info('fetching user profile', auth.user.id)
+      const res = await fetchUserProfile(auth.user.id)
+      setUser(res)
     } else {
-      setUser(null);
+      setUser(null)
     }
   }
 
@@ -94,13 +99,13 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <div className="flex items-center gap-3 px-2 py-4">
           <Avatar className="h-10 w-10">
             <AvatarImage
-              src={auth?.user?.user_metadata?.avatar_url || "/placeholder.svg"}
+              src={auth?.user?.user_metadata?.avatar_url || '/placeholder.svg'}
               alt={user?.name}
             />
             <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
-              {(user?.name?.split(" ") ?? [])
-                .map((n) => n?.[0] ?? "")
-                .join("") || "?"}
+              {(user?.name?.split(' ') ?? [])
+                .map((n: string) => n?.[0] ?? '')
+                .join('') || '?'}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
@@ -108,11 +113,11 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               {user?.name}
             </span>
             <span className="text-xs text-sidebar-foreground/70">
-              {!user?.email ?
-                  "" :
-                  user.email.length < 26
-                ? user.email
-                : user.email?.slice(0, 22) + "..."}
+              {!user?.email
+                ? ''
+                : user.email.length < 26
+                  ? user.email
+                  : user.email?.slice(0, 22) + '...'}
             </span>
           </div>
         </div>
@@ -122,8 +127,8 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
         <SidebarGroup>
           <SidebarGroupContent>
             <SidebarMenu className="gap-2">
-              {navItems.map((item) =>
-                item.url === "#" ? (
+              {navItems.map(item =>
+                item.url === '#' ? (
                   <SidebarMenuItem key={item.title}>
                     <FeatureLockWrapper>
                       <SidebarMenuButton
@@ -150,7 +155,7 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
                       </a>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
-                ),
+                )
               )}
             </SidebarMenu>
           </SidebarGroupContent>
@@ -173,5 +178,5 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
 
       <SidebarRail />
     </Sidebar>
-  );
+  )
 }

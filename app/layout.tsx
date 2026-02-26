@@ -1,16 +1,17 @@
-import './globals.css';
-import 'react-day-picker/dist/style.css';
-import type { Metadata } from 'next';
-import { Inter } from 'next/font/google';
-import { AuthProvider } from '@/hooks/use-auth';
-import { Toaster } from '@/components/ui/sonner';
+import './globals.css'
+import 'react-day-picker/dist/style.css'
+import type { Metadata } from 'next'
+import { Inter } from 'next/font/google'
+import { AuthProvider } from '@/hooks/use-auth'
+import { Toaster } from '@/components/ui/toaster'
 
-const inter = Inter({ subsets: ['latin'] });
+const inter = Inter({ subsets: ['latin'] })
 
 export const metadata: Metadata = {
   title: 'MeetingMind - AI-Powered Meeting Transcription',
-  description: 'Transform your meetings with AI-powered transcription, summaries, and insights',
-};
+  description:
+    'Transform your meetings with AI-powered transcription, summaries, and insights',
+}
 
 /**
  * Root application layout that wraps page content with the authentication provider and applies the global Inter font.
@@ -21,16 +22,14 @@ export const metadata: Metadata = {
 export default function RootLayout({
   children,
 }: {
-  children: React.ReactNode;
+  children: React.ReactNode
 }) {
   return (
     <html lang="en">
       <body className={inter.className}>
-        <AuthProvider>
-          {children}
-        </AuthProvider>
-        <Toaster/>
+        <AuthProvider>{children}</AuthProvider>
+        <Toaster />
       </body>
     </html>
-  );
+  )
 }

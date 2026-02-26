@@ -1,15 +1,15 @@
-"use client";
+'use client'
 
-import { Card } from "@/components/ui/card";
-import { useState } from "react";
-import { StatusBadge } from "@/components/status-badge";
-import { useRouter } from "next/navigation";
-import TimeDisplay from "@/components/time-display";
-import { AudioFile } from "@/types/transcription.db";
-import { formatDuration, formatFileSize } from "@/lib/utils";
-import { FileAudio, Pencil, Trash2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { log } from "@/lib/logger";
+import { Card } from '@/components/ui/card'
+import { useState } from 'react'
+import { StatusBadge } from '@/components/status-badge'
+import { useRouter } from 'next/navigation'
+import TimeDisplay from '@/components/time-display'
+import { AudioFileRow } from '@/types/transcriptions/transcription.db'
+import { formatDuration, formatFileSize } from '@/lib/ui-format/time-format'
+import { FileAudio, Pencil, Trash2 } from 'lucide-react'
+import { Button } from '@/components/ui/button'
+import { log } from '@/lib/logger'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -19,7 +19,7 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from "@/components/ui/alert-dialog";
+} from '@/components/ui/alert-dialog'
 import {
   Dialog,
   DialogContent,
@@ -27,16 +27,19 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-} from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { useAudio } from "@/components/context/audios-list-context";
-import { deleteAudioById, updateAudioName } from "@/lib/query/audio-operations";
-import { toast } from "sonner";
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import { Label } from '@/components/ui/label'
+import { useAudio } from '@/components/context/audios-list-context'
+import {
+  deleteAudioById,
+  updateAudioName,
+} from '@/lib/queries/browser/audio-operations'
+import { toast } from 'sonner'
 
 type CompactAudioCardProps = {
-  audio: AudioFile;
-};
+  audio: AudioFileRow
+}
 
 /**
  * Render a compact, focusable audio card for the given audio file.
@@ -48,33 +51,33 @@ type CompactAudioCardProps = {
  * @returns A JSX element representing the clickable audio card
  */
 export function CompactAudioCard({ audio }: CompactAudioCardProps) {
-  const router = useRouter();
-  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
-  const [showRenameDialog, setShowRenameDialog] = useState(false);
+  const router = useRouter()
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false)
+  const [showRenameDialog, setShowRenameDialog] = useState(false)
 
   const handleClick = () => {
-    router.push(`?audioId=${audio.id}`);
-  };
+    router.push(`?audioId=${audio.id}`, { scroll: false })
+  }
 
   const handleRename = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowRenameDialog(true);
-  };
+    e.stopPropagation()
+    setShowRenameDialog(true)
+  }
 
   const handleDelete = (e: React.MouseEvent) => {
-    e.stopPropagation();
-    setShowDeleteDialog(true);
-  };
+    e.stopPropagation()
+    setShowDeleteDialog(true)
+  }
 
   return (
     <>
       <Card
         className="p-3 hover:bg-accent/50 transition-colors cursor-pointer"
         onClick={handleClick}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleClick();
+        onKeyDown={e => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault()
+            handleClick()
           }
         }}
         role="button"
@@ -111,11 +114,11 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
         </div>
 
         <div className="flex items-start gap-3 pl-0">
-          <StatusBadge status={audio.transcription_status} />
+          <StatusBadge status={audio.transcription_status ?? 'unknown'} />
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <TimeDisplay dateString={audio.created_at} />
-            <span>{formatDuration(audio.duration)}</span>
-            <span>{formatFileSize(audio.file_size)}</span>
+            <TimeDisplay dateString={audio.created_at ?? 'Unknown time'} />
+            <span>{formatDuration(audio.duration ?? 0)}</span>
+            <span>{formatFileSize(audio.file_size ?? 0)}</span>
           </div>
         </div>
       </Card>
@@ -130,7 +133,7 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
         audio={audio}
       />
     </>
-  );
+  )
 }
 
 /**
@@ -148,33 +151,33 @@ function ConfirmDeletingDialog({
   setShowDeleteDialog,
   audio,
 }: {
-  showDeleteDialog: boolean;
-  setShowDeleteDialog: (arg: boolean) => void;
-  audio: AudioFile;
+  showDeleteDialog: boolean
+  setShowDeleteDialog: (arg: boolean) => void
+  audio: AudioFileRow
 }) {
-  const { audios, setAudios } = useAudio();
+  const { audios, setAudios } = useAudio()
   /**
-   * Confirm and perform deletion of the provided audio file.
+   * Delete the provided audio file with an optimistic local update.
    *
-   * Performs an optimistic removal of the audio from local state, closes the delete dialog, logs the action, and then attempts to delete the audio on the server. If the audio cannot be found locally, shows an error toast and aborts. If the server deletion fails, restores the removed audio to local state and shows an error toast.
+   * Performs an optimistic removal of the audio from local state, closes the delete dialog, logs the deletion attempt, and then attempts to delete the audio on the server. If the audio is not found locally, shows an error toast and aborts. If the server deletion fails, restores the removed audio to local state and shows an error toast.
    */
   async function confirmDelete() {
-    const target = audios.find((a) => a.id === audio.id);
+    const target = audios.find(a => a.id === audio.id)
     try {
       if (!target) {
-        toast.error("There is no audio like that to delete");
-        return;
+        toast.error('There is no audio like that to delete')
+        return
       }
-      setAudios((prev) => prev.filter((a) => a.id !== audio.id));
-      log.info("Delete audio:", audio.id);
-      setShowDeleteDialog(false);
-      await deleteAudioById(audio.id);
+      setAudios(prev => prev.filter(a => a.id !== audio.id))
+      log.info('Delete audio:', audio.id)
+      setShowDeleteDialog(false)
+      await deleteAudioById(audio.id)
     } catch (e) {
       if (!target) {
-        return;
+        return
       }
-      setAudios((prev) => [...prev, target]);
-      toast.error("Error deleting audio, pls try again");
+      setAudios(prev => [...prev, target])
+      toast.error('Error deleting audio, pls try again')
     }
   }
   return (
@@ -199,7 +202,7 @@ function ConfirmDeletingDialog({
         </AlertDialogFooter>
       </AlertDialogContent>
     </AlertDialog>
-  );
+  )
 }
 
 /**
@@ -215,55 +218,56 @@ function RenameInputDialog({
   setShowRenameDialog,
   audio,
 }: {
-  showRenameDialog: boolean;
-  setShowRenameDialog: (arg: boolean) => void;
-  audio: AudioFile;
+  showRenameDialog: boolean
+  setShowRenameDialog: (arg: boolean) => void
+  audio: AudioFileRow
 }) {
-  const { setAudios } = useAudio();
-  const [newName, setNewName] = useState(audio.name);
+  const { setAudios } = useAudio()
+  const [newName, setNewName] = useState(audio.name)
 
   /**
-   * Perform an optimistic rename for the provided audio: update local state, close the rename dialog, and persist the new name to the backend.
+   * Optimistically rename the audio: update local audios with `newName`, close the rename dialog, and persist the change to the backend.
    *
-   * If the backend update fails, shows an error toast, logs the error, and restores the previous name in local state when available.
+   * If persisting fails, show an error toast, log the error, and restore the previous name in local state when available.
    */
   async function confirmRename() {
-    let oldName: string = "";
+    let oldName: string = ''
     try {
-      setAudios((prev) =>
-        prev.map((a) => {
+      setAudios(prev =>
+        prev.map(a => {
           if (a.id === audio.id) {
-            oldName = a.name;
-            return { ...a, name: newName };
+            oldName = a.name
+            return { ...a, name: newName }
           } else {
-            return a;
+            return a
           }
-        }),
-      );
+        })
+      )
 
-      log.info("Rename audio:", audio.id, "New name:", newName);
-      setShowRenameDialog(false);
-      await updateAudioName(audio.id, newName);
+      log.info('Rename audio:', audio.id)
+      log.info('New name:', newName)
+      setShowRenameDialog(false)
+      await updateAudioName(audio.id, newName)
     } catch (e) {
-      toast.error(`Can not rename the ${audio.name} audio`);
-      if (oldName === "") {
-        log.error("There some error when selecting the audio, pls try again");
-        return;
+      toast.error(`Can not rename the ${audio.name} audio`)
+      if (oldName === '') {
+        log.error('There some error when selecting the audio, pls try again')
+        return
       }
-      setAudios((prev) =>
-        prev.map((a) => {
+      setAudios(prev =>
+        prev.map(a => {
           if (a.id === audio.id) {
-            return { ...a, name: oldName };
+            return { ...a, name: oldName }
           } else {
-            return a;
+            return a
           }
-        }),
-      );
+        })
+      )
     }
   }
   return (
     <Dialog open={showRenameDialog} onOpenChange={setShowRenameDialog}>
-      <DialogContent onClick={(e) => e.stopPropagation()}>
+      <DialogContent onClick={e => e.stopPropagation()}>
         <DialogHeader>
           <DialogTitle>Rename Audio File</DialogTitle>
           <DialogDescription>
@@ -276,10 +280,10 @@ function RenameInputDialog({
             <Input
               id="name"
               value={newName}
-              onChange={(e) => setNewName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") {
-                  confirmRename();
+              onChange={e => setNewName(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') {
+                  confirmRename()
                 }
               }}
               placeholder="Enter new name"
@@ -294,5 +298,5 @@ function RenameInputDialog({
         </DialogFooter>
       </DialogContent>
     </Dialog>
-  );
+  )
 }

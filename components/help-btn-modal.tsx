@@ -1,45 +1,45 @@
-"use client";
+'use client'
 
-import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { X, ChevronLeft, ChevronRight } from "lucide-react";
+import { useState } from 'react'
+import { Button } from '@/components/ui/button'
+import { X, ChevronLeft, ChevronRight } from 'lucide-react'
 
 export function HelpModal() {
-  const [isOpen, setIsOpen] = useState(false);
-  const [currentPage, setCurrentPage] = useState(0);
+  const [isOpen, setIsOpen] = useState(false)
+  const [currentPage, setCurrentPage] = useState(0)
 
   const pages = [
     {
-      title: "Getting Started, Microphone Audio Setup",
+      title: 'Getting Started, Microphone Audio Setup',
       description:
-        "Welcome to the help guide! To enable audio for microphone input, please allow microphone access when prompted by your browser.",
-      imageUrl: "/images/micro-audio.png",
+        'Welcome to the help guide! To enable audio for microphone input, please allow microphone access when prompted by your browser.',
+      imageUrl: '/images/micro-audio.png',
     },
     {
-      title: "System Audio Setup",
+      title: 'System Audio Setup',
       description:
-        "If you also want to capture audio from another tab or even system audio from your entire computer, ",
-      imageUrl: "/images/system-audio.png",
+        'If you also want to capture audio from another tab or even system audio from your entire computer, ',
+      imageUrl: '/images/system-audio.png',
     },
-  ];
+  ]
 
-  const currentPageData = pages[currentPage];
+  const currentPageData = pages[currentPage]
 
   const handleNext = () => {
     if (currentPage < pages.length - 1) {
-      setCurrentPage(currentPage + 1);
+      setCurrentPage(currentPage + 1)
     }
-  };
+  }
 
   const handlePrev = () => {
     if (currentPage > 0) {
-      setCurrentPage(currentPage - 1);
+      setCurrentPage(currentPage - 1)
     }
-  };
+  }
 
   function handleClose() {
-    setIsOpen(false);
-    setCurrentPage(0);
+    setIsOpen(false)
+    setCurrentPage(0)
   }
 
   return (
@@ -66,7 +66,7 @@ export function HelpModal() {
         >
           <div
             className="bg-card rounded-lg shadow-xl max-w-2xl w-full max-h-[90vh] overflow-hidden flex flex-col"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
             {/* Header */}
             <div className="flex items-center justify-between p-6 border-b border-border">
@@ -87,7 +87,7 @@ export function HelpModal() {
               {/* Image Section */}
               <div className="w-full h-64 bg-muted rounded-lg overflow-hidden flex items-center justify-center">
                 <img
-                  src={currentPageData.imageUrl || "/placeholder.svg"}
+                  src={currentPageData.imageUrl || '/placeholder.svg'}
                   alt={currentPageData.title}
                   className="w-full h-full object-contain"
                 />
@@ -129,5 +129,5 @@ export function HelpModal() {
         </div>
       )}
     </>
-  );
+  )
 }

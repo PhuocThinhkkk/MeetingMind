@@ -7,15 +7,15 @@ jest.mock('next/navigation', () => ({
       replace: jest.fn(),
       prefetch: jest.fn(),
       back: jest.fn(),
-    };
+    }
   },
   usePathname() {
-    return '';
+    return ''
   },
   useSearchParams() {
-    return new URLSearchParams();
+    return new URLSearchParams()
   },
-}));
+}))
 
 global.WebSocket = jest.fn(() => ({
   send: jest.fn(),
@@ -26,17 +26,15 @@ global.WebSocket = jest.fn(() => ({
   onclose: null,
   onmessage: null,
   onerror: null,
-}));
+}))
 
-jest.mock("/lib/logger", () => ({
+jest.mock('/lib/logger', () => ({
   log: {
     info: jest.fn(),
     warn: jest.fn(),
     error: jest.fn(),
   },
-}));
+}))
 
-import { Blob } from "buffer";
-global.Blob = Blob;
-
-
+import { Blob } from 'buffer'
+global.Blob = Blob

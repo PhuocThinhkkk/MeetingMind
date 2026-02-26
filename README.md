@@ -1,10 +1,11 @@
 <a id="readme-top"></a>
+
 <div align="center">
   <h1 align="center">MeetingMind</h1>
 
 [product-screenshot]: ./assets/mockup-image.png
-[![Product Name Screen Shot][product-screenshot]](./assets/mockup-image.png)
 
+[![Product Name Screen Shot][product-screenshot]](./assets/mockup-image.png)
 
   <p align="center">
     Transcription your meeting in real-time from browser
@@ -25,6 +26,7 @@ The app is live and available to try <a href="https://meeting-mind-nu.vercel.app
 (sometime the websocket server not working well cause i use free tier when deploying on Render)
 
 <br><br>
+
 <details>
   <summary>Table of Contents</summary>
   <ol>
@@ -41,24 +43,24 @@ The app is live and available to try <a href="https://meeting-mind-nu.vercel.app
   </ol>
 </details>
 
-
 ## About The Project
+
 ### Demo
+
 <div align="center">
 
 ![demo-video-clip](./assets/demo-gif.gif)
 
 </div>
 
-
-
 ### Built With
-* [![Next][Next.js]][Next-url]
-* [![Go][Go]][Go-url]
-* [![Supabase][Supabase]][Supabase-url]
 
+- [![Next][Next.js]][Next-url]
+- [![Go][Go]][Go-url]
+- [![Supabase][Supabase]][Supabase-url]
 
 ## Getting Started
+
 Reading the setup document right [here](./docs/setup.md)
 
 [vercel-link]: https://meeting-mind-nu.vercel.app
@@ -71,4 +73,3 @@ Reading the setup document right [here](./docs/setup.md)
 [Go-url]: https://golang.org/
 [Supabase]: https://img.shields.io/badge/Supabase-latest-3ECF8E?style=flat-square&logo=supabase&logoColor=white
 [Supabase-url]: https://supabase.com/
-

@@ -1,6 +1,11 @@
-import { getAudioHistory, saveAudioFile, updateAudioName, deleteAudioById } from '@/lib/query/audio-operations'
-import { supabase } from '@/lib/supabase'
-import { getAudioDuration } from '@/lib/transcriptionUtils'
+import {
+  getAudioHistory,
+  saveAudioFile,
+  updateAudioName,
+  deleteAudioById,
+} from '@/lib/queries/browser/audio-operations'
+import { supabase } from '@/lib/supabase-init/supabase-browser'
+import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -56,7 +61,9 @@ describe('Audio Query Functions', () => {
 
       const mockSelect = jest.fn().mockReturnThis()
       const mockEq = jest.fn().mockReturnThis()
-      const mockOrder = jest.fn().mockResolvedValue({ data: mockData, error: null })
+      const mockOrder = jest
+        .fn()
+        .mockResolvedValue({ data: mockData, error: null })
 
       ;(supabase.from as jest.Mock).mockReturnValue({
         select: mockSelect,
@@ -122,7 +129,9 @@ describe('Audio Query Functions', () => {
 
       const mockSelect = jest.fn().mockReturnThis()
       const mockEq = jest.fn().mockReturnThis()
-      const mockOrder = jest.fn().mockResolvedValue({ data: mockData, error: null })
+      const mockOrder = jest
+        .fn()
+        .mockResolvedValue({ data: mockData, error: null })
 
       ;(supabase.from as jest.Mock).mockReturnValue({
         select: mockSelect,
@@ -222,7 +231,9 @@ describe('Audio Query Functions', () => {
         upload: mockUpload,
       })
 
-      await expect(saveAudioFile(mockBlob, 'user-1', 'Test')).rejects.toThrow(uploadError)
+      await expect(saveAudioFile(mockBlob, 'user-1', 'Test')).rejects.toThrow(
+        uploadError
+      )
     })
 
     it('should handle duration calculation failure gracefully', async () => {
@@ -237,8 +248,9 @@ describe('Audio Query Functions', () => {
         upload: mockUpload,
         getPublicUrl: mockGetPublicUrl,
       })
-
-      ;(getAudioDuration as jest.Mock).mockRejectedValue(new Error('Duration calc failed'))
+      ;(getAudioDuration as jest.Mock).mockRejectedValue(
+        new Error('Duration calc failed')
+      )
 
       const mockInsert = jest.fn().mockReturnThis()
       const mockSelect = jest.fn().mockReturnThis()
@@ -336,7 +348,9 @@ describe('Audio Query Functions', () => {
         single: mockSingle,
       })
 
-      await expect(updateAudioName('audio-1', 'New Name')).rejects.toThrow(mockError)
+      await expect(updateAudioName('audio-1', 'New Name')).rejects.toThrow(
+        mockError
+      )
     })
   })
 

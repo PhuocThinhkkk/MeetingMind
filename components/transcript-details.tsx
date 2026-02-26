@@ -1,13 +1,13 @@
-import { log } from "@/lib/logger";
-import { Badge } from "@/components/ui/badge";
-import { Calendar } from "lucide-react";
-import { Transcript } from "@/types/transcription.db";
-import { formatDate } from "@/lib/utils";
+import { log } from '@/lib/logger'
+import { Badge } from '@/components/ui/badge'
+import { Calendar } from 'lucide-react'
+import { Transcript } from '@/types/transcriptions/transcription.db'
+import { formatDate } from '@/lib/ui-format/time-format'
 
 type TranscriptDetailsProps = {
-  transcript: Transcript;
-  currentTimeSeconds: number;
-};
+  transcript: Transcript
+  currentTimeSeconds: number
+}
 
 /**
  * Render transcript metadata and the transcript text with a truncated ID badge and active-word highlighting.
@@ -22,24 +22,24 @@ export function TranscriptDetails({
   transcript,
   currentTimeSeconds,
 }: TranscriptDetailsProps) {
-  const currentMs = currentTimeSeconds * 1000;
+  const currentMs = currentTimeSeconds * 1000
   let currentTranscriptId = transcript.id
-    ? transcript.id.slice(0, 8) + "..."
-    : "N/A";
+    ? transcript.id.slice(0, 8) + '...'
+    : 'N/A'
 
   if (!transcript.id) {
-    log.error("Transcript ID is undefined", transcript);
+    log.error('Transcript ID is undefined', transcript)
   }
 
-  const windowBefore = 300; 
-  const windowAfter = 300; 
+  const windowBefore = 300
+  const windowAfter = 300
 
   const activeWords =
     transcript.words?.filter(
-      (word) =>
+      word =>
         currentMs >= word.start_time - windowBefore &&
-        currentMs <= word.end_time + windowAfter,
-    ) || [];
+        currentMs <= word.end_time + windowAfter
+    ) || []
 
   return (
     <div className="space-y-4">
@@ -65,16 +65,18 @@ export function TranscriptDetails({
 
         <p className="text-sm text-foreground leading-relaxed">
           {transcript.words ? (
-            transcript.words.map((word) => {
-              const isActive = activeWords.includes(word);
+            transcript.words.map(word => {
+              const isActive = activeWords.includes(word)
               return (
                 <span
                   key={word.id}
-                  className={isActive ? "text-blue-500 bg-blue-100 font-bold" : ""}
+                  className={
+                    isActive ? 'text-blue-500 bg-blue-100 font-bold' : ''
+                  }
                 >
-                  {word.text + " "}
+                  {word.text + ' '}
                 </span>
-              );
+              )
             })
           ) : (
             <span>{transcript.text}</span>
@@ -82,5 +84,5 @@ export function TranscriptDetails({
         </p>
       </div>
     </div>
-  );
+  )
 }

@@ -35,7 +35,8 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+supabase/.temp/
 
 socket-server/.env
 
-.vscode
+backups/

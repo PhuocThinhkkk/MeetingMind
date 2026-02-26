@@ -1,40 +1,32 @@
-"use client";
+'use client'
 
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-import { useAuth } from "@/hooks/use-auth";
-import { log } from "@/lib/logger"
+import { useEffect } from 'react'
+import { useRouter } from 'next/navigation'
+import { useAuth } from '@/hooks/use-auth'
+import { log } from '@/lib/logger'
+import { serverCheck } from '@/lib/utils/server-check'
 
 export default function Home() {
-  const router = useRouter();
-  const { user, loading } = useAuth();
+  const router = useRouter()
+  const { user, loading } = useAuth()
 
   useEffect(() => {
-    const serverCheck = async () => {
-      try {
-        let wsDomain =
-          process.env.NEXT_PUBLIC_WS_SERVER_URL || "ws://localhost:9090";
-        wsDomain = wsDomain.replace(/^wss?:\/\//, "");
-        const protocol = location.protocol.replace(":", ""); 
-        const wsUrl = `${protocol}://${wsDomain}`;
+    wakingUpServer()
+  }, [])
 
-        log.info(wsUrl);
-        const res = await fetch(`${wsUrl}`);
-        if (!res.ok) {
-          throw new Error(`Server responded with status ${res.status}`);
-        }
-      } catch (error) {
-        console.error("Server is not reachable:", error);
-      }
-    };
-    serverCheck();
-  }, []);
+  async function wakingUpServer() {
+    try {
+      await serverCheck()
+    } catch (error) {
+      log.error('Server is not reachable:', error)
+    }
+  }
 
   useEffect(() => {
     if (!loading && user) {
-      // router.push("/home");
+      router.push('/home')
     }
-  }, [user, loading, router]);
+  }, [user, loading, router])
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
@@ -88,8 +80,8 @@ export default function Home() {
                     title=""
                     className="text-base font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
                   >
-                    {" "}
-                    Features{" "}
+                    {' '}
+                    Features{' '}
                   </a>
 
                   <a
@@ -97,8 +89,8 @@ export default function Home() {
                     title=""
                     className="text-base font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
                   >
-                    {" "}
-                    Pricing{" "}
+                    {' '}
+                    Pricing{' '}
                   </a>
 
                   <a
@@ -106,8 +98,8 @@ export default function Home() {
                     title=""
                     className="text-base font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
                   >
-                    {" "}
-                    Automation{" "}
+                    {' '}
+                    Automation{' '}
                   </a>
                 </div>
 
@@ -118,8 +110,8 @@ export default function Home() {
                   title=""
                   className="text-base font-medium text-gray-900 transition-all duration-200 rounded focus:outline-none font-pj hover:text-opacity-50 focus:ring-1 focus:ring-gray-900 focus:ring-offset-2"
                 >
-                  {" "}
-                  Login{" "}
+                  {' '}
+                  Login{' '}
                 </a>
 
                 <a
@@ -166,9 +158,9 @@ export default function Home() {
                     </div>
 
                     <p className="mt-4 text-lg text-gray-900 lg:mt-0 lg:ml-0 font-pj">
-                      Automatically{" "}
+                      Automatically{' '}
                       <span className="font-bold">
-                        transcribe, summarize, and organize{" "}
+                        transcribe, summarize, and organize{' '}
                       </span>
                       your conversations in seconds.
                     </p>
@@ -223,5 +215,5 @@ export default function Home() {
         </section>
       </div>
     </div>
-  );
+  )
 }
