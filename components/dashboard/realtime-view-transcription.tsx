@@ -36,8 +36,8 @@ export default function RealTimeTranscriptionPage({
   transcriptionWords: words = [],
   translationWords = [],
   isVisible = true,
-  onExit = async () => {},
-  onStopRecording = async () => {},
+  onExit = async () => { },
+  onStopRecording = async () => { },
 }: RealTimeTranscriptionPageProps) {
   const [isAnimating, setIsAnimating] = useState(false)
   const [highlightedWords, setHighlightedWords] = useState<Set<number>>(
@@ -122,9 +122,8 @@ export default function RealTimeTranscriptionPage({
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-white flex flex-col transform transition-all duration-300 ease-out ${
-        isAnimating ? 'translate-y-0' : 'translate-y-full'
-      }`}
+      className={`fixed inset-0 z-50 bg-white flex flex-col transform transition-all duration-300 ease-out ${isAnimating ? 'translate-y-0' : 'translate-y-full'
+        }`}
     >
       {/* Header */}
       <div className="border-b bg-white shadow-sm">

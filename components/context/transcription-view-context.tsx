@@ -99,7 +99,6 @@ export function useTranscriptionViewData(audioId: string) {
       setQaLogs(logs)
     } catch (e) {
       log.error('refreshQaLogs error', e)
-      setError(e)
     }
   }, [audioId])
 

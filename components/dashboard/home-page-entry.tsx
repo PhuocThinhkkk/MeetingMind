@@ -72,6 +72,7 @@ export default function HomePageEntry() {
    * @param file - The audio `File` to upload.
    */
   async function handleFileUpload(file: File) {
+    if (uploading) return
     if (!user) {
       log.error('User not authenticated')
       return
@@ -102,6 +103,7 @@ export default function HomePageEntry() {
     file: File,
     transcriptionWords: SaveTranscriptInput
   ) {
+    if (uploading) return
     if (!user) {
       log.error('User not authenticated')
       return

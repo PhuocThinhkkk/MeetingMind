@@ -36,6 +36,7 @@ export function useUploadController(
         description: 'Saved successfully',
         variant: 'default',
       })
+      return true
     } catch (e) {
       setState('error')
       toast({
@@ -43,6 +44,7 @@ export function useUploadController(
         description: 'There is error when saving audio.',
         variant: 'destructive',
       })
+      return false
     }
   }
 

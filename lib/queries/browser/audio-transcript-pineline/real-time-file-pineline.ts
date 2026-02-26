@@ -2,13 +2,11 @@ import { sanitizedFileName } from '@/lib/transcript/extract-file-name'
 import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
 import { fetchPresignedUrlAndUpload, triggerAnalyze } from './utils'
 import { log } from '@/lib/logger'
-import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
 import {
   saveTranscript,
   saveTranscriptWords,
 } from '@/lib/queries/browser/transcription-operations'
 import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
-import { updateAudioComplete } from '../../server/audio-upload-operations'
 import { updateAudioStatus } from '../audio-operations'
 /**
  * Uploads a local audio file, saves its realtime transcript and words, and triggers analysis for the uploaded audio.
