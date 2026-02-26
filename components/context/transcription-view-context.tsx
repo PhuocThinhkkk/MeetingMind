@@ -11,12 +11,9 @@ import { getTranscriptWordNestedByAudioId } from '@/lib/queries/browser/transcri
 import type {
   QALogRow,
   TranscriptionDataUpload,
-  TranscriptWithWordNested,
 } from '@/types/transcriptions/transcription.db'
 import type {
   EventItemRow,
-  SummaryRow,
-  AudioFileRow,
 } from '@/types/transcriptions/transcription.db'
 
 /**
@@ -89,6 +86,18 @@ export function useTranscriptionViewData(audioId: string) {
     setQaLogs(prev => [...prev, qaLog])
   }, [])
 
+  const deleteEvent = useCallback((id: string) => {
+    setEvents?.(events.filter((e: EventItemRow) => e.id !== id))
+  }, [])
+
+  const updateEvent = useCallback((event: EventItemRow) => {
+    setEvents?.(prev =>
+      prev.map(e =>
+        e.id === event.id ? { ...e, ...event } : e
+      )
+    )
+  }, [])
+
   const replaceQaLogs = useCallback((logs: QALogRow[]) => {
     setQaLogs(logs)
   }, [])
@@ -127,6 +136,8 @@ export function useTranscriptionViewData(audioId: string) {
     setQaLogs: replaceQaLogs,
     appendQaLog,
     refreshQaLogs,
+    deleteEvent,
+    updateEvent,
   }
 }
 
@@ -146,6 +157,8 @@ type TranscriptionViewContextValue = {
   appendQaLog: (log: QALogRow) => void
   setQaLogs: (logs: QALogRow[]) => void
   refreshQaLogs: () => Promise<void>
+  deleteEvent: (id: string) => void
+  updateEvent: (event: EventItemRow) => void
 }
 
 const TranscriptionViewContext =
@@ -183,6 +196,8 @@ export function TranscriptionViewProvider({
     appendQaLog: view.appendQaLog,
     setQaLogs: view.setQaLogs,
     refreshQaLogs: view.refreshQaLogs,
+    deleteEvent: view.deleteEvent,
+    updateEvent: view.updateEvent,
   } // all of this damn thing just for prevent nullable in the dialog components, this is the pain in the ass
 
   return (

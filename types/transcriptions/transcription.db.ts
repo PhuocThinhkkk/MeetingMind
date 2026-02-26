@@ -59,7 +59,7 @@ export type TranscriptionDataUpload = {
   audioFile: AudioFileRow
   transcript?: TranscriptWithWordNested
   summary?: SummaryBase
-  events: EventItemBase[]
+  events: EventItemRow[]
   qaLogs: QALogBase[]
 }
 export type TranscriptWordInsert =
@@ -68,4 +68,5 @@ export type QALogInsert = Database['public']['Tables']['qa_logs']['Insert']
 
 export type QALogBase = Omit<QALogRow, 'id' | 'user_id' | 'audio_id'>
 export type SummaryBase = Omit<SummaryRow, 'id' | 'user_id' | 'audio_id'>
-export type EventItemBase = Omit<EventItemRow, 'id' | 'user_id' | 'audio_id'>
+export type EventItemBase = Omit<EventItemRow, 'id' | 'user_id' | 'audio_id'> &
+  Partial<Pick<EventItemRow, 'id' | 'audio_id'>>

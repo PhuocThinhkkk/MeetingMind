@@ -13,7 +13,7 @@ import { FileText } from 'lucide-react'
 import { TranscriptTab } from '@/components/dashboard/transcription-view/transcript-tab'
 import { QATab } from './qa-tab'
 import { SummaryTab } from './summary-tab'
-import { EventsTab } from './event-tab'
+import { EventsTab } from './event/event-tab'
 import { log } from '@/lib/logger'
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
 
