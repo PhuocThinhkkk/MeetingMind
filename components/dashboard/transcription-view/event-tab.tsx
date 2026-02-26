@@ -1,3 +1,4 @@
+"use client"
 import {
   Card,
   CardContent,
@@ -9,9 +10,11 @@ import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Calendar, CheckCircle } from 'lucide-react'
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
+import { useRouter } from 'next/navigation'
 
 export function EventsTab() {
   const { events } = useTranscriptionView()
+  const router = useRouter()
   return (
     <Card className="h-full">
       <CardHeader>
@@ -45,9 +48,9 @@ export function EventsTab() {
                     Added
                   </Badge>
                 ) : (
-                  <Button size="sm" variant="outline">
+                  <Button onClick={() => { router.push("/calendar") }} size="sm" variant="outline">
                     <Calendar className="w-4 h-4 mr-1" />
-                    Add
+                    Sync calendar
                   </Button>
                 )}
               </div>
