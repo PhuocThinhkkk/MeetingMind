@@ -1,4 +1,4 @@
-"use client"
+'use client'
 import { useState } from 'react'
 import {
   Card,
@@ -23,7 +23,9 @@ export function EventsTab() {
   const { toast } = useToast()
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null)
 
-  const selectedEvent = events.find((e: EventItemRow) => e.id === selectedEventId)
+  const selectedEvent = events.find(
+    (e: EventItemRow) => e.id === selectedEventId
+  )
 
   const handleDelete = async (id: string) => {
     try {
@@ -57,7 +59,7 @@ export function EventsTab() {
             No events detected.
           </div>
         ) : (
-          events.map((event) => (
+          events.map(event => (
             <div key={event.id} className="p-4 border rounded-lg">
               <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
@@ -69,7 +71,9 @@ export function EventsTab() {
                     <p className="text-sm text-gray-500">{event.location}</p>
                   )}
                   {event.description && (
-                    <p className="text-sm text-gray-600 mt-1">{event.description}</p>
+                    <p className="text-sm text-gray-600 mt-1">
+                      {event.description}
+                    </p>
                   )}
                 </div>
 
@@ -80,7 +84,13 @@ export function EventsTab() {
                       Added
                     </Badge>
                   ) : (
-                    <Button onClick={() => { router.push("/calendar") }} size="sm" variant="outline">
+                    <Button
+                      onClick={() => {
+                        router.push('/calendar')
+                      }}
+                      size="sm"
+                      variant="outline"
+                    >
                       <Calendar className="w-4 h-4 mr-1" />
                       Sync
                     </Button>
@@ -114,10 +124,9 @@ export function EventsTab() {
       <EditEventModal
         open={!!selectedEventId}
         event={selectedEvent ?? null}
-        onOpenChange={(open) => !open && setSelectedEventId(null)}
+        onOpenChange={open => !open && setSelectedEventId(null)}
         onEventUpdated={handleEventUpdated}
       />
     </Card>
   )
 }
-

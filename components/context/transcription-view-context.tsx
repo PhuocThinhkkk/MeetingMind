@@ -12,9 +12,7 @@ import type {
   QALogRow,
   TranscriptionDataUpload,
 } from '@/types/transcriptions/transcription.db'
-import type {
-  EventItemRow,
-} from '@/types/transcriptions/transcription.db'
+import type { EventItemRow } from '@/types/transcriptions/transcription.db'
 
 /**
  * Manages loading and local state for transcription data associated with an audio ID.
@@ -92,9 +90,7 @@ export function useTranscriptionViewData(audioId: string) {
 
   const updateEvent = useCallback((event: EventItemRow) => {
     setEvents?.(prev =>
-      prev.map(e =>
-        e.id === event.id ? { ...e, ...event } : e
-      )
+      prev.map(e => (e.id === event.id ? { ...e, ...event } : e))
     )
   }, [])
 

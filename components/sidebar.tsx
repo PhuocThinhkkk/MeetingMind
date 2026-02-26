@@ -103,12 +103,9 @@ export function AppSidebar({ ...props }: React.ComponentProps<typeof Sidebar>) {
               alt={user?.name}
             />
             <AvatarFallback className="bg-sidebar-primary text-sidebar-primary-foreground">
-              {
-                //@ts-ignore
-                (user?.name?.split(' ') ?? [])
-                  .map(n => n?.[0] ?? '')
-                  .join('') || '?'
-              }
+              {(user?.name?.split(' ') ?? [])
+                .map((n: string) => n?.[0] ?? '')
+                .join('') || '?'}
             </AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
