@@ -19,6 +19,7 @@ import { toast } from '@/hooks/use-toast'
 import { LoadingOverlay } from '../loading-overlay'
 import { useUploadController } from '@/hooks/use-upload-controller'
 import { log } from '@/lib/logger'
+import { serverCheck } from '@/lib/utils/server-check'
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (

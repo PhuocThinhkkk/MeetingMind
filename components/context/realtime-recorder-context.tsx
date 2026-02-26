@@ -24,6 +24,7 @@ import {
 
 import { resampleTo16kHz, float32ToInt16 } from '@/lib/transcript/transcript-realtime-utils'
 import { useAuth } from '@/hooks/use-auth'
+import { serverCheck } from '@/lib/utils/server-check'
 
 const SAMPLE_RATE = 16000
 const CHUNK_MS = 128
@@ -127,6 +128,13 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   const startRecording = useCallback(async () => {
     clearTranscript()
     updateStatus('connecting')
+    try {
+      await serverCheck()
+    } catch (e: any) {
+      updateStatus("error")
+      log.error(e)
+      throw e
+    }
     connectWebSocket()
 
     const audioContext = initAudioContext()
