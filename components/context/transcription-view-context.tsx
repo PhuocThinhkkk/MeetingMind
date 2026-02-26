@@ -85,7 +85,7 @@ export function useTranscriptionViewData(audioId: string) {
   }, [])
 
   const deleteEvent = useCallback((id: string) => {
-    setEvents?.(events.filter((e: EventItemRow) => e.id !== id))
+    setEvents(prev => prev.filter((e: EventItemRow) => e.id !== id))
   }, [])
 
   const updateEvent = useCallback((event: EventItemRow) => {
