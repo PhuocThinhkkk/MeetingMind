@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
-import { log } from '@/lib/logger'
 import { Badge } from '@/components/ui/badge'
 import {
   Mic,
@@ -19,6 +18,8 @@ import { formatDuration } from '@/lib/ui-format/time-format'
 import { toast } from '@/hooks/use-toast'
 import { LoadingOverlay } from '../loading-overlay'
 import { useUploadController } from '@/hooks/use-upload-controller'
+import { log } from '@/lib/logger'
+import { serverCheck } from '@/lib/utils/server-check'
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (
@@ -64,8 +65,16 @@ export function RealtimeRecorder({
   }, [sessionStartTime, isRecording])
 
   async function handleStartRecording() {
-    await startRecording()
-    setShowTranscription(true)
+    try {
+      await startRecording()
+      setShowTranscription(true)
+    } catch (e: any) {
+      toast({
+        title: 'Error start recording.',
+        description: e.message,
+        variant: 'destructive',
+      })
+    }
   }
 
   /**
@@ -75,21 +84,21 @@ export function RealtimeRecorder({
    * when the upload completes and the controller is idle the component UI is reset.
    */
   async function handleStopRecording() {
-    const audioBlob = stopRecording()
-    if (!audioBlob) {
-      toast({
-        title: "Error",
-        description: "Audio not found when stop recording.",
-        variant: 'destructive'
-      })
-      return
-    }
-    await uploadCtrl.upload(audioBlob, transcriptWords)
-    if (uploadCtrl.state === 'idle') {
-      handleCloseAll()
+    try {
+      const audioBlob = stopRecording()
+      if (!audioBlob) {
+        log.error('no audio found')
+        uploadCtrl.setState('error')
+        return
+      }
+      const success = await uploadCtrl.upload(audioBlob, transcriptWords)
+      if (!success) {
+        handleCloseAll()
+      }
+    } catch (e: any) {
+      toast({ title: 'Error', description: e.message, variant: 'destructive' })
     }
   }
-
 
   /**
    * Reset recorder-related state to idle and hide any open transcription UI.
@@ -100,7 +109,6 @@ export function RealtimeRecorder({
     setShowTranscription(false)
     setSessionStartTime(null)
   }
-
 
   /**
    * Selects the Tailwind CSS class string used for the status badge based on the current recorder status.
@@ -167,10 +175,11 @@ export function RealtimeRecorder({
 
             <div>
               <div
-                className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${isRecording
-                  ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                  : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
-                  }`}
+                className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
+                  isRecording
+                    ? 'bg-red-500 hover:bg-red-600 animate-pulse'
+                    : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
+                }`}
               >
                 {status === 'connecting' ? (
                   <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
@@ -256,7 +265,9 @@ export function RealtimeRecorder({
         message="We are uploading your audio pls wait for a bit."
         errorMessage="There was something wrong when uploading your audio, please try again."
         onRetry={() => uploadCtrl.retry(transcriptWords)}
-        onDismiss={uploadCtrl.dismiss}
+        onDismiss={() => {
+          uploadCtrl.dismiss(handleCloseAll)
+        }}
       />
     </>
   )

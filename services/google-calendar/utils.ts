@@ -1,3 +1,4 @@
+import { log } from '@/lib/logger'
 import { EventItemRow } from '@/types/transcriptions/transcription.db'
 
 /**
@@ -21,4 +22,17 @@ export function toAllDayEvent(event: EventItemRow) {
     start: { date: startDate },
     end: { date: endDate },
   }
+}
+export async function requestRefreshToken() {
+  const res = await fetch('/api/google/refresh-access-token', {
+    method: 'POST',
+    credentials: 'include',
+  })
+
+  if (!res.ok) {
+    log.error('Error when request refresh token: ', { error: await res.json() })
+    throw new Error('Failed to refresh Google token')
+  }
+
+  const data = await res.json()
 }

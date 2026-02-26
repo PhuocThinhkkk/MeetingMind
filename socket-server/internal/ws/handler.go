@@ -3,10 +3,11 @@ package ws
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gorilla/websocket"
 	"log"
 	"strings"
 	"time"
+
+	"github.com/gorilla/websocket"
 )
 
 func (c *Client) processClientAudio() {
@@ -31,7 +32,7 @@ func (c *Client) processClientAudio() {
 				c.Mu.Lock()
 				c.Conn.WriteJSON(map[string]any{
 					"type":    "error",
-					"message": "Your 20-minute session has expired",
+					"message": "Your 30-minute session has expired",
 				})
 				c.Mu.Unlock()
 				return

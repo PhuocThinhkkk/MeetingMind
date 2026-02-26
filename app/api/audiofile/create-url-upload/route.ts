@@ -25,7 +25,7 @@ export type CreateUrlUploadBody = {
  *   - `size`: file size in bytes
  *   - `type`: MIME type string
  *   - `isUpload`: boolean indicating upload mode
- * @returns On success (201): an object containing the created upload URL and related metadata. On error (401 or 500): an object with an `error` string describing the failure. 
+ * @returns On success (201): an object containing the created upload URL and related metadata. On error (401 or 500): an object with an `error` string describing the failure.
  */
 export async function POST(req: NextRequest) {
   try {

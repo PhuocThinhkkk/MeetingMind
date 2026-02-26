@@ -1,35 +1,37 @@
-"use client"
-import CalendarEntry from "@/components/calendar/calendar-entry";
-import { useAuth } from "@/hooks/use-auth";
-import { toast } from "@/hooks/use-toast";
-import { getAllEventsByUserId } from "@/lib/queries/browser/events-sumaries-operations";
-import { EventItemRow } from "@/types/transcriptions/transcription.db";
-import { useEffect, useState } from "react";
+'use client'
+import CalendarEntry from '@/components/calendar/calendar-entry'
+import { useAuth } from '@/hooks/use-auth'
+import { toast } from '@/hooks/use-toast'
+import { getAllEventsByUserId } from '@/lib/queries/browser/events-sumaries-operations'
+import { EventItemRow } from '@/types/transcriptions/transcription.db'
+import { useEffect, useState } from 'react'
 
 export default function CalendarPage() {
-    const [events, setEvents] = useState<undefined | null | EventItemRow[]>(undefined)
-    const { user } = useAuth()
-    useEffect(() => {
-        fetchAllEvents()
-    }, [user?.id])
+  const [events, setEvents] = useState<undefined | null | EventItemRow[]>(
+    undefined
+  )
+  const { user } = useAuth()
+  useEffect(() => {
+    fetchAllEvents()
+  }, [user?.id])
 
-    /**
-     * Fetches calendar events for the current authenticated user and updates component state.
-     *
-     * If there is no authenticated user, the function returns without side effects. On error, it displays a destructive toast containing the error message.
-     */
-    async function fetchAllEvents() {
-        try {
-            if (!user) return
-            const events = await getAllEventsByUserId()
-            setEvents(events)
-        } catch (e) {
-            toast({
-                title: "Error when query events",
-                description: `${e}`,
-                variant: "destructive"
-            })
-        }
+  /**
+   * Fetches calendar events for the current authenticated user and updates component state.
+   *
+   * If there is no authenticated user, the function returns without side effects. On error, it displays a destructive toast containing the error message.
+   */
+  async function fetchAllEvents() {
+    try {
+      if (!user) return
+      const events = await getAllEventsByUserId()
+      setEvents(events)
+    } catch (e) {
+      toast({
+        title: 'Error when query events',
+        description: `${e}`,
+        variant: 'destructive',
+      })
     }
-    return <CalendarEntry events={events ?? []} />
+  }
+  return <CalendarEntry events={events ?? []} />
 }

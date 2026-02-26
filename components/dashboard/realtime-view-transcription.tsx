@@ -36,8 +36,8 @@ export default function RealTimeTranscriptionPage({
   transcriptionWords: words = [],
   translationWords = [],
   isVisible = true,
-  onExit = async () => { },
-  onStopRecording = async () => { },
+  onExit = async () => {},
+  onStopRecording = async () => {},
 }: RealTimeTranscriptionPageProps) {
   const [isAnimating, setIsAnimating] = useState(false)
   const [highlightedWords, setHighlightedWords] = useState<Set<number>>(
@@ -48,7 +48,7 @@ export default function RealTimeTranscriptionPage({
     null
   )
   const [showTranscript, setShowTranscript] = useState(true)
-  const [showTranslate, setShowTranslate] = useState(true)
+  const [showTranslate, setShowTranslate] = useState(false)
 
   useEffect(() => {
     if (isVisible) {
@@ -57,10 +57,7 @@ export default function RealTimeTranscriptionPage({
   }, [isVisible])
 
   const handleExit = () => {
-    setIsAnimating(false)
-    setTimeout(() => {
-      onExit()
-    }, 300)
+    onExit()
   }
 
   const toggleHighlight = (index: number) => {
@@ -125,8 +122,9 @@ export default function RealTimeTranscriptionPage({
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-white flex flex-col transform transition-all duration-300 ease-out ${isAnimating ? 'translate-y-0' : 'translate-y-full'
-        }`}
+      className={`fixed inset-0 z-50 bg-white flex flex-col transform transition-all duration-300 ease-out ${
+        isAnimating ? 'translate-y-0' : 'translate-y-full'
+      }`}
     >
       {/* Header */}
       <div className="border-b bg-white shadow-sm">
@@ -151,6 +149,7 @@ export default function RealTimeTranscriptionPage({
         </div>
 
         {/* Action Buttons */}
+        {/*
         <div className="px-6 pb-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center space-x-2">
@@ -197,6 +196,7 @@ export default function RealTimeTranscriptionPage({
             </FeatureLockWrapper>
           </div>
         </div>
+*/}
 
         {/* Transcript/Translate Toggle */}
         <div className="px-6 pb-4 border-t pt-4">
@@ -211,15 +211,17 @@ export default function RealTimeTranscriptionPage({
                 <FileText className="w-3 h-3 mr-1" />
                 Transcript
               </Button>
-              <Button
+              {/*
+                < Button
                 variant={showTranslate ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setShowTranslate(!showTranslate)}
-                className="h-8"
+              size="sm"
+              onClick={() => setShowTranslate(!showTranslate)}
+              className="h-8"
               >
-                <Languages className="w-3 h-3 mr-1" />
-                Translate
-              </Button>
+              <Languages className="w-3 h-3 mr-1" />
+              Translate
+            </Button>
+*/}
             </div>
           </div>
         </div>

@@ -21,10 +21,12 @@ export async function saveTranscript(
   audioId: string,
   transcripts: SaveTranscriptInput
 ) {
+  let transcriptText
   if (!transcripts || transcripts.length === 0) {
-    throw new Error('Transcripts array cannot be empty')
+    transcriptText = ''
+  } else {
+    transcriptText = transcripts.map(t => t.text).join(' ')
   }
-  const transcriptText = transcripts.map(t => t.text).join(' ')
   const { data, error } = await supabase
     .from('transcripts')
     .insert({
@@ -108,13 +110,13 @@ export async function getTranscriptWordNestedByAudioId(audioId: string) {
 `
     )
     .eq('audio_id', audioId)
-    .single()
 
   if (error) {
     throw new Error('Error when getting transcript words: ' + error.message)
   }
-  if (!data) {
-    throw new Error('No transcript found.')
+  if (!data?.[0]) {
+    log.error('No transcript found.')
+    return null
   }
-  return data
+  return data[0]
 }

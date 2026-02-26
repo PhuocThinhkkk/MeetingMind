@@ -2,7 +2,7 @@
 
 import { UploadState } from '@/hooks/use-upload-controller'
 import { createPortal } from 'react-dom'
-
+import { Button } from './ui/button'
 
 interface LoadingOverlayProps {
   state: UploadState
@@ -25,9 +25,9 @@ export function LoadingOverlay({
     <>
       {state === 'uploading' && (
         <>
-          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-[9998]" />
+          <div className="fixed inset-0 bg-white/80 backdrop-blur-sm z-[49]" />
 
-          <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 flex items-center justify-center z-[50]">
             <div className="flex flex-col items-center gap-4">
               {/* Spinner */}
               <div className="relative w-12 h-12">
@@ -47,31 +47,31 @@ export function LoadingOverlay({
       {state === 'error' && (
         <>
           <div
-            className="fixed inset-0 bg-black/20 z-[9998]"
+            className="fixed inset-0 bg-black/20 z-[50]"
             onClick={onDismiss}
           />
 
-          <div className="fixed inset-0 flex items-center justify-center z-[9999]">
+          <div className="fixed inset-0 flex items-center justify-center z-[51]">
             <div className="bg-white rounded-lg shadow-lg p-6 max-w-sm mx-4 space-y-4">
               <p className="text-base text-slate-700 font-medium text-center">
                 {errorMessage}
               </p>
 
               <div className="flex gap-3 justify-center">
-                <button
+                <Button
                   onClick={onDismiss}
                   className="px-4 py-2 bg-slate-200 hover:bg-slate-300 text-slate-700 font-medium rounded-lg"
                 >
                   Dismiss
-                </button>
+                </Button>
 
                 {onRetry && (
-                  <button
+                  <Button
                     onClick={onRetry}
                     className="px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white font-medium rounded-lg"
                   >
                     Try Again
-                  </button>
+                  </Button>
                 )}
               </div>
             </div>

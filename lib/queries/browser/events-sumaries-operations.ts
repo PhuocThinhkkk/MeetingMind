@@ -1,5 +1,6 @@
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { log } from '@/lib/logger'
+import { EventItemRow } from '@/types/transcriptions/transcription.db'
 
 /**
  * Retrieve events and the first summary record associated with an audio ID.
@@ -48,4 +49,27 @@ export async function getAllEventsByUserId() {
     throw error
   }
   return events
+}
+
+export async function updateEventById(
+  id: string,
+  updates: Partial<EventItemRow>
+) {
+  const { data, error } = await supabase
+    .from('events')
+    .update(updates)
+    .eq('id', id)
+    .select()
+    .single()
+
+  if (error) {
+    log.error('Error when update event: ', { updates, data, error })
+    throw error
+  }
+  return data
+}
+
+export async function deleteEventById(id: string) {
+  const { error } = await supabase.from('events').delete().eq('id', id)
+  if (error) throw error
 }

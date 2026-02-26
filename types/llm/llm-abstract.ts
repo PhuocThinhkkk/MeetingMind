@@ -11,7 +11,7 @@ export type MeetingExtractionResult = {
   events: {
     title: string
     description: string
-    start_time: string
+    start_time: string | null
     end_time: string | null
     location: string | null
   }[]

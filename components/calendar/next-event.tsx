@@ -50,7 +50,9 @@ export default function NextEvent({ event }: NextEventProps) {
         <div className="space-y-3">
           <div>
             <h4 className="font-semibold text-slate-900">{event.title}</h4>
-            <p className="text-xs text-slate-500 mt-1">{getTimeUntil(event.start_time)}</p>
+            <p className="text-xs text-slate-500 mt-1">
+              {getTimeUntil(event.start_time)}
+            </p>
           </div>
 
           <div className="space-y-2">
@@ -69,7 +71,9 @@ export default function NextEvent({ event }: NextEventProps) {
 
           {event.description && (
             <div className="pt-2 border-t border-blue-200">
-              <p className="text-xs text-slate-600 line-clamp-2">{event.description}</p>
+              <p className="text-xs text-slate-600 line-clamp-2">
+                {event.description}
+              </p>
             </div>
           )}
         </div>

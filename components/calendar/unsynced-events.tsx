@@ -13,17 +13,18 @@ interface UnsyncedEventsProps {
 export default function UnsyncedEvents({ events }: UnsyncedEventsProps) {
   const [syncedIds, setSyncedIds] = useState<string[]>([])
 
-
-
   const unsyncedList = events.filter(e => !syncedIds.includes(e.id))
 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <div>
-          <h3 className="text-lg font-semibold text-slate-900">Add to Google Calendar</h3>
+          <h3 className="text-lg font-semibold text-slate-900">
+            Add to Google Calendar
+          </h3>
           <p className="text-sm text-slate-600 mt-1">
-            {unsyncedList.length} event{unsyncedList.length !== 1 ? 's' : ''} ready to sync
+            {unsyncedList.length} event{unsyncedList.length !== 1 ? 's' : ''}{' '}
+            ready to sync
           </p>
         </div>
         {unsyncedList.length > 0 && (
@@ -36,8 +37,12 @@ export default function UnsyncedEvents({ events }: UnsyncedEventsProps) {
       {unsyncedList.length === 0 ? (
         <div className="rounded-lg border-2 border-dashed border-slate-300 bg-slate-50 p-8 text-center">
           <Check className="h-12 w-12 mx-auto text-green-500 mb-3" />
-          <p className="text-sm font-medium text-slate-900">No unsynced event found</p>
-          <p className="text-xs text-slate-500 mt-1">Your events are up to date with Google Calendar</p>
+          <p className="text-sm font-medium text-slate-900">
+            No unsynced event found
+          </p>
+          <p className="text-xs text-slate-500 mt-1">
+            Your events are up to date with Google Calendar
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
@@ -45,18 +50,22 @@ export default function UnsyncedEvents({ events }: UnsyncedEventsProps) {
             <div
               key={event.id}
               className="rounded-lg border border-slate-200 bg-white p-4 hover:shadow-md transition-shadow"
-
             >
               <RenderUnsyncedEvent event={event} setSyncedIds={setSyncedIds} />
             </div>
-
           ))}
         </div>
       )}
     </div>
   )
 }
-function RenderUnsyncedEvent({ event, setSyncedIds }: { event: EventItemRow, setSyncedIds: React.Dispatch<React.SetStateAction<string[]>> }) {
+function RenderUnsyncedEvent({
+  event,
+  setSyncedIds,
+}: {
+  event: EventItemRow
+  setSyncedIds: React.Dispatch<React.SetStateAction<string[]>>
+}) {
   const [loading, setLoading] = useState(false)
   const formatDateTime = (date: string) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -71,25 +80,29 @@ function RenderUnsyncedEvent({ event, setSyncedIds }: { event: EventItemRow, set
   const handleSync = async (eventId: string) => {
     try {
       setLoading(true)
-      const res = await fetch(`/api/google/sync?event_id=${eventId}`, { method: "POST", credentials: "include" })
+      const res = await fetch(`/api/google/sync?event_id=${eventId}`, {
+        method: 'POST',
+        credentials: 'include',
+      })
       if (!res.ok) {
-        throw new Error("unable to sync event")
+        throw new Error('unable to sync event')
       }
       setSyncedIds(prev => [...prev, eventId])
     } catch (e) {
-      toast({ title: "Failed to sync event", variant: "destructive" })
+      toast({ title: 'Failed to sync event', variant: 'destructive' })
     } finally {
       setLoading(false)
     }
   }
   return (
-
     <div className="flex items-start justify-between gap-4">
       <div className="flex-1 min-w-0">
         <h4 className="font-semibold text-slate-900">{event.title}</h4>
 
         {event.description && (
-          <p className="text-sm text-slate-600 mt-1 line-clamp-2">{event.description}</p>
+          <p className="text-sm text-slate-600 mt-1 line-clamp-2">
+            {event.description}
+          </p>
         )}
 
         <div className="mt-3 space-y-2">

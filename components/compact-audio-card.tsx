@@ -114,9 +114,9 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
         </div>
 
         <div className="flex items-start gap-3 pl-0">
-          <StatusBadge status={audio.transcription_status ?? "unknown"} />
+          <StatusBadge status={audio.transcription_status ?? 'unknown'} />
           <div className="flex items-center gap-3 text-xs text-muted-foreground">
-            <TimeDisplay dateString={audio.created_at ?? "Unknown time"} />
+            <TimeDisplay dateString={audio.created_at ?? 'Unknown time'} />
             <span>{formatDuration(audio.duration ?? 0)}</span>
             <span>{formatFileSize(audio.file_size ?? 0)}</span>
           </div>

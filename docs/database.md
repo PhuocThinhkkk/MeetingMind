@@ -30,3 +30,21 @@ Generated from Supabase schema. Regenerate with:
 ```bash
 npx supabase gen types typescript --local > types/database.types.ts
 ```
+
+## Staging & Backup
+
+Use direct url pool in supabase postgresql://USER:PASSWORD@HOST:PORT/DATABASE
+These following cmd was on Window OS:
+
+```bash
+pg_dump "SOURCE_URL" -n public -F c -f app.dump
+```
+
+```bash
+pg_restore \
+ -d "TARGET_URL" \
+ --no-owner \
+ --no-privileges \
+ app.dump
+
+```

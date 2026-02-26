@@ -47,7 +47,7 @@ func CheckingAllEnvVars() {
 		log.Fatal("fail to load DATABASE_URL in env")
 	}
 
-	envVars = &EnvVars{
+	EnvVars = &AppEnvVars{
 		Port:              port,
 		FrontendUrl:       frontendUrl,
 		AssemblyApiKey:    assemblyApiKey,

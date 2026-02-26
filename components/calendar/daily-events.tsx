@@ -8,7 +8,10 @@ interface DailyEventsProps {
   selectedDate: Date
 }
 
-export default function DailyEvents({ events, selectedDate }: DailyEventsProps) {
+export default function DailyEvents({
+  events,
+  selectedDate,
+}: DailyEventsProps) {
   const formatTime = (date: string) => {
     return new Date(date).toLocaleTimeString('en-US', {
       hour: '2-digit',
@@ -32,12 +35,17 @@ export default function DailyEvents({ events, selectedDate }: DailyEventsProps) 
 
       {events.length === 0 ? (
         <div className="rounded-lg bg-slate-50 p-4 text-center">
-          <p className="text-sm text-slate-500">No events scheduled for this day</p>
+          <p className="text-sm text-slate-500">
+            No events scheduled for this day
+          </p>
         </div>
       ) : (
         <div className="space-y-3">
           {events.map(event => (
-            <div key={event.id} className="rounded-lg border border-slate-200 bg-slate-50 p-3">
+            <div
+              key={event.id}
+              className="rounded-lg border border-slate-200 bg-slate-50 p-3"
+            >
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1 min-w-0">
                   <h4 className="text-sm font-semibold text-slate-900 truncate">
@@ -46,7 +54,9 @@ export default function DailyEvents({ events, selectedDate }: DailyEventsProps) 
                   <div className="mt-2 space-y-1">
                     <div className="flex items-center gap-2 text-xs text-slate-600">
                       <Clock className="h-3.5 w-3.5 flex-shrink-0" />
-                      <span className="truncate">{formatTime(event.start_time)}</span>
+                      <span className="truncate">
+                        {formatTime(event.start_time)}
+                      </span>
                     </div>
                     {event.location && (
                       <div className="flex items-center gap-2 text-xs text-slate-600">
@@ -59,9 +69,10 @@ export default function DailyEvents({ events, selectedDate }: DailyEventsProps) 
                 <div
                   className={`
                     mt-1 inline-flex flex-shrink-0 items-center rounded-full px-2 py-1 text-xs font-medium
-                    ${event.added_to_google_calendar
-                      ? 'bg-green-100 text-green-700'
-                      : 'bg-amber-100 text-amber-700'
+                    ${
+                      event.added_to_google_calendar
+                        ? 'bg-green-100 text-green-700'
+                        : 'bg-amber-100 text-amber-700'
                     }
                   `}
                 >

@@ -4,35 +4,27 @@ import { useEffect } from 'react'
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import { log } from '@/lib/logger'
+import { serverCheck } from '@/lib/utils/server-check'
 
 export default function Home() {
   const router = useRouter()
   const { user, loading } = useAuth()
 
   useEffect(() => {
-    const serverCheck = async () => {
-      try {
-        let wsDomain =
-          process.env.NEXT_PUBLIC_WS_SERVER_URL || 'ws://localhost:9090'
-        wsDomain = wsDomain.replace(/^wss?:\/\//, '')
-        const protocol = location.protocol.replace(':', '')
-        const wsUrl = `${protocol}://${wsDomain}`
-
-        log.info(wsUrl)
-        const res = await fetch(`${wsUrl}`)
-        if (!res.ok) {
-          throw new Error(`Server responded with status ${res.status}`)
-        }
-      } catch (error) {
-        log.error('Server is not reachable:', error)
-      }
-    }
-    serverCheck()
+    wakingUpServer()
   }, [])
+
+  async function wakingUpServer() {
+    try {
+      await serverCheck()
+    } catch (error) {
+      log.error('Server is not reachable:', error)
+    }
+  }
 
   useEffect(() => {
     if (!loading && user) {
-      // router.push("/home");
+      router.push('/home')
     }
   }, [user, loading, router])
 

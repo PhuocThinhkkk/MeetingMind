@@ -1,3 +1,5 @@
+import { log } from '../logger'
+
 /**
  * Validates whether a storage file path belongs to the given user.
  *
@@ -9,6 +11,7 @@ export function validateFilePathOwner(path: string, userId: string) {
   if (path.includes('..') || path.includes('//')) {
     return { allowed: false, reason: 'Invalid path.' }
   }
+  log.info('path: ', { path, userId })
   if (
     !path.startsWith(`uploads/${userId}/`) &&
     !path.startsWith(`recordings/${userId}/`)

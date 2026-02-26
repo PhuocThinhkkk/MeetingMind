@@ -1,8 +1,10 @@
 package validation
 
 import (
-    "errors"
-    "github.com/golang-jwt/jwt/v5"
+	"errors"
+	"log"
+
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func ValidateSupabaseJWT(tokenString string, secret string) (string, error) {
@@ -15,6 +17,7 @@ func ValidateSupabaseJWT(tokenString string, secret string) (string, error) {
     })
 
     if err != nil || !token.Valid {
+        log.Println("Error when validate jwt key: ", err)
         return "", errors.New("invalid jwt")
     }
 

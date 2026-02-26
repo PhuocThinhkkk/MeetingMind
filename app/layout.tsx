@@ -3,7 +3,7 @@ import 'react-day-picker/dist/style.css'
 import type { Metadata } from 'next'
 import { Inter } from 'next/font/google'
 import { AuthProvider } from '@/hooks/use-auth'
-import { Toaster } from '@/components/ui/sonner'
+import { Toaster } from '@/components/ui/toaster'
 
 const inter = Inter({ subsets: ['latin'] })
 

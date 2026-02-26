@@ -11,7 +11,11 @@ import { useRouter } from 'next/navigation'
 import { FileAudio, Clock, HardDrive } from 'lucide-react'
 import { StatusBadge } from '@/components/status-badge'
 import { AudioFile } from '@/types/transcriptions/transcription.db'
-import { formatDate, formatDuration, formatFileSize } from '@/lib/ui-format/time-format'
+import {
+  formatDate,
+  formatDuration,
+  formatFileSize,
+} from '@/lib/ui-format/time-format'
 import { useState, useRef } from 'react'
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'
@@ -223,7 +227,8 @@ export function TranscriptModal({ audio }: TranscriptModalProps) {
               ref={audioRef}
               src={
                 // @ts-ignore
-                audio.url}
+                audio.url
+              }
               className="hidden"
               onEnded={handleEnded}
               onLoadedMetadata={handleLoadedMetadata}

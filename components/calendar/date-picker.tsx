@@ -9,7 +9,10 @@ interface DatePickerProps {
   onSelectDate: (date: Date) => void
 }
 
-export default function DatePicker({ selectedDate, onSelectDate }: DatePickerProps) {
+export default function DatePicker({
+  selectedDate,
+  onSelectDate,
+}: DatePickerProps) {
   const [currentMonth, setCurrentMonth] = useState(new Date())
 
   const getDaysInMonth = (date: Date) => {
@@ -25,18 +28,29 @@ export default function DatePicker({ selectedDate, onSelectDate }: DatePickerPro
   const days = Array.from({ length: daysInMonth }, (_, i) => i + 1)
   const emptyDays = Array.from({ length: firstDay }, (_, i) => i)
 
-  const monthName = currentMonth.toLocaleString('default', { month: 'long', year: 'numeric' })
+  const monthName = currentMonth.toLocaleString('default', {
+    month: 'long',
+    year: 'numeric',
+  })
 
   const handlePrevMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1)
+    )
   }
 
   const handleNextMonth = () => {
-    setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1))
+    setCurrentMonth(
+      new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1)
+    )
   }
 
   const handleSelectDay = (day: number) => {
-    const newDate = new Date(currentMonth.getFullYear(), currentMonth.getMonth(), day)
+    const newDate = new Date(
+      currentMonth.getFullYear(),
+      currentMonth.getMonth(),
+      day
+    )
     onSelectDate(newDate)
   }
 
@@ -104,11 +118,12 @@ export default function DatePicker({ selectedDate, onSelectDate }: DatePickerPro
             onClick={() => handleSelectDay(day)}
             className={`
               hover:cursor-pointer h-9 rounded-lg text-sm font-medium transition-colors
-              ${isSelected(day)
-                ? 'bg-blue-600 text-white'
-                : isToday(day)
-                  ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300'
-                  : 'text-slate-700 hover:bg-slate-100'
+              ${
+                isSelected(day)
+                  ? 'bg-blue-600 text-white'
+                  : isToday(day)
+                    ? 'bg-blue-100 text-blue-700 ring-1 ring-blue-300'
+                    : 'text-slate-700 hover:bg-slate-100'
               }
             `}
           >
