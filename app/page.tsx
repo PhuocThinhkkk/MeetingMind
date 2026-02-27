@@ -30,10 +30,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center">
-      <div className="relative bg-gray-50">
+      <div className="w-full relative bg-gray-50">
         <div className="absolute bottom-0 right-0 overflow-hidden lg:inset-y-0">
           <img
-            className="w-auto h-full"
+            className="w-auto h-full object-fill"
             src="https://d33wubrfki0l68.cloudfront.net/1e0fc04f38f5896d10ff66824a62e466839567f8/699b5/images/hero/3/background-pattern.png"
             alt=""
           />
@@ -75,6 +75,7 @@ export default function Home() {
 
               <div className="hidden lg:flex lg:ml-16 lg:items-center lg:justify-center lg:space-x-10">
                 <div className="flex items-center space-x-12">
+                  {/*
                   <a
                     href="#"
                     title=""
@@ -101,6 +102,7 @@ export default function Home() {
                     {' '}
                     Automation{' '}
                   </a>
+                  */}
                 </div>
 
                 <div className="w-px h-5 bg-gray-300"></div>
