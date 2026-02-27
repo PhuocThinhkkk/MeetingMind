@@ -10,10 +10,27 @@ export type PromptBuilder = {
  * @returns An object with a `prompt` string that embeds the provided transcript and specifies the required JSON schema for `summary` (including `text`, `highlights`, `todo`, `key_topics`, and `sentiment`) and `events` (objects with `title`, `description`, `start_time`, `end_time`, and `location`).
  */
 export function buildMeetingSummaryPrompt(transcript: string): PromptBuilder {
+  const nowUtc = new Date().toISOString()
+  // Example: 2026-02-27T08:31:12.123Z
+
+  const currentDateUtc = nowUtc.split('T')[0]
+  // Example: 2026-02-27
   return {
     prompt: `
-Extract meeting summary and events.
-Output ONLY valid JSON.
+You are a structured meeting parser.
+
+Current date (UTC): ${currentDateUtc}
+
+Rules:
+- Return ONLY valid JSON.
+- All event times MUST be ISO8601.
+- All times MUST be in UTC.
+- Use this format strictly: YYYY-MM-DDTHH:MM:SS+00:00
+- If transcript says "tomorrow", add 1 day from Current date (UTC).
+- If a date is mentioned without time, default to 09:00:00.
+- If end time is not mentioned, return null.
+- Never output non-ISO time strings.
+- If no events are found, return an empty array [].
 
 Transcript:
 ${transcript}
