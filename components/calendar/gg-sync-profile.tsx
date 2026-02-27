@@ -7,8 +7,8 @@ import {
   UserInforGoogleCalendar,
 } from '@/services/google-calendar/user-profile'
 import { Loader2, Calendar, Link2 } from 'lucide-react'
-import Image from 'next/image'
 import { log } from '@/lib/logger'
+import { AvatarFallback, AvatarImage, Avatar } from '@/components/ui/avatar'
 
 interface Props {
   token?: GoogleTokenRow | null
@@ -83,13 +83,15 @@ export default function GoogleSyncProfile({ token }: Props) {
         <div className="flex flex-col gap-3">
           <p className="font-bold">You have signed as:</p>
           <div className="flex flex-1 items-center gap-4">
-            <Image
-              src={profile.picture}
-              alt={profile.name}
-              width={56}
-              height={56}
-              className="rounded-full border"
-            />
+            <Avatar className="w-12 h-12 border">
+              <AvatarImage src={profile.picture} alt={profile.name} />
+              <AvatarFallback>
+                {profile.name
+                  ?.split(" ")[0][0]
+                  .toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
+
 
             <div className="flex-1">
               <p className="font-semibold text-gray-900">{profile.name}</p>
