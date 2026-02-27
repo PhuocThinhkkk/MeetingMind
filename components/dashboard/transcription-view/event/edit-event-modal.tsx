@@ -13,6 +13,15 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
+import { Calendar } from '@/components/ui/calendar'
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from '@/components/ui/popover'
+import { CalendarIcon } from 'lucide-react'
+import { format } from 'date-fns'
+import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
 import { updateEventById } from '@/lib/queries/browser/events-sumaries-operations'
 import { EventItemRow } from '@/types/transcriptions/transcription.db'
@@ -33,18 +42,15 @@ export function EditEventModal({
 }: EditEventModalProps) {
   const { toast } = useToast()
   const [loading, setLoading] = useState(false)
+
   const [form, setForm] = useState({
     title: '',
     description: '',
     location: '',
-    start_time: '',
-    end_time: '',
   })
 
-  // Update form when event changes
-  const handleOpenChange = (newOpen: boolean) => {
-    onOpenChange(newOpen)
-  }
+  const [startDate, setStartDate] = useState<Date | undefined>()
+  const [endDate, setEndDate] = useState<Date | undefined>()
 
   useEffect(() => {
     if (open && event) {
@@ -52,21 +58,22 @@ export function EditEventModal({
         title: event.title ?? '',
         description: event.description ?? '',
         location: event.location ?? '',
-        start_time: event.start_time ?? '',
-        end_time: event.end_time ?? '',
       })
+
+      setStartDate(event.start_time ? new Date(event.start_time) : undefined)
+      setEndDate(event.end_time ? new Date(event.end_time) : undefined)
     }
 
-    // Optional: reset when closing
     if (!open) {
       setForm({
         title: '',
         description: '',
         location: '',
-        start_time: '',
-        end_time: '',
       })
+      setStartDate(undefined)
+      setEndDate(undefined)
     }
+
     log.info('event: ', event)
   }, [open, event])
 
@@ -75,19 +82,27 @@ export function EditEventModal({
     if (!event) return
 
     setLoading(true)
+
     try {
       const cleanedPayload = {
         title: form.title,
         description: form.description,
         location: form.location,
-        start_time: form.start_time || undefined,
-        end_time: form.end_time || undefined,
+        start_time: startDate ? startDate.toISOString() : undefined,
+        end_time: endDate ? endDate.toISOString() : undefined,
       }
 
       const updated = await updateEventById(event.id, cleanedPayload)
+
       onEventUpdated(updated as EventItemRow)
-      toast({ title: 'Saved', description: 'Event updated' })
-    } catch {
+
+      toast({
+        title: 'Saved',
+        description: 'Event updated successfully',
+      })
+
+      onOpenChange(false)
+    } catch (error) {
       toast({
         title: 'Error',
         description: 'Failed to update event',
@@ -98,12 +113,63 @@ export function EditEventModal({
     }
   }
 
+  const renderDatePicker = (
+    label: string,
+    date: Date | undefined,
+    setDate: (date: Date | undefined) => void
+  ) => (
+    <div className="space-y-2">
+      <Label>{label}</Label>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            type="button"
+            variant="outline"
+            className={cn(
+              'w-full justify-start text-left font-normal',
+              !date && 'text-muted-foreground'
+            )}
+          >
+            <CalendarIcon className=" h-3 w-3" />
+            {date ? format(date, 'P p') : 'Pick date & time'}
+          </Button>
+        </PopoverTrigger>
+
+        <PopoverContent className="w-auto p-0">
+          <Calendar
+            mode="single"
+            selected={date}
+            onSelect={setDate}
+            initialFocus
+          />
+
+          <div className="p-3 border-t">
+            <Input
+              type="time"
+              onChange={(e) => {
+                if (!date) return
+                const [hours, minutes] = e.target.value.split(':')
+                const newDate = new Date(date)
+                newDate.setHours(Number(hours))
+                newDate.setMinutes(Number(minutes))
+                setDate(newDate)
+              }}
+            />
+          </div>
+        </PopoverContent>
+      </Popover>
+    </div>
+  )
+
   return (
-    <Dialog open={open} onOpenChange={handleOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
           <DialogTitle>Edit Event</DialogTitle>
-          <DialogDescription>Update the event details below</DialogDescription>
+          <DialogDescription>
+            Update the event details below
+          </DialogDescription>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -112,7 +178,9 @@ export function EditEventModal({
             <Input
               id="title"
               value={form.title}
-              onChange={e => setForm({ ...form, title: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, title: e.target.value })
+              }
               placeholder="Event title"
             />
           </div>
@@ -122,7 +190,9 @@ export function EditEventModal({
             <Textarea
               id="description"
               value={form.description}
-              onChange={e => setForm({ ...form, description: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, description: e.target.value })
+              }
               placeholder="Event description"
               className="min-h-24"
             />
@@ -133,43 +203,16 @@ export function EditEventModal({
             <Input
               id="location"
               value={form.location}
-              onChange={e => setForm({ ...form, location: e.target.value })}
+              onChange={(e) =>
+                setForm({ ...form, location: e.target.value })
+              }
               placeholder="Event location"
             />
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <div className="space-y-2">
-              <Label htmlFor="start_time">Start Time</Label>
-              <Input
-                id="start_time"
-                type="datetime-local"
-                value={form.start_time.slice(0, 16)}
-                onChange={e =>
-                  setForm({
-                    ...form,
-                    start_time: new Date(e.target.value).toISOString(),
-                  })
-                }
-              />
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="end_time">End Time</Label>
-              <Input
-                id="end_time"
-                type="datetime-local"
-                value={form.end_time ? form.end_time.slice(0, 16) : ''}
-                onChange={e =>
-                  setForm({
-                    ...form,
-                    end_time: e.target.value
-                      ? new Date(e.target.value).toISOString()
-                      : '',
-                  })
-                }
-              />
-            </div>
+            {renderDatePicker('Start Time', startDate, setStartDate)}
+            {renderDatePicker('End Time', endDate, setEndDate)}
           </div>
 
           <DialogFooter>
@@ -181,6 +224,7 @@ export function EditEventModal({
             >
               Cancel
             </Button>
+
             <Button type="submit" disabled={loading}>
               {loading ? 'Saving...' : 'Save Changes'}
             </Button>
