@@ -55,7 +55,7 @@ export function checkFileSizeAllowed({
   if (fileSeconds > limits.MAX_PER_FILE_SECONDS) {
     return {
       allowed: false,
-      reason: 'This recording exceeds the maximum length for your plan.',
+      reason: `This recording ${fileSeconds} seconds exceeds the maximum ${limits.MAX_PER_FILE_SECONDS} seconds for your ${plan} plan.`,
     }
   }
 

@@ -54,10 +54,10 @@ export async function POST(
     }
 
     const plan = await getUserPlan(user.id)
-    const audioDuration = await getStorageFileSize(BUCKET_NAME, path)
+    // const audioFileSize = await getStorageFileSize(BUCKET_NAME, path)
     const { allowed, reason } = checkFileSizeAllowed({
       plan,
-      fileSeconds: audioDuration,
+      fileSeconds: duration,
     })
     if (!allowed) {
       return NextResponse.json({ error: reason }, { status: 401 })

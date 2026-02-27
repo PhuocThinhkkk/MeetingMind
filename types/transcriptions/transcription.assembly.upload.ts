@@ -15,8 +15,14 @@ export interface AssemblyAIWebhookPayload {
 
   text?: string
   confidence?: number
-  language_code?: string
+  language_code?: string // "en_us"
+  language_model: string // 'assemblyai_default'
+  acoustic_model: string // 'assemblyai_default'
+  duration: number //milliseconds
   audio_duration?: number
+  audio_url: string
+
+  format_text?: boolean
 
   words?: AssemblyAIWord[]
 

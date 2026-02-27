@@ -187,6 +187,7 @@ export async function updateAudioComplete(
       text: transcript.text ?? '',
       language: transcript.language_code ?? 'en-US',
       confidence_score: transcript.confidence,
+      duration: transcript.duration,
     })
     .select('*')
     .single()

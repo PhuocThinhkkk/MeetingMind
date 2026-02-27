@@ -4,6 +4,9 @@ import {
   findAudioFileByJobId,
   updateAudioComplete,
 } from '@/lib/queries/server/audio-upload-operations'
+import { AssemblyAIWebhookPayload } from '@/types/transcriptions/transcription.assembly.upload'
+import { checkFileSizeAllowed } from '@/lib/limits/usage.limit'
+import { getUserPlan } from '@/lib/queries/server/limits-audio-upload-operations'
 
 /**
  * Handle AssemblyAI transcript webhook POSTs and update the corresponding local audio record when a transcription completes.
@@ -35,11 +38,21 @@ export async function POST(req: NextRequest) {
       }
     )
 
-    const transcript = await res.json()
+    const transcript: AssemblyAIWebhookPayload = await res.json()
+    log.info('Assembly webhook payload:', transcript)
 
     const audio = await findAudioFileByJobId(transcript_id)
     if (!audio) {
       return NextResponse.json({ error: 'Audio not found' }, { status: 404 })
+    }
+
+    const plan = await getUserPlan(audio.user_id)
+    const { allowed, reason } = checkFileSizeAllowed({
+      plan,
+      fileSeconds: transcript.duration,
+    })
+    if (!allowed) {
+      return NextResponse.json({ error: reason }, { status: 401 })
     }
 
     await updateAudioComplete(audio, transcript)

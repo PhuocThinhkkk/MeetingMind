@@ -29,6 +29,7 @@ import { fileUploadPineline } from '@/lib/queries/browser/audio-transcript-pinel
 import { TranscriptionViewProvider } from '@/components/context/transcription-view-context'
 import { TranscriptionDialog } from '@/components/dashboard/transcription-view/transcription-main-view-dialog'
 import { realtimeUploadPineline } from '@/lib/queries/browser/audio-transcript-pineline/real-time-file-pineline'
+import { toast } from '@/hooks/use-toast'
 
 export default function HomePageEntry() {
   const { user, loading: authLoading } = useAuth()
@@ -84,8 +85,9 @@ export default function HomePageEntry() {
       const audioFile = await fileUploadPineline(file, user.id)
       log.info('pineline of upload success: ', { audioFile })
       handleFileTranscriptionView(audioFile.audio)
-    } catch (error) {
+    } catch (error: any) {
       log.error('Error uploading file:', error)
+      toast({ title: "File upload error.", description: error.message, variant: "destructive" })
     } finally {
       setUploading(false)
     }
@@ -119,8 +121,9 @@ export default function HomePageEntry() {
       )
       log.info('pineline of upload success: ', { audioFile })
       handleFileTranscriptionView(audioFile.audio)
-    } catch (error) {
+    } catch (error: any) {
       log.error('Error uploading file:', error)
+      toast({ title: "File upload error.", description: error.message, variant: "destructive" })
     } finally {
       setUploading(false)
     }
