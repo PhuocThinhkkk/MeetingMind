@@ -351,10 +351,11 @@ export default function Home() {
               Join hundreds of professionals who are already using MeetingMind to turn conversations into insights.
             </p>
             <div className="flex flex-col sm:flex-row justify-center gap-4">
-              <Button size="lg" className="gap-2 hover:cursor-pointer">
-                Start Free Trial <ArrowRight className="w-4 h-4" />
-              </Button>
-
+              <Link href="/auth/login">
+                <Button size="lg" className="gap-2 hover:cursor-pointer">
+                  Start Free Trial <ArrowRight className="w-4 h-4" />
+                </Button>
+              </Link>
             </div>
           </div>
         </section>
