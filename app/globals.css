@@ -28,6 +28,7 @@
   --color-destructive-foreground: var(--destructive-foreground);
   --color-accent-foreground: var(--accent-foreground);
   --color-accent: var(--accent);
+  --color-muted-hover-foreground: var(--muted-hover-foreground);
   --color-muted-foreground: var(--muted-foreground);
   --color-muted: var(--muted);
   --color-secondary-foreground: var(--secondary-foreground);
@@ -48,6 +49,7 @@
   --success: 142 76% 36%;
   --success-foreground: 355 7% 97%;
   --radius: 0.625rem;
+  --muted-hover-foreground: oklch(0.705 0.015 286.067);
   --background: oklch(0.985 0.002 285);
   --foreground: oklch(0.141 0.005 285.823);
   --card: oklch(1 0 0);
