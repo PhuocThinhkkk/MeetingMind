@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
 import { Upload, FileAudio } from 'lucide-react';
 import { useLoading } from '../contexts/LoadingContext';
+import { useLoading } from '../contexts/LoadingContext';
 
 const UploadFile: React.FC = () => {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [transcript, setTranscript] = useState<string>('');
-  const { isLoading, setLoading } = useLoading();
 
+  const { setLoading } = useLoading();
   const handleFileSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (file) {
@@ -78,11 +79,11 @@ const UploadFile: React.FC = () => {
         <div className="mt-6">
           <button
             onClick={handleUpload}
-            disabled={!selectedFile || isLoading}
-            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center gap-2"
+            disabled={!selectedFile}
+            className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 disabled:bg-gray-400 disabled:cursor-not-allowed transition-colors flex items-center justify-center space-x-2"
           >
             <Upload className="w-4 h-4" />
-            Upload & Transcribe
+            <span>Upload & Transcribe</span>
           </button>
         </div>
 

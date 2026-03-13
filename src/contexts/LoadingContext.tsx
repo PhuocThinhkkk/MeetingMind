@@ -12,7 +12,7 @@ export const LoadingProvider: React.FC<{ children: ReactNode }> = ({ children })
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMessage, setLoadingMessage] = useState('');
 
-  const setLoading = (loading: boolean, message: string = 'Processing...') => {
+  const setLoading = (loading: boolean, message: string = '') => {
     setIsLoading(loading);
     setLoadingMessage(message);
   };
