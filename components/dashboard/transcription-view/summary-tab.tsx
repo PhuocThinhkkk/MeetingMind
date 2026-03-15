@@ -1,4 +1,5 @@
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
+import { ScrollArea } from '@/components/ui/scroll-area'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle } from 'lucide-react'
 
@@ -9,8 +10,8 @@ export function SummaryTab() {
   }
 
   return (
-    <div className="space-y-4">
-      <Card>
+    <ScrollArea className="space-y-4 h-[70vh] pr-2 ">
+      <Card className='mb-4'>
         <CardHeader>
           <CardTitle>AI Summary</CardTitle>
         </CardHeader>
@@ -52,6 +53,6 @@ export function SummaryTab() {
           </CardContent>
         </Card>
       </div >
-    </div >
+    </ScrollArea >
   )
 }
