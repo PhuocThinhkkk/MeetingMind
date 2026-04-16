@@ -5,7 +5,7 @@ import {
   formatFileSize,
   formatDate,
   cn,
-} from '@/lib/utils'
+} from '@/apps/web/lib/utils'
 
 beforeAll(() => {
   // @ts-ignore

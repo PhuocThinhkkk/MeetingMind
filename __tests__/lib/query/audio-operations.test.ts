@@ -3,7 +3,7 @@ import {
   saveAudioFile,
   updateAudioName,
   deleteAudioById,
-} from '@/lib/queries/browser/audio-operations'
+} from '@/packages/modules/transcription/repository/client/audio-operations'
 import { supabase } from '@/lib/supabase-init/supabase-browser'
 import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
 
