@@ -1,7 +1,7 @@
 import React from 'react'
 import { renderHook, act, waitFor } from '@testing-library/react'
 import { AuthProvider, useAuth } from '@/hooks/use-auth'
-import { supabase } from '@/lib/supabase-init/supabase-browser'
+import { supabase } from '@repo/utils/supabase-init/supabase-browser'
 
 jest.mock('@/lib/supabase', () => ({
   supabase: {
@@ -34,14 +34,14 @@ describe('useAuth', () => {
 
   describe('AuthProvider initialization', () => {
     it('should initialize with loading state', async () => {
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+      ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
       })
 
       const mockSubscription = { unsubscribe: jest.fn() }
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-        data: { subscription: mockSubscription },
-      })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
+          data: { subscription: mockSubscription },
+        })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -58,14 +58,14 @@ describe('useAuth', () => {
     })
 
     it('should load existing session on mount', async () => {
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+      ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: mockSession },
       })
 
       const mockSubscription = { unsubscribe: jest.fn() }
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-        data: { subscription: mockSubscription },
-      })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
+          data: { subscription: mockSubscription },
+        })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -81,14 +81,14 @@ describe('useAuth', () => {
     })
 
     it('should set up auth state change listener', async () => {
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+      ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
       })
 
       const mockSubscription = { unsubscribe: jest.fn() }
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-        data: { subscription: mockSubscription },
-      })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
+          data: { subscription: mockSubscription },
+        })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -104,18 +104,18 @@ describe('useAuth', () => {
 
   describe('signUp', () => {
     it('should sign up a new user', async () => {
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+      ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
       })
 
       const mockSubscription = { unsubscribe: jest.fn() }
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-        data: { subscription: mockSubscription },
-      })
-      ;(supabase.auth.signUp as jest.Mock).mockResolvedValue({
-        error: null,
-        data: { user: mockUser },
-      })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
+          data: { subscription: mockSubscription },
+        })
+        ; (supabase.auth.signUp as jest.Mock).mockResolvedValue({
+          error: null,
+          data: { user: mockUser },
+        })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -149,20 +149,20 @@ describe('useAuth', () => {
     })
 
     it('should return error on sign up failure', async () => {
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+      ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
       })
 
       const mockSubscription = { unsubscribe: jest.fn() }
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-        data: { subscription: mockSubscription },
-      })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
+          data: { subscription: mockSubscription },
+        })
 
       const mockError = { message: 'Email already exists' }
-      ;(supabase.auth.signUp as jest.Mock).mockResolvedValue({
-        error: mockError,
-        data: null,
-      })
+        ; (supabase.auth.signUp as jest.Mock).mockResolvedValue({
+          error: mockError,
+          data: null,
+        })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -189,27 +189,27 @@ describe('useAuth', () => {
     it('should create user profile on SIGNED_IN event', async () => {
       const mockSubscription = { unsubscribe: jest.fn() }
       let authChangeCallback: any
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
-        data: { session: null },
-      })
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
-        callback => {
-          authChangeCallback = callback
-          return { data: { subscription: mockSubscription } }
-        }
-      )
+        ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
+          data: { session: null },
+        })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
+          callback => {
+            authChangeCallback = callback
+            return { data: { subscription: mockSubscription } }
+          }
+        )
 
       const mockSelect = jest.fn().mockReturnThis()
       const mockEq = jest.fn().mockReturnThis()
       const mockMaybeSingle = jest.fn().mockResolvedValue({ data: null })
       const mockInsert = jest.fn().mockResolvedValue({ error: null })
 
-      ;(supabase.from as jest.Mock).mockReturnValue({
-        select: mockSelect,
-        eq: mockEq,
-        maybeSingle: mockMaybeSingle,
-        insert: mockInsert,
-      })
+        ; (supabase.from as jest.Mock).mockReturnValue({
+          select: mockSelect,
+          eq: mockEq,
+          maybeSingle: mockMaybeSingle,
+          insert: mockInsert,
+        })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -237,18 +237,18 @@ describe('useAuth', () => {
 
   describe('signIn', () => {
     it('should sign in a user with email and password', async () => {
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+      ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
       })
 
       const mockSubscription = { unsubscribe: jest.fn() }
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-        data: { subscription: mockSubscription },
-      })
-      ;(supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
-        error: null,
-        data: { session: mockSession },
-      })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
+          data: { subscription: mockSubscription },
+        })
+        ; (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
+          error: null,
+          data: { session: mockSession },
+        })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -276,20 +276,20 @@ describe('useAuth', () => {
     })
 
     it('should return error on sign in failure', async () => {
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+      ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: null },
       })
 
       const mockSubscription = { unsubscribe: jest.fn() }
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-        data: { subscription: mockSubscription },
-      })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
+          data: { subscription: mockSubscription },
+        })
 
       const mockError = { message: 'Invalid credentials' }
-      ;(supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
-        error: mockError,
-        data: null,
-      })
+        ; (supabase.auth.signInWithPassword as jest.Mock).mockResolvedValue({
+          error: mockError,
+          data: null,
+        })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -315,15 +315,15 @@ describe('useAuth', () => {
 
   describe('signOut', () => {
     it('should sign out the current user', async () => {
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
+      ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
         data: { session: mockSession },
       })
 
       const mockSubscription = { unsubscribe: jest.fn() }
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-        data: { subscription: mockSubscription },
-      })
-      ;(supabase.auth.signOut as jest.Mock).mockResolvedValue({ error: null })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
+          data: { subscription: mockSubscription },
+        })
+        ; (supabase.auth.signOut as jest.Mock).mockResolvedValue({ error: null })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -347,15 +347,15 @@ describe('useAuth', () => {
     it('should update user state on SIGNED_IN event', async () => {
       const mockSubscription = { unsubscribe: jest.fn() }
       let authChangeCallback: any
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
-        data: { session: null },
-      })
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
-        callback => {
-          authChangeCallback = callback
-          return { data: { subscription: mockSubscription } }
-        }
-      )
+        ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
+          data: { session: null },
+        })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
+          callback => {
+            authChangeCallback = callback
+            return { data: { subscription: mockSubscription } }
+          }
+        )
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -378,15 +378,15 @@ describe('useAuth', () => {
     it('should clear user state on SIGNED_OUT event', async () => {
       const mockSubscription = { unsubscribe: jest.fn() }
       let authChangeCallback: any
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
-        data: { session: mockSession },
-      })
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
-        callback => {
-          authChangeCallback = callback
-          return { data: { subscription: mockSubscription } }
-        }
-      )
+        ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
+          data: { session: mockSession },
+        })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockImplementation(
+          callback => {
+            authChangeCallback = callback
+            return { data: { subscription: mockSubscription } }
+          }
+        )
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>
@@ -424,12 +424,12 @@ describe('useAuth', () => {
     it('should unsubscribe from auth changes on unmount', async () => {
       const mockSubscription = { unsubscribe: jest.fn() }
 
-      ;(supabase.auth.getSession as jest.Mock).mockResolvedValue({
-        data: { session: null },
-      })
-      ;(supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
-        data: { subscription: mockSubscription },
-      })
+        ; (supabase.auth.getSession as jest.Mock).mockResolvedValue({
+          data: { session: null },
+        })
+        ; (supabase.auth.onAuthStateChange as jest.Mock).mockReturnValue({
+          data: { subscription: mockSubscription },
+        })
 
       const wrapper = ({ children }: { children: React.ReactNode }) => (
         <AuthProvider>{children}</AuthProvider>

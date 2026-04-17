@@ -1,13 +1,13 @@
-import { sanitizedFileName } from '@/packages/modules/transcription/service/client/extract-file-name'
-import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
-import { fetchPresignedUrlAndUpload, triggerAnalyze } from './utils'
-import { log } from '@/packages/utils/logger'
+import { sanitizedFileName } from "@repo/modules/transcription/service/client/extract-file-name";
+import { getAudioDuration } from "@/lib/transcript/transcript-realtime-utils";
+import { fetchPresignedUrlAndUpload, triggerAnalyze } from "./utils";
+import { log } from "@repo/utils/logger";
 import {
   saveTranscript,
   saveTranscriptWords,
-} from '@/packages/modules/transcription/repository/client/transcription-operations'
-import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
-import { updateAudioStatus } from '../../repository/client/audio-operations'
+} from "@repo/modules/transcription/repository/client/transcription-operations";
+import { SaveTranscriptInput } from "@repo/types/transcriptions/transcription.db";
+import { updateAudioStatus } from "../../repository/client/audio-operations";
 /**
  * Uploads a local audio file, saves its realtime transcript and words, and triggers analysis for the uploaded audio.
  *
@@ -19,10 +19,10 @@ import { updateAudioStatus } from '../../repository/client/audio-operations'
 export async function realtimeUploadPineline(
   transcriptWords: SaveTranscriptInput,
   file: File,
-  userId: string
+  userId: string,
 ) {
   try {
-    const sanitizedName = sanitizedFileName(file.name)
+    const sanitizedName = sanitizedFileName(file.name);
     const presigedUrlInput = {
       name: sanitizedName,
       type: file.type,
@@ -30,20 +30,20 @@ export async function realtimeUploadPineline(
       duration: await getAudioDuration(file),
       isUpload: false,
       path: undefined,
-    }
+    };
     const { path, audio } = await fetchPresignedUrlAndUpload(
       presigedUrlInput,
       file,
-      userId
-    )
-    await handlingSaveAudioAndTranscript(transcriptWords, audio.id)
-    await triggerAnalyze(audio.id)
-    return { audio }
+      userId,
+    );
+    await handlingSaveAudioAndTranscript(transcriptWords, audio.id);
+    await triggerAnalyze(audio.id);
+    return { audio };
   } catch (error) {
-    log.error('Error when handle file upload.')
-    throw error
+    log.error("Error when handle file upload.");
+    throw error;
   } finally {
-    log.info('File upload function end.')
+    log.info("File upload function end.");
   }
 }
 
@@ -57,16 +57,16 @@ export async function realtimeUploadPineline(
  */
 export async function handlingSaveAudioAndTranscript(
   transcriptWords: SaveTranscriptInput,
-  audioId: string
+  audioId: string,
 ) {
-  const transcription = await saveTranscript(audioId, transcriptWords)
+  const transcription = await saveTranscript(audioId, transcriptWords);
   if (transcription) {
-    log.info('Transcript saved with ID:', transcription)
+    log.info("Transcript saved with ID:", transcription);
   }
-  let words
+  let words;
   if (transcriptWords && transcriptWords.length > 0) {
-    words = await saveTranscriptWords(transcription.id, transcriptWords)
+    words = await saveTranscriptWords(transcription.id, transcriptWords);
   }
-  await updateAudioStatus(audioId, 'done')
-  log.info('Success storing transcript and words: ', { transcription, words })
+  await updateAudioStatus(audioId, "done");
+  log.info("Success storing transcript and words: ", { transcription, words });
 }

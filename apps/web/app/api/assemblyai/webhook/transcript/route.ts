@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 import {
   findAudioFileByJobId,
   updateAudioComplete,
-} from '@/packages/modules/transcription/repository/server/audio-upload-operations'
-import { AssemblyAIWebhookPayload } from '@/types/transcriptions/transcription.assembly.upload'
-import { checkFileSizeAllowed } from '@/packages/modules/transcription/validations/usage.limit'
-import { getUserPlan } from '@/packages/modules/billing/repository/server/limits-audio-upload-operations'
+} from '@repo/modules/transcription/repository/server/audio-upload-operations'
+import { AssemblyAIWebhookPayload } from '@repo/types/transcriptions/transcription.assembly.upload'
+import { checkFileSizeAllowed } from '@repo/modules/transcription/validations/usage.limit'
+import { getUserPlan } from '@repo/modules/billing/repository/server/limits-audio-upload-operations'
 
 /**
  * Handle AssemblyAI transcript webhook POSTs and update the corresponding local audio record when a transcription completes.

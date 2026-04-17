@@ -1,4 +1,4 @@
-import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
+import { supabaseAdmin } from "@repo/utils/supabase-init/supabase-server";
 /**
  * Retrieve the transcript row that matches the given audio ID.
  *
@@ -7,9 +7,9 @@ import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
  */
 export async function getTranscriptByAudioId(audioId: string) {
   const { data: transcript } = await supabaseAdmin
-    .from('transcripts')
-    .select('*')
-    .eq('audio_id', audioId)
-    .single()
-  return transcript
+    .from("transcripts")
+    .select("*")
+    .eq("audio_id", audioId)
+    .single();
+  return transcript;
 }

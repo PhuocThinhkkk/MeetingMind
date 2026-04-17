@@ -13,13 +13,13 @@ import {
 } from 'lucide-react'
 import RealTimeTranscriptionPage from './realtime-view-transcription'
 import { useRecorder } from '@/components/context/realtime-recorder-context'
-import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
-import { formatDuration } from '@/lib/ui-format/time-format'
+import { SaveTranscriptInput } from '@repo/types/transcriptions/transcription.db'
+import { formatDuration } from '@repo/utils/ui-format/time-format'
 import { toast } from '@/hooks/use-toast'
 import { LoadingOverlay } from '../loading-overlay'
 import { useUploadController } from '@/hooks/use-upload-controller'
-import { log } from '@/packages/utils/logger'
-import { serverCheck } from '@/apps/web/lib/utils/server-check'
+import { log } from '@repo/utils/logger'
+import { serverCheck } from '@/lib/utils/server-check'
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (

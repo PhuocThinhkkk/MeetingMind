@@ -1,7 +1,7 @@
-import 'server-only'
-import { createServerClient } from '@supabase/auth-helpers-nextjs'
-import { cookies } from 'next/headers'
-import { Database } from '@/types/database.types'
+import "server-only";
+import { createServerClient } from "@supabase/auth-helpers-nextjs";
+import { cookies } from "next/headers";
+import { Database } from "@repo/types/database.types";
 
 /**
  * Create a Supabase server client that reads and writes auth cookies via Next.js server cookies.
@@ -9,23 +9,23 @@ import { Database } from '@/types/database.types'
  * @returns A Supabase server client (typed with `Database`) configured with the application's Supabase URL and anon key and wired to Next.js server cookies for auth.
  */
 export async function getSupabseAuthServer() {
-  const cookieStore = await cookies()
+  const cookieStore = await cookies();
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
     {
       cookies: {
         getAll() {
-          return cookieStore.getAll()
+          return cookieStore.getAll();
         },
         setAll(cookiesToSet) {
           cookiesToSet.forEach(({ name, value, options }) => {
-            cookieStore.set(name, value, options)
-          })
+            cookieStore.set(name, value, options);
+          });
         },
       },
-    }
-  )
+    },
+  );
 }
 
 /**
@@ -34,9 +34,9 @@ export async function getSupabseAuthServer() {
  * @returns The authenticated user object if a session exists, `null` otherwise.
  */
 export async function getUserAuthInSupabaseToken() {
-  const supabaseAuth = await getSupabseAuthServer()
+  const supabaseAuth = await getSupabseAuthServer();
   const {
     data: { user },
-  } = await supabaseAuth.auth.getUser()
-  return user
+  } = await supabaseAuth.auth.getUser();
+  return user;
 }

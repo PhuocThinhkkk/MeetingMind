@@ -1,6 +1,6 @@
 'use client'
 
-import { EventItemRow } from '@/types/transcriptions/transcription.db'
+import { EventItemRow } from '@repo/types/transcriptions/transcription.db'
 import { Clock, MapPin } from 'lucide-react'
 
 interface DailyEventsProps {
@@ -69,10 +69,9 @@ export default function DailyEvents({
                 <div
                   className={`
                     mt-1 inline-flex flex-shrink-0 items-center rounded-full px-2 py-1 text-xs font-medium
-                    ${
-                      event.added_to_google_calendar
-                        ? 'bg-green-100 text-green-700'
-                        : 'bg-amber-100 text-amber-700'
+                    ${event.added_to_google_calendar
+                      ? 'bg-green-100 text-green-700'
+                      : 'bg-amber-100 text-amber-700'
                     }
                   `}
                 >

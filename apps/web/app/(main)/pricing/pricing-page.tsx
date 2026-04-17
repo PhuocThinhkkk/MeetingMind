@@ -1,5 +1,5 @@
 'use client'
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 
 import { useEffect, useState } from 'react'
 import {
@@ -13,9 +13,9 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Check, Sparkles } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
-import { getUserSubscription } from '@/packages/modules/billing/repository/client/subscriptions'
-import { plans, PlanKey } from '@/constains/plans'
-import { PLANS } from '@/constains/limits'
+import { getUserSubscription } from '@repo/modules/billing/repository/client/subscriptions'
+import { plans, PlanKey } from '@repo/utils/constants/plans'
+import { PLANS } from '@repo/utils/constants/limits'
 
 export default function PricingSection() {
   const { user } = useAuth()

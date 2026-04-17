@@ -1,10 +1,10 @@
-import { saveAudioFile } from '@/packages/modules/transcription/repository/client/audio-operations'
-import { CreateUrlUploadBody } from '@/app/api/audiofile/create-url-upload/route'
-import { CreateUploadUrlResult } from '@/types/transcriptions/transcription.storage.upload'
-import { TriggerTranscriptBody } from '@/app/api/audiofile/[audioId]/trigger-transcript/route'
-import { GetUrlDownloadBody } from '@/app/api/audiofile/get-url-download/route'
-import { supabase } from '@/lib/supabase-init/supabase-browser'
-import { log } from '@/packages/utils/logger'
+import { saveAudioFile } from "@repo/modules/transcription/repository/client/audio-operations";
+import { CreateUrlUploadBody } from "@/app/api/audiofile/create-url-upload/route";
+import { CreateUploadUrlResult } from "@repo/types/transcriptions/transcription.storage.upload";
+import { TriggerTranscriptBody } from "@/app/api/audiofile/[audioId]/trigger-transcript/route";
+import { GetUrlDownloadBody } from "@/app/api/audiofile/get-url-download/route";
+import { supabase } from "@repo/utils/supabase-init/supabase-browser";
+import { log } from "@repo/utils/logger";
 
 /**
  * Request a presigned upload URL for an audio file.
@@ -13,18 +13,18 @@ import { log } from '@/packages/utils/logger'
  * @returns An object containing the data required to perform the upload, including the presigned upload URL and the storage path
  */
 async function fetchPresignedUrl(input: CreateUrlUploadBody) {
-  const res = await fetch('/api/audiofile/create-url-upload', {
-    method: 'POST',
+  const res = await fetch("/api/audiofile/create-url-upload", {
+    method: "POST",
     body: JSON.stringify(input),
-  })
+  });
   if (!res.ok) {
     throw new Error(
-      `Error when creating url upload: ${(await res.json()).error}`
-    )
+      `Error when creating url upload: ${(await res.json()).error}`,
+    );
   }
-  const data: CreateUploadUrlResult = await res.json()
-  log.info('presigned url res: ', data)
-  return data
+  const data: CreateUploadUrlResult = await res.json();
+  log.info("presigned url res: ", data);
+  return data;
 }
 
 /**
@@ -38,11 +38,11 @@ async function fetchPresignedUrl(input: CreateUrlUploadBody) {
 export async function fetchPresignedUrlAndUpload(
   input: CreateUrlUploadBody,
   file: File,
-  userId: string
+  userId: string,
 ) {
-  const uploadRes = await fetchPresignedUrl(input)
-  const audio = await saveAudioFile(file, userId, uploadRes)
-  return { path: uploadRes.path, audio: audio }
+  const uploadRes = await fetchPresignedUrl(input);
+  const audio = await saveAudioFile(file, userId, uploadRes);
+  return { path: uploadRes.path, audio: audio };
 }
 
 /**
@@ -55,20 +55,20 @@ export async function fetchPresignedUrlAndUpload(
  */
 export async function fetchTriggerTranscript(
   audioId: string,
-  input: TriggerTranscriptBody
+  input: TriggerTranscriptBody,
 ) {
   const res = await fetch(`/api/audiofile/${audioId}/trigger-transcript`, {
-    method: 'POST',
+    method: "POST",
     body: JSON.stringify(input),
-  })
+  });
   if (!res.ok) {
-    const body = await res.json().catch(() => null)
+    const body = await res.json().catch(() => null);
     throw new Error(
-      `Error when creating url upload: ${body?.error ?? res.statusText}`
-    )
+      `Error when creating url upload: ${body?.error ?? res.statusText}`,
+    );
   }
-  const data: TriggerTranscriptBody = await res.json()
-  return data
+  const data: TriggerTranscriptBody = await res.json();
+  return data;
 }
 
 /**
@@ -79,17 +79,17 @@ export async function fetchTriggerTranscript(
  * @throws Error if the server responds with an error; message contains the server-provided error
  */
 export async function fetchUrlDownload(input: GetUrlDownloadBody) {
-  const res = await fetch('/api/audiofile/get-url-download', {
-    method: 'POST',
+  const res = await fetch("/api/audiofile/get-url-download", {
+    method: "POST",
     body: JSON.stringify(input),
-  })
+  });
   if (!res.ok) {
     throw new Error(
-      `Error when fetching url download: ${(await res.json()).error}`
-    )
+      `Error when fetching url download: ${(await res.json()).error}`,
+    );
   }
-  const data = await res.json()
-  return data.url
+  const data = await res.json();
+  return data.url;
 }
 
 /**
@@ -100,43 +100,43 @@ export async function fetchUrlDownload(input: GetUrlDownloadBody) {
  */
 export async function waitForTranscriptionDone(audioId: string): Promise<void> {
   const { data } = await supabase
-    .from('audio_files')
-    .select('transcription_status')
-    .eq('id', audioId)
-    .single()
+    .from("audio_files")
+    .select("transcription_status")
+    .eq("id", audioId)
+    .single();
 
-  if (data?.transcription_status === 'done') return
-  if (data?.transcription_status === 'failed') {
-    throw new Error('Transcription failed')
+  if (data?.transcription_status === "done") return;
+  if (data?.transcription_status === "failed") {
+    throw new Error("Transcription failed");
   }
 
   return new Promise((resolve, reject) => {
     const channel = supabase
       .channel(`audio-status-${audioId}`)
       .on(
-        'postgres_changes',
+        "postgres_changes",
         {
-          event: 'UPDATE',
-          schema: 'public',
-          table: 'audio_files',
+          event: "UPDATE",
+          schema: "public",
+          table: "audio_files",
           filter: `id=eq.${audioId}`,
         },
-        payload => {
-          const status = payload.new.transcription_status
+        (payload) => {
+          const status = payload.new.transcription_status;
 
-          if (status === 'done') {
-            supabase.removeChannel(channel)
-            resolve()
+          if (status === "done") {
+            supabase.removeChannel(channel);
+            resolve();
           }
 
-          if (status === 'failed') {
-            supabase.removeChannel(channel)
-            reject(new Error('Transcription waiting failed'))
+          if (status === "failed") {
+            supabase.removeChannel(channel);
+            reject(new Error("Transcription waiting failed"));
           }
-        }
+        },
       )
-      .subscribe()
-  })
+      .subscribe();
+  });
 }
 
 /**
@@ -147,13 +147,13 @@ export async function waitForTranscriptionDone(audioId: string): Promise<void> {
  */
 export async function triggerAnalyze(audioId: string) {
   const res = await fetch(`/api/audiofile/${audioId}/analyze`, {
-    method: 'POST',
-  })
+    method: "POST",
+  });
   if (!res.ok) {
     throw new Error(
-      `Error when trigger analyzing : ${(await res.json()).error}`
-    )
+      `Error when trigger analyzing : ${(await res.json()).error}`,
+    );
   }
-  const data = await res.json()
-  return data
+  const data = await res.json();
+  return data;
 }

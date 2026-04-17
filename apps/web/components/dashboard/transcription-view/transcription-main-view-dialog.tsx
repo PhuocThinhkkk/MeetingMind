@@ -14,7 +14,7 @@ import { TranscriptTab } from '@/components/dashboard/transcription-view/transcr
 import { QATab } from './qa-tab'
 import { SummaryTab } from './summary-tab'
 import { EventsTab } from './event/event-tab'
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
 
 type Props = {

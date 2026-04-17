@@ -1,17 +1,17 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserAuthInSupabaseToken } from '@/packages/lib/supabase-auth-server'
-import { log } from '@/packages/utils/logger'
+import { getUserAuthInSupabaseToken } from '@repo/utils/supabase-auth-server'
+import { log } from '@repo/utils/logger'
 import {
   getAudioById,
   getStorageFileSize,
   updateAudioFileByJobId,
-} from '@/packages/modules/transcription/repository/server/audio-upload-operations'
-import { createAssemblyAudioUploadWithWebhook } from '@/packages/modules/transcription/service/server/assembly-webhook'
-import { getUserPlan } from '@/packages/modules/billing/repository/server/limits-audio-upload-operations'
-import { checkFileSizeAllowed } from '@/packages/modules/transcription/validations/usage.limit'
-import { AudioFileRow } from '@/types/transcriptions/transcription.db'
-import { BUCKET_NAME } from '@/constains/storage'
-import { getSignedAudioUrl } from '@/packages/modules/transcription/repository/server/storage-operations'
+} from '@repo/modules/transcription/repository/server/audio-upload-operations'
+import { createAssemblyAudioUploadWithWebhook } from '@repo/modules/transcription/service/server/assembly-webhook'
+import { getUserPlan } from '@repo/modules/billing/repository/server/limits-audio-upload-operations'
+import { checkFileSizeAllowed } from '@repo/modules/transcription/validations/usage.limit'
+import { AudioFileRow } from '@repo/types/transcriptions/transcription.db'
+import { BUCKET_NAME } from '@repo/utils/constants/storage'
+import { getSignedAudioUrl } from '@repo/modules/transcription/repository/server/storage-operations'
 
 export type TriggerTranscriptBody = {
   path: string

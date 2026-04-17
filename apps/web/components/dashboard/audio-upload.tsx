@@ -1,6 +1,6 @@
 'use client'
 
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 import { useState, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
@@ -73,8 +73,8 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
   return (
     <Card
       className={`h-full group hover:shadow-lg transition-all duration-300 border-dashed border-2 animate-slide-up hover-lift ${dragActive
-          ? 'border-blue-400 bg-blue-50'
-          : 'border-gray-300 hover:border-blue-400'
+        ? 'border-blue-400 bg-blue-50'
+        : 'border-gray-300 hover:border-blue-400'
         }`}
     >
       <CardContent className="p-8">

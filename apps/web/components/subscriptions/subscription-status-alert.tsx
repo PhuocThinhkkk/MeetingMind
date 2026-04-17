@@ -1,7 +1,7 @@
 'use client'
 
 import { AlertCircle, CheckCircle, Clock } from 'lucide-react'
-import { cn } from '@/apps/web/lib/utils'
+import { cn } from '@/lib/utils'
 
 type StatusAlertProps = {
   status: 'active' | 'inactive' | 'canceled'

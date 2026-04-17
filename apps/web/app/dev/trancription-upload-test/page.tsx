@@ -1,16 +1,16 @@
 'use client'
 
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 import { useEffect, useState } from 'react'
-import { supabase } from '@/lib/supabase-init/supabase-browser'
+import { supabase } from '@repo/utils/supabase-init/supabase-browser'
 import { TranscriptionDialog } from '@/components/dashboard/transcription-view/transcription-main-view-dialog'
-import { TranscriptionDataUpload } from '@/types/transcriptions/transcription.db'
-import { getAudioById } from '@/packages/modules/transcription/repository/client/audio-operations'
+import { TranscriptionDataUpload } from '@repo/types/transcriptions/transcription.db'
+import { getAudioById } from '@repo/modules/transcription/repository/client/audio-operations'
 import {
   getTranscriptByAudioId,
   getTranscriptWordNestedByAudioId,
-} from '@/packages/modules/transcription/repository/client/transcription-operations'
-import { getQaLogsByAudioId } from '@/packages/modules/transcription/repository/client/qa-log-operations'
+} from '@repo/modules/transcription/repository/client/transcription-operations'
+import { getQaLogsByAudioId } from '@repo/modules/transcription/repository/client/qa-log-operations'
 import { TranscriptionViewProvider } from '@/components/context/transcription-view-context'
 
 export default function TranscriptionTestPage() {

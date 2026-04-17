@@ -1,18 +1,18 @@
 'use client'
 
 import { useCallback, useEffect, useState } from 'react'
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 
-import { getAudioById } from '@/packages/modules/transcription/repository/client/audio-operations'
-import { getEventAndSumariesByAudioId } from '@/packages/modules/transcription/repository/client/events-sumaries-operations'
-import { getQaLogsByAudioId } from '@/packages/modules/transcription/repository/client/qa-log-operations'
-import { getTranscriptWordNestedByAudioId } from '@/packages/modules/transcription/repository/client/transcription-operations'
+import { getAudioById } from '@repo/modules/transcription/repository/client/audio-operations'
+import { getEventAndSumariesByAudioId } from '@repo/modules/transcription/repository/client/events-sumaries-operations'
+import { getQaLogsByAudioId } from '@repo/modules/transcription/repository/client/qa-log-operations'
+import { getTranscriptWordNestedByAudioId } from '@repo/modules/transcription/repository/client/transcription-operations'
 
 import type {
   QALogRow,
   TranscriptionDataUpload,
-} from '@/types/transcriptions/transcription.db'
-import type { EventItemRow } from '@/types/transcriptions/transcription.db'
+} from '@repo/types/transcriptions/transcription.db'
+import type { EventItemRow } from '@repo/types/transcriptions/transcription.db'
 
 /**
  * Manages loading and local state for transcription data associated with an audio ID.

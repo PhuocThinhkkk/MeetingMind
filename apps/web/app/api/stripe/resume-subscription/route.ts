@@ -1,10 +1,10 @@
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 import { NextResponse } from 'next/server'
-import { getUserAuthInSupabaseToken } from '@/packages/lib/supabase-auth-server'
+import { getUserAuthInSupabaseToken } from '@repo/utils/supabase-auth-server'
 import {
   getUserSubscriptionServer,
   updateResumeSubscription,
-} from '@/packages/modules/billing/repository/server/stripe-subscription-operations'
+} from '@repo/modules/billing/repository/server/stripe-subscription-operations'
 
 /**
  * Resumes the authenticated user's subscription and returns the result as an HTTP response.

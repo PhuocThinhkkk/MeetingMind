@@ -10,12 +10,12 @@ import { TranscriptDetails } from '@/components/transcript-details'
 import { useRouter } from 'next/navigation'
 import { FileAudio, Clock, HardDrive } from 'lucide-react'
 import { StatusBadge } from '@/components/status-badge'
-import { AudioFile } from '@/types/transcriptions/transcription.db'
+import { AudioFile } from '@repo/types/transcriptions/transcription.db'
 import {
   formatDate,
   formatDuration,
   formatFileSize,
-} from '@/lib/ui-format/time-format'
+} from '@repo/utils/ui-format/time-format'
 import { useState, useRef } from 'react'
 import { Play, Pause, Volume2, VolumeX } from 'lucide-react'
 import { Slider } from '@/components/ui/slider'

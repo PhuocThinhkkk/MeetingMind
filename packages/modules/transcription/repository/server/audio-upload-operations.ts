@@ -1,15 +1,15 @@
-import { adaptAssemblyAIWords } from '@/lib/adapters/upload-transcript'
-import { log } from '@/packages/utils/logger'
-import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
+import { adaptAssemblyAIWords } from "@/lib/adapters/upload-transcript";
+import { log } from "@repo/utils/logger";
+import { supabaseAdmin } from "@repo/utils/supabase-init/supabase-server";
 import {
   AudioFileInsertInput,
   AudioFileRow,
-} from '@/types/transcriptions/transcription.db'
-import { AssemblyAIWebhookPayload } from '@/types/transcriptions/transcription.assembly.upload'
+} from "@repo/types/transcriptions/transcription.db";
+import { AssemblyAIWebhookPayload } from "@repo/types/transcriptions/transcription.assembly.upload";
 import {
   CreateUploadUrlParams,
   CreateUploadUrlResult,
-} from '@/types/transcriptions/transcription.storage.upload'
+} from "@repo/types/transcriptions/transcription.storage.upload";
 
 /**
  * Insert a new row into the `audio_files` table and return the inserted record.
@@ -20,15 +20,15 @@ import {
  */
 export async function insertAudioFile(audioFileInput: AudioFileInsertInput) {
   const { data: audio, error: insertError } = await supabaseAdmin
-    .from('audio_files')
+    .from("audio_files")
     .insert(audioFileInput)
     .select()
-    .single()
+    .single();
   if (insertError || !audio) {
-    log.error('Failed to insert audio record', { error: insertError })
-    throw insertError ?? new Error('Failed to insert audio record')
+    log.error("Failed to insert audio record", { error: insertError });
+    throw insertError ?? new Error("Failed to insert audio record");
   }
-  return audio as AudioFileRow
+  return audio as AudioFileRow;
 }
 
 /**
@@ -41,24 +41,24 @@ export async function insertAudioFile(audioFileInput: AudioFileInsertInput) {
  */
 export async function createAudioUploadUrl(
   params: CreateUploadUrlParams,
-  isUpload: boolean
+  isUpload: boolean,
 ): Promise<CreateUploadUrlResult> {
-  const { userId, fileName, fileType } = params
+  const { userId, fileName, fileType } = params;
 
-  const ext = fileName.split('.').pop()
-  let path
+  const ext = fileName.split(".").pop();
+  let path;
   if (isUpload) {
-    path = `uploads/${userId}/${crypto.randomUUID()}.${ext}`
+    path = `uploads/${userId}/${crypto.randomUUID()}.${ext}`;
   } else {
-    path = `recordings/${userId}/${crypto.randomUUID()}.${ext}`
+    path = `recordings/${userId}/${crypto.randomUUID()}.${ext}`;
   }
 
   const { data, error } = await supabaseAdmin.storage
-    .from('audio-files')
-    .createSignedUploadUrl(path)
+    .from("audio-files")
+    .createSignedUploadUrl(path);
 
   if (error || !data) {
-    throw new Error(error?.message || 'Failed to create signed upload URL')
+    throw new Error(error?.message || "Failed to create signed upload URL");
   }
 
   return {
@@ -66,7 +66,7 @@ export async function createAudioUploadUrl(
     signedUrl: data.signedUrl,
     token: data.token,
     contentType: fileType,
-  }
+  };
 }
 
 /**
@@ -79,27 +79,27 @@ export async function createAudioUploadUrl(
  */
 export async function getStorageFileSize(
   bucket: string,
-  path: string
+  path: string,
 ): Promise<number> {
-  const parts = path.split('/')
-  const fileName = parts.pop()
-  const folder = parts.join('/')
+  const parts = path.split("/");
+  const fileName = parts.pop();
+  const folder = parts.join("/");
 
   const { data, error } = await supabaseAdmin.storage
     .from(bucket)
     .list(folder, {
       search: fileName,
       limit: 1,
-    })
+    });
 
-  if (error) throw error
+  if (error) throw error;
 
-  const file = data?.[0]
+  const file = data?.[0];
   if (!file || file.name !== fileName) {
-    throw new Error('File not found in storage')
+    throw new Error("File not found in storage");
   }
 
-  return file.metadata.size || file.metadata.file_size || 0
+  return file.metadata.size || file.metadata.file_size || 0;
 }
 
 /**
@@ -111,18 +111,18 @@ export async function getStorageFileSize(
  */
 export async function findAudioFileByJobId(jobId: string) {
   const { data: audio, error } = await supabaseAdmin
-    .from('audio_files')
-    .select('*')
-    .eq('assembly_job_id', jobId)
-    .single()
+    .from("audio_files")
+    .select("*")
+    .eq("assembly_job_id", jobId)
+    .single();
 
   if (error || !audio) {
     throw new Error(
-      `Audio file not found for job ID: ${jobId}, error: ${JSON.stringify(error)}`
-    )
+      `Audio file not found for job ID: ${jobId}, error: ${JSON.stringify(error)}`,
+    );
   }
 
-  return audio as AudioFileRow
+  return audio as AudioFileRow;
 }
 /**
  * Set the AssemblyAI job ID on an existing audio file record.
@@ -134,19 +134,19 @@ export async function findAudioFileByJobId(jobId: string) {
  */
 export async function updateAudioFileByJobId(audioId: string, jobId: string) {
   const { data: audio, error } = await supabaseAdmin
-    .from('audio_files')
+    .from("audio_files")
     .update({ assembly_job_id: jobId })
-    .select('*')
-    .eq('id', audioId)
-    .single()
+    .select("*")
+    .eq("id", audioId)
+    .single();
 
   if (error || !audio) {
     throw new Error(
-      `Audio file not found for job ID: ${jobId}, error: ${JSON.stringify(error)}`
-    )
+      `Audio file not found for job ID: ${jobId}, error: ${JSON.stringify(error)}`,
+    );
   }
 
-  return audio as AudioFileRow
+  return audio as AudioFileRow;
 }
 
 /**
@@ -158,15 +158,15 @@ export async function updateAudioFileByJobId(audioId: string, jobId: string) {
  */
 export async function getAudioById(audioId: string) {
   const { data: audio, error: e } = await supabaseAdmin
-    .from('audio_files')
-    .select('*')
-    .eq('id', audioId)
+    .from("audio_files")
+    .select("*")
+    .eq("id", audioId);
 
   if (e) {
-    log.error('Error when get audio by id: ', { e, audio, audioId })
-    throw e
+    log.error("Error when get audio by id: ", { e, audio, audioId });
+    throw e;
   }
-  return audio[0]
+  return audio[0];
 }
 
 /**
@@ -178,51 +178,51 @@ export async function getAudioById(audioId: string) {
  */
 export async function updateAudioComplete(
   audio: AudioFileRow,
-  transcript: AssemblyAIWebhookPayload
+  transcript: AssemblyAIWebhookPayload,
 ) {
   const { data: transcriptDb, error: insertError } = await supabaseAdmin
-    .from('transcripts')
+    .from("transcripts")
     .insert({
       audio_id: audio.id,
-      text: transcript.text ?? '',
-      language: transcript.language_code ?? 'en-US',
+      text: transcript.text ?? "",
+      language: transcript.language_code ?? "en-US",
       confidence_score: transcript.confidence,
       duration: transcript.duration,
     })
-    .select('*')
-    .single()
+    .select("*")
+    .single();
 
   if (!transcriptDb || insertError) {
-    log.error('Failed to insert transcript', {
+    log.error("Failed to insert transcript", {
       error: insertError,
       transcript,
       transcriptDb,
       audioId: audio.id,
-    })
-    throw insertError
+    });
+    throw insertError;
   }
 
   const transcriptWordsInsert = adaptAssemblyAIWords(
     transcript.words,
-    transcriptDb.id
-  )
+    transcriptDb.id,
+  );
 
   const { error: insertError2 } = await supabaseAdmin
-    .from('transcription_words')
-    .insert(transcriptWordsInsert)
+    .from("transcription_words")
+    .insert(transcriptWordsInsert);
 
   if (insertError2) {
-    log.error('Failed to insert transcript words: ', {
+    log.error("Failed to insert transcript words: ", {
       error: insertError,
       transcript,
       transcriptDb,
       audioId: audio.id,
-    })
-    throw insertError2
+    });
+    throw insertError2;
   }
 
   await supabaseAdmin
-    .from('audio_files')
-    .update({ transcription_status: 'done' })
-    .eq('id', audio.id)
+    .from("audio_files")
+    .update({ transcription_status: "done" })
+    .eq("id", audio.id);
 }

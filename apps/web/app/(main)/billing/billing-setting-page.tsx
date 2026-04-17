@@ -1,6 +1,6 @@
 'use client'
 
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 import { useEffect, useState } from 'react'
 import { SubscriptionCard } from '@/components/subscriptions/subscription-card'
 import { SubscriptionStatusAlert } from '@/components/subscriptions/subscription-status-alert'
@@ -8,8 +8,8 @@ import { CancelSubscriptionButton } from '@/components/subscriptions/cancel-subs
 import {
   getSubscriptionStatus,
   getUserSubscription,
-} from '@/packages/modules/billing/repository/client/subscriptions'
-import { Subscription } from '@/packages/modules/billing/service/server/types'
+} from '@repo/modules/billing/repository/client/subscriptions'
+import { Subscription } from '@repo/modules/billing/service/server/types'
 import { Loader2 } from 'lucide-react'
 import { useAuth } from '@/hooks/use-auth'
 import { ResumeSubscriptionButton } from '@/components/subscriptions/resume-subscription-button'

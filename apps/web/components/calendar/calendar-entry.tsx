@@ -9,11 +9,11 @@ import UnsyncedEvents from './unsynced-events'
 import {
   GoogleTokenRow,
   type EventItemRow,
-} from '@/types/transcriptions/transcription.db'
-import { getTokenByUserId } from '@/packages/modules/calendar/repository/client/calendar-token-operations'
+} from '@repo/types/transcriptions/transcription.db'
+import { getTokenByUserId } from '@repo/modules/calendar/repository/client/calendar-token-operations'
 import { useAuth } from '@/hooks/use-auth'
 import GoogleSyncProfile from './gg-sync-profile'
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 
 export default function CalendarEntry({ events }: { events: EventItemRow[] }) {
   const [selectedDate, setSelectedDate] = useState(new Date())

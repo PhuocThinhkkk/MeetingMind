@@ -1,12 +1,12 @@
-import { log } from '@/packages/utils/logger'
+import { log } from "@repo/utils/logger";
 import {
   SaveTranscriptInput,
   Transcript,
-} from '@/types/transcriptions/transcription.db'
-import { supabase } from '@/lib/supabase-init/supabase-browser'
-import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
-import { TranscriptionWord } from '@/types/transcriptions/transcription.db'
-import { adaptRealtimeWords } from '@/lib/adapters/upload-transcript'
+} from "@repo/types/transcriptions/transcription.db";
+import { supabase } from "@repo/utils/supabase-init/supabase-browser";
+import { RealtimeTranscriptionWord } from "@repo/types/transcriptions/transcription.ws";
+import { TranscriptionWord } from "@repo/types/transcriptions/transcription.db";
+import { adaptRealtimeWords } from "@repo/modules/transcription/adapters/upload-transcript";
 
 /**
  * Save a transcript for an audio file to the database.
@@ -19,29 +19,29 @@ import { adaptRealtimeWords } from '@/lib/adapters/upload-transcript'
  */
 export async function saveTranscript(
   audioId: string,
-  transcripts: SaveTranscriptInput
+  transcripts: SaveTranscriptInput,
 ) {
-  let transcriptText
+  let transcriptText;
   if (!transcripts || transcripts.length === 0) {
-    transcriptText = ''
+    transcriptText = "";
   } else {
-    transcriptText = transcripts.map(t => t.text).join(' ')
+    transcriptText = transcripts.map((t) => t.text).join(" ");
   }
   const { data, error } = await supabase
-    .from('transcripts')
+    .from("transcripts")
     .insert({
       audio_id: audioId,
       text: transcriptText,
     })
     .select()
-    .single()
+    .single();
 
   if (error || !data) {
-    log.error('Error saving transcript:', { error, data })
-    throw error
+    log.error("Error saving transcript:", { error, data });
+    throw error;
   }
 
-  return data
+  return data;
 }
 
 /**
@@ -54,20 +54,20 @@ export async function saveTranscript(
  */
 export async function saveTranscriptWords(
   transcriptionId: string,
-  transcriptWords: RealtimeTranscriptionWord[]
+  transcriptWords: RealtimeTranscriptionWord[],
 ) {
-  const rows = adaptRealtimeWords(transcriptWords, transcriptionId)
+  const rows = adaptRealtimeWords(transcriptWords, transcriptionId);
 
   const { data, error } = await supabase
-    .from('transcription_words')
+    .from("transcription_words")
     .insert(rows)
-    .select()
+    .select();
 
   if (error) {
-    throw new Error('Error when saving transcript words: ' + error.message)
+    throw new Error("Error when saving transcript words: " + error.message);
   }
-  if (!data) return []
-  return data as TranscriptionWord[]
+  if (!data) return [];
+  return data as TranscriptionWord[];
 }
 
 /**
@@ -79,18 +79,18 @@ export async function saveTranscriptWords(
  */
 export async function getTranscriptByAudioId(audioId: string) {
   const { data, error } = await supabase
-    .from('transcripts')
-    .select('*')
-    .eq('audio_id', audioId)
-    .single()
+    .from("transcripts")
+    .select("*")
+    .eq("audio_id", audioId)
+    .single();
 
   if (error) {
-    throw new Error('Error when getting transcript words: ' + error.message)
+    throw new Error("Error when getting transcript words: " + error.message);
   }
   if (!data) {
-    throw new Error('No transcript found.')
+    throw new Error("No transcript found.");
   }
-  return data
+  return data;
 }
 
 /**
@@ -102,21 +102,21 @@ export async function getTranscriptByAudioId(audioId: string) {
  */
 export async function getTranscriptWordNestedByAudioId(audioId: string) {
   const { data, error } = await supabase
-    .from('transcripts')
+    .from("transcripts")
     .select(
       `
   *,
   transcription_words (*)
-`
+`,
     )
-    .eq('audio_id', audioId)
+    .eq("audio_id", audioId);
 
   if (error) {
-    throw new Error('Error when getting transcript words: ' + error.message)
+    throw new Error("Error when getting transcript words: " + error.message);
   }
   if (!data?.[0]) {
-    log.error('No transcript found.')
-    return null
+    log.error("No transcript found.");
+    return null;
   }
-  return data[0]
+  return data[0];
 }

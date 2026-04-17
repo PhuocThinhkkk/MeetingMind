@@ -2,8 +2,8 @@
 
 import { useRouter } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
-import { log } from '@/packages/utils/logger'
-import { serverCheck } from '@/apps/web/lib/utils/server-check'
+import { log } from '@repo/utils/logger'
+import { serverCheck } from '@/lib/utils/server-check'
 import { useRef, useEffect, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { ArrowRight, AudioLines } from 'lucide-react'

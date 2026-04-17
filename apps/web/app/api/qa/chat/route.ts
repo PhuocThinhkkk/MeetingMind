@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { log } from '@/packages/utils/logger'
-import { getUserAuthInSupabaseToken } from '@/packages/lib/supabase-auth-server'
-import { getLLM } from '@/types/llm/llm-factory'
-import { buildQAPrompt } from '@/types/llm/prompt-builder'
-import { QALogResult } from '@/types/llm/llm-abstract'
+import { log } from '@repo/utils/logger'
+import { getUserAuthInSupabaseToken } from '@repo/utils/supabase-auth-server'
+import { getLLM } from '@repo/types/llm/llm-factory'
+import { buildQAPrompt } from '@repo/types/llm/prompt-builder'
+import { QALogResult } from '@repo/types/llm/llm-abstract'
 
 /**
  * Handles POST requests to analyze a transcript and answer a question using an LLM.

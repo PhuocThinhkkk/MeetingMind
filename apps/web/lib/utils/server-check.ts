@@ -1,4 +1,4 @@
-import { log } from '../../../../packages/lib/logger'
+import { log } from '@repo/utils/logger'
 export async function serverCheck() {
   try {
     let wsDomain =

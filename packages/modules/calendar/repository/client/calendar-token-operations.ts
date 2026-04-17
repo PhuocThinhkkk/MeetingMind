@@ -1,4 +1,4 @@
-import { supabase } from '@/lib/supabase-init/supabase-browser'
+import { supabase } from "@repo/utils/supabase-init/supabase-browser";
 
 /**
  * Retrieve the Google token record associated with the specified user ID.
@@ -9,13 +9,13 @@ import { supabase } from '@/lib/supabase-init/supabase-browser'
  */
 export async function getTokenByUserId(userId: string) {
   const { data: token } = await supabase
-    .from('google_tokens')
-    .select('*')
-    .eq('user_id', userId)
-    .single()
+    .from("google_tokens")
+    .select("*")
+    .eq("user_id", userId)
+    .single();
 
   if (!token) {
-    throw new Error(`Token not found for userId:  ${userId}`)
+    throw new Error(`Token not found for userId:  ${userId}`);
   }
-  return token
+  return token;
 }

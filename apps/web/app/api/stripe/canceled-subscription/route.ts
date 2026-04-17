@@ -1,14 +1,14 @@
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 import { NextResponse } from 'next/server'
-import { getUserAuthInSupabaseToken } from '@/packages/lib/supabase-auth-server'
+import { getUserAuthInSupabaseToken } from '@repo/utils/supabase-auth-server'
 import {
   getUserSubscriptionServer,
   updateCancelSubscription,
-} from '@/packages/modules/billing/repository/server/stripe-subscription-operations'
+} from '@repo/modules/billing/repository/server/stripe-subscription-operations'
 
 /**
  * Handles POST requests to cancel the authenticated user's subscription.
- *
+ 
  * Cancels the caller's active subscription after verifying authentication.
  *
  * @returns A NextResponse containing `{ success: true }` with status 200 on success; a JSON error object with status 401 if the user is not authenticated; or a JSON error object with status 500 if cancellation fails.

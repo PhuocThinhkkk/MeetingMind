@@ -1,5 +1,5 @@
-import { PlanKey } from '@/constains/plans'
-import { PLAN_LIMITS } from '@/constains/limits'
+import { PlanKey } from "@repo/utils/constants/plans";
+import { PLAN_LIMITS } from "@repo/utils/constants/limits";
 /**
  * Determine whether a transcription request is permitted under the given plan's per-file and monthly usage limits.
  *
@@ -13,27 +13,27 @@ export function checkTranscriptionAllowed({
   usedSeconds,
   fileSeconds,
 }: {
-  plan: PlanKey
-  usedSeconds: number
-  fileSeconds: number
+  plan: PlanKey;
+  usedSeconds: number;
+  fileSeconds: number;
 }) {
-  const limits = PLAN_LIMITS[plan]
+  const limits = PLAN_LIMITS[plan];
 
   if (fileSeconds > limits.MAX_PER_FILE_SECONDS) {
     return {
       allowed: false,
-      reason: 'This recording exceeds the maximum length for your plan.',
-    }
+      reason: "This recording exceeds the maximum length for your plan.",
+    };
   }
 
   if (usedSeconds + fileSeconds > limits.MONTHLY_SECONDS) {
     return {
       allowed: false,
-      reason: 'You have reached your monthly transcription limit.',
-    }
+      reason: "You have reached your monthly transcription limit.",
+    };
   }
 
-  return { allowed: true, reason: 'Did not violate the quota.' }
+  return { allowed: true, reason: "Did not violate the quota." };
 }
 
 /**
@@ -47,17 +47,17 @@ export function checkFileSizeAllowed({
   plan,
   fileSeconds,
 }: {
-  plan: PlanKey
-  fileSeconds: number
+  plan: PlanKey;
+  fileSeconds: number;
 }) {
-  const limits = PLAN_LIMITS[plan]
+  const limits = PLAN_LIMITS[plan];
 
   if (fileSeconds > limits.MAX_PER_FILE_SECONDS) {
     return {
       allowed: false,
       reason: `This recording ${fileSeconds} seconds exceeds the maximum ${limits.MAX_PER_FILE_SECONDS} seconds for your ${plan} plan.`,
-    }
+    };
   }
 
-  return { allowed: true, reason: 'Did not violate the quota.' }
+  return { allowed: true, reason: "Did not violate the quota." };
 }

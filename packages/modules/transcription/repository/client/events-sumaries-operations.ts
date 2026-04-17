@@ -1,6 +1,6 @@
-import { supabase } from '@/lib/supabase-init/supabase-browser'
-import { log } from '@/packages/utils/logger'
-import { EventItemRow } from '@/types/transcriptions/transcription.db'
+import { supabase } from "@repo/utils/supabase-init/supabase-browser";
+import { log } from "@repo/utils/logger";
+import { EventItemRow } from "@repo/types/transcriptions/transcription.db";
 
 /**
  * Retrieve events and the first summary record associated with an audio ID.
@@ -11,28 +11,28 @@ import { EventItemRow } from '@/types/transcriptions/transcription.db'
  */
 export async function getEventAndSumariesByAudioId(audioId: string) {
   const { data: events, error: eventError } = await supabase
-    .from('events')
-    .select('*')
-    .eq('audio_id', audioId)
+    .from("events")
+    .select("*")
+    .eq("audio_id", audioId);
 
   if (eventError) {
-    log.error('query events error: ', eventError)
-    throw eventError
+    log.error("query events error: ", eventError);
+    throw eventError;
   }
   const { data: summary, error: summaryError } = await supabase
-    .from('summaries')
-    .select('*')
-    .eq('audio_id', audioId)
+    .from("summaries")
+    .select("*")
+    .eq("audio_id", audioId);
   if (summaryError) {
-    log.error('query summaries error: ', summaryError)
-    throw summaryError
+    log.error("query summaries error: ", summaryError);
+    throw summaryError;
   }
   const result = {
     summary: summary[0],
     events: events,
-  }
+  };
 
-  return result
+  return result;
 }
 
 /**
@@ -42,34 +42,34 @@ export async function getEventAndSumariesByAudioId(audioId: string) {
  * @throws The underlying database error when the query fails (the error is logged before being rethrown).
  */
 export async function getAllEventsByUserId() {
-  const { data: events, error } = await supabase.from('events').select('*')
+  const { data: events, error } = await supabase.from("events").select("*");
 
   if (error) {
-    log.error('query events error: ', { error, events })
-    throw error
+    log.error("query events error: ", { error, events });
+    throw error;
   }
-  return events
+  return events;
 }
 
 export async function updateEventById(
   id: string,
-  updates: Partial<EventItemRow>
+  updates: Partial<EventItemRow>,
 ) {
   const { data, error } = await supabase
-    .from('events')
+    .from("events")
     .update(updates)
-    .eq('id', id)
+    .eq("id", id)
     .select()
-    .single()
+    .single();
 
   if (error) {
-    log.error('Error when update event: ', { updates, data, error })
-    throw error
+    log.error("Error when update event: ", { updates, data, error });
+    throw error;
   }
-  return data
+  return data;
 }
 
 export async function deleteEventById(id: string) {
-  const { error } = await supabase.from('events').delete().eq('id', id)
-  if (error) throw error
+  const { error } = await supabase.from("events").delete().eq("id", id);
+  if (error) throw error;
 }

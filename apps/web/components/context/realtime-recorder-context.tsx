@@ -1,4 +1,4 @@
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 import {
   requestMicrophoneAudio,
   requestSystemAudio,
@@ -23,14 +23,14 @@ import {
   RealtimeTranscriptionWord,
   RealtimeTranscriptResponse,
   RealtimeTranslateResponse,
-} from '@/types/transcriptions/transcription.ws'
+} from '@repo/types/transcriptions/transcription.ws'
 
 import {
   resampleTo16kHz,
   float32ToInt16,
 } from '@/lib/transcript/transcript-realtime-utils'
 import { useAuth } from '@/hooks/use-auth'
-import { serverCheck } from '@/apps/web/lib/utils/server-check'
+import { serverCheck } from '@/lib/utils/server-check'
 
 const SAMPLE_RATE = 16000
 const CHUNK_MS = 128

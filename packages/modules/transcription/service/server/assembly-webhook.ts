@@ -1,4 +1,4 @@
-import { log } from '@/packages/utils/logger'
+import { log } from "@repo/utils/logger";
 
 /**
  * Registers an audio file with AssemblyAI and configures a webhook for transcript delivery.
@@ -13,36 +13,36 @@ export async function createAssemblyAudioUploadWithWebhook(audioUrl: string) {
     process.env.ASSEMBLY_API_KEY,
     process.env.NEXT_PUBLIC_APP_URL,
     process.env.ASSEMBLY_WEBHOOK_SECRET,
-  ]
+  ];
   if (!ASSEMBLY_KEY || !BASE_URL || !WEBHOOK_SECRET) {
-    log.error('Missing required environment variable', {
+    log.error("Missing required environment variable", {
       hasAssemblyKey: !!ASSEMBLY_KEY,
       hasBaseUrl: !!BASE_URL,
       hasWebhookSecret: !!WEBHOOK_SECRET,
-    })
-    throw new Error('Missing required environment variable')
+    });
+    throw new Error("Missing required environment variable");
   }
-  const res = await fetch('https://api.assemblyai.com/v2/transcript', {
-    method: 'POST',
+  const res = await fetch("https://api.assemblyai.com/v2/transcript", {
+    method: "POST",
     headers: {
       Authorization: ASSEMBLY_KEY,
-      'Content-Type': 'application/json',
+      "Content-Type": "application/json",
     },
     body: JSON.stringify({
       audio_url: audioUrl,
       webhook_url: `${BASE_URL}/api/assemblyai/webhook/transcript`,
-      webhook_auth_header_name: 'X-Webhook-Secret',
+      webhook_auth_header_name: "X-Webhook-Secret",
       webhook_auth_header_value: WEBHOOK_SECRET,
     }),
-  })
+  });
   if (!res.ok) {
-    const errorBody = await res.text()
-    log.error('AssemblyAI API request failed', {
+    const errorBody = await res.text();
+    log.error("AssemblyAI API request failed", {
       status: res.status,
       body: errorBody,
-    })
-    throw new Error(`AssemblyAI API error: ${res.status}`)
+    });
+    throw new Error(`AssemblyAI API error: ${res.status}`);
   }
-  const job = await res.json()
-  return job
+  const job = await res.json();
+  return job;
 }

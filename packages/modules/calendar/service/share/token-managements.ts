@@ -1,20 +1,20 @@
 import {
   EventItemRow,
   GoogleTokenRow,
-} from '@/types/transcriptions/transcription.db'
-import { toAllDayEvent } from './utils'
+} from "@repo/types/transcriptions/transcription.db";
+import { toAllDayEvent } from "./utils";
 import {
   updateEventAddedToGoogleInSupabase,
   updateRefreshTokenSupabase,
-} from '@/packages/modules/calendar/repository/server/google-token-operations'
+} from "@repo/modules/calendar/repository/server/google-token-operations";
 
 export type GoogleRefreshTokenResponse = {
-  access_token: string
-  expires_in: number
-  scope: string
-  token_type: 'Bearer'
-  id_token: string
-}
+  access_token: string;
+  expires_in: number;
+  scope: string;
+  token_type: "Bearer";
+  id_token: string;
+};
 /**
  * Exchange a Google OAuth refresh token for a refreshed token response.
  *
@@ -23,49 +23,49 @@ export type GoogleRefreshTokenResponse = {
  * @throws Error if the token endpoint responds with a non-OK status; the error message includes Google's `error_description` when available.
  */
 export async function refreshAccessToken(
-  refreshToken: string
+  refreshToken: string,
 ): Promise<GoogleRefreshTokenResponse> {
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+  const res = await fetch("https://oauth2.googleapis.com/token", {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
     body: JSON.stringify({
       client_id: process.env.GOOGLE_CALENDAR_CLIENT_ID,
       client_secret: process.env.GOOGLE_CALENDAR_CLIENT_SECRET,
       refresh_token: refreshToken,
-      grant_type: 'refresh_token',
+      grant_type: "refresh_token",
     }),
-  })
+  });
 
   if (!res.ok) {
-    const error = await res.json()
+    const error = await res.json();
     throw new Error(
-      `Failed to refresh token: ${error.error_description ?? res.statusText}`
-    )
+      `Failed to refresh token: ${error.error_description ?? res.statusText}`,
+    );
   }
 
-  const data = await res.json()
-  return data as GoogleRefreshTokenResponse
+  const data = await res.json();
+  return data as GoogleRefreshTokenResponse;
 }
 
 export type GoogleCalendarEventResponse = {
-  id: string
-  summary?: string
-  description?: string
-  status: 'confirmed' | 'tentative' | 'cancelled'
-  htmlLink: string
-  created: string
-  updated: string
+  id: string;
+  summary?: string;
+  description?: string;
+  status: "confirmed" | "tentative" | "cancelled";
+  htmlLink: string;
+  created: string;
+  updated: string;
   start?: {
-    date?: string
-    dateTime?: string
-    timeZone?: string
-  }
+    date?: string;
+    dateTime?: string;
+    timeZone?: string;
+  };
   end?: {
-    date?: string
-    dateTime?: string
-    timeZone?: string
-  }
-}
+    date?: string;
+    dateTime?: string;
+    timeZone?: string;
+  };
+};
 /**
  * Creates an all-day Google Calendar event from an internal event and returns the created event resource.
  *
@@ -76,28 +76,28 @@ export type GoogleCalendarEventResponse = {
  */
 export async function sendToGoogleCalendar(
   accessToken: string,
-  event: EventItemRow
+  event: EventItemRow,
 ) {
-  const googleEvent = toAllDayEvent(event)
+  const googleEvent = toAllDayEvent(event);
 
   const res = await fetch(
-    'https://www.googleapis.com/calendar/v3/calendars/primary/events',
+    "https://www.googleapis.com/calendar/v3/calendars/primary/events",
     {
-      method: 'POST',
+      method: "POST",
       headers: {
         Authorization: `Bearer ${accessToken}`,
-        'Content-Type': 'application/json',
+        "Content-Type": "application/json",
       },
       body: JSON.stringify(googleEvent),
-    }
-  )
+    },
+  );
   if (!res.ok) {
-    const errorBody = await res.text()
-    throw new Error(`Google Calendar error: ${errorBody}`)
+    const errorBody = await res.text();
+    throw new Error(`Google Calendar error: ${errorBody}`);
   }
 
-  const data = await res.json()
-  return data as GoogleCalendarEventResponse
+  const data = await res.json();
+  return data as GoogleCalendarEventResponse;
 }
 /**
  * Ensure and return a valid Google OAuth access token for the specified user.
@@ -110,16 +110,16 @@ export async function sendToGoogleCalendar(
  */
 export async function refreshTokenIfExpired(
   userId: string,
-  token: GoogleTokenRow
+  token: GoogleTokenRow,
 ) {
-  let accessToken = token.access_token
+  let accessToken = token.access_token;
   if (Date.now() > token.expiry_date) {
-    const refreshed = await refreshAccessToken(token.refresh_token)
+    const refreshed = await refreshAccessToken(token.refresh_token);
 
-    accessToken = refreshed.access_token
-    await updateRefreshTokenSupabase(userId, refreshed)
+    accessToken = refreshed.access_token;
+    await updateRefreshTokenSupabase(userId, refreshed);
   }
-  return accessToken
+  return accessToken;
 }
 /**
  * Posts an event to the user's Google Calendar and marks that event as added in Supabase.
@@ -129,8 +129,8 @@ export async function refreshTokenIfExpired(
  */
 export async function addEventToGoogleCalendar(
   accessToken: string,
-  event: EventItemRow
+  event: EventItemRow,
 ) {
-  await sendToGoogleCalendar(accessToken, event)
-  await updateEventAddedToGoogleInSupabase(event)
+  await sendToGoogleCalendar(accessToken, event);
+  await updateEventAddedToGoogleInSupabase(event);
 }

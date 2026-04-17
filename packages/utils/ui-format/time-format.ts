@@ -1,4 +1,4 @@
-import { log } from '@/packages/utils/logger'
+import { log } from "@repo/utils/logger";
 /**
  * Convert a Float32Array of normalized PCM samples to 16-bit PCM samples.
  *
@@ -8,13 +8,13 @@ import { log } from '@/packages/utils/logger'
  * @returns The converted Int16Array containing 16-bit PCM samples.
  */
 export function convertFloat32ToInt16(buffer: Float32Array) {
-  const l = buffer.length
-  const int16Buffer = new Int16Array(l)
+  const l = buffer.length;
+  const int16Buffer = new Int16Array(l);
   for (let i = 0; i < l; i++) {
-    let s = Math.max(-1, Math.min(1, buffer[i]))
-    int16Buffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff
+    let s = Math.max(-1, Math.min(1, buffer[i]));
+    int16Buffer[i] = s < 0 ? s * 0x8000 : s * 0x7fff;
   }
-  return int16Buffer
+  return int16Buffer;
 }
 
 /**
@@ -24,13 +24,13 @@ export function convertFloat32ToInt16(buffer: Float32Array) {
  * @returns No value.
  */
 export function waitFor(timeout = 5000): Promise<void> {
-  return new Promise(resolve => {
+  return new Promise((resolve) => {
     setTimeout(() => {
-      const seconds = timeout / 1000
-      log.info('Wait for ', seconds)
-      resolve()
-    }, timeout)
-  })
+      const seconds = timeout / 1000;
+      log.info("Wait for ", seconds);
+      resolve();
+    }, timeout);
+  });
 }
 /**
  * Formats a duration in seconds into a human-readable string.
@@ -39,14 +39,14 @@ export function waitFor(timeout = 5000): Promise<void> {
  * @returns The formatted duration as "Xh Ym Zs" when hours are present, otherwise "Ym Zs".
  */
 export function formatDuration(seconds: number): string {
-  const hours = Math.floor(seconds / 3600)
-  const minutes = Math.floor((seconds % 3600) / 60)
-  const secs = Math.floor(seconds % 60)
+  const hours = Math.floor(seconds / 3600);
+  const minutes = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
 
   if (hours > 0) {
-    return `${hours}h ${minutes}m ${secs}s`
+    return `${hours}h ${minutes}m ${secs}s`;
   }
-  return `${minutes}m ${secs}s`
+  return `${minutes}m ${secs}s`;
 }
 /**
  * Format a byte count into a human-readable size string using MB or GB.
@@ -55,11 +55,11 @@ export function formatDuration(seconds: number): string {
  * @returns The size formatted with two decimal places, using "MB" when under 1024 MB and "GB" otherwise.
  */
 export function formatFileSize(bytes: number): string {
-  const mb = bytes / (1024 * 1024)
+  const mb = bytes / (1024 * 1024);
   if (mb >= 1024) {
-    return `${(mb / 1024).toFixed(2)} GB`
+    return `${(mb / 1024).toFixed(2)} GB`;
   }
-  return `${mb.toFixed(2)} MB`
+  return `${mb.toFixed(2)} MB`;
 }
 
 /**
@@ -70,17 +70,17 @@ export function formatFileSize(bytes: number): string {
  */
 export function formatDate(dateString: string | null): string {
   if (!dateString) {
-    log.warn('Date is null or underfined', dateString)
-    return 'Unknown Time'
+    log.warn("Date is null or underfined", dateString);
+    return "Unknown Time";
   }
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  })
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
 }
 /**
  * Formats an ISO date string into a short en-US date (e.g., "Feb 14, 2026").
@@ -90,13 +90,13 @@ export function formatDate(dateString: string | null): string {
  */
 export function formatDateShorted(dateString: string | null): string {
   if (!dateString) {
-    log.warn('Date is null or underfined', dateString)
-    return 'Unknown Time'
+    log.warn("Date is null or underfined", dateString);
+    return "Unknown Time";
   }
-  const date = new Date(dateString)
-  return date.toLocaleDateString('en-US', {
-    year: 'numeric',
-    month: 'short',
-    day: 'numeric',
-  })
+  const date = new Date(dateString);
+  return date.toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  });
 }

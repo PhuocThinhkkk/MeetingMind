@@ -2,8 +2,8 @@
 import CalendarEntry from '@/components/calendar/calendar-entry'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from '@/hooks/use-toast'
-import { getAllEventsByUserId } from '@/packages/modules/transcription/repository/client/events-sumaries-operations'
-import { EventItemRow } from '@/types/transcriptions/transcription.db'
+import { getAllEventsByUserId } from '@repo/modules/transcription/repository/client/events-sumaries-operations'
+import { EventItemRow } from '@repo/types/transcriptions/transcription.db'
 import { useEffect, useState } from 'react'
 
 export default function CalendarPage() {

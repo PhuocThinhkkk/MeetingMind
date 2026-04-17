@@ -1,34 +1,34 @@
-import OpenAI from 'openai'
-import { LLMProvider, MeetingExtractionResult } from './llm-abstract'
-import { log } from '@/packages/utils/logger'
-import { PromptBuilder } from './prompt-builder'
+import OpenAI from "openai";
+import { LLMProvider, MeetingExtractionResult } from "./llm-abstract";
+import { log } from "@repo/utils/logger";
+import { PromptBuilder } from "./prompt-builder";
 
 const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY!,
-})
+});
 
 export class OpenAILLM extends LLMProvider {
   async callLLM<T>(p: PromptBuilder): Promise<T> {
-    log.info('Using gpt llm')
+    log.info("Using gpt llm");
     const res = await openai.chat.completions.create({
-      model: 'gpt-4o-mini', // 👈 cheap model
+      model: "gpt-4o-mini", // 👈 cheap model
       temperature: 0,
       messages: [
         {
-          role: 'system',
+          role: "system",
           content:
-            'Extract meeting summary and events. Output ONLY valid JSON.',
+            "Extract meeting summary and events. Output ONLY valid JSON.",
         },
         {
-          role: 'user',
+          role: "user",
           content: `
           ${p.prompt}
 
           `,
         },
       ],
-    })
+    });
 
-    return JSON.parse(res.choices[0].message.content!)
+    return JSON.parse(res.choices[0].message.content!);
   }
 }

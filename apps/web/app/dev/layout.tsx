@@ -1,4 +1,4 @@
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 
 export default function RootLayout({
   children,

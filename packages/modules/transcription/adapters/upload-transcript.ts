@@ -1,6 +1,6 @@
-import { TranscriptWordInsert } from '@/types/transcriptions/transcription.db'
-import { AssemblyAIWord } from '@/types/transcriptions/transcription.assembly.upload'
-import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
+import { TranscriptWordInsert } from "@repo/types/transcriptions/transcription.db";
+import { AssemblyAIWord } from "@repo/types/transcriptions/transcription.assembly.upload";
+import { RealtimeTranscriptionWord } from "@repo/types/transcriptions/transcription.ws";
 /**
  * Convert AssemblyAI word objects into TranscriptWordInsert records for a given transcription ID.
  *
@@ -10,17 +10,17 @@ import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.
  */
 export function adaptAssemblyAIWords(
   words: AssemblyAIWord[] | undefined,
-  transcriptionId: string
+  transcriptionId: string,
 ): TranscriptWordInsert[] {
-  if (!words || words.length === 0) return []
+  if (!words || words.length === 0) return [];
 
-  return words.map(word => ({
+  return words.map((word) => ({
     transcript_id: transcriptionId,
     text: word.text,
     start_time: word.start,
     end_time: word.end,
     confidence: word.confidence,
-  }))
+  }));
 }
 
 /**
@@ -34,17 +34,17 @@ export function adaptAssemblyAIWords(
  */
 export function adaptRealtimeWords(
   words: RealtimeTranscriptionWord[],
-  transcriptionId: string
+  transcriptionId: string,
 ) {
-  if (!words || words.length === 0) return []
+  if (!words || words.length === 0) return [];
 
-  const rows = words.map(word => ({
+  const rows = words.map((word) => ({
     transcript_id: transcriptionId,
     text: word.text,
     confidence: word.confidence,
     start_time: word.start,
     end_time: word.end,
     word_is_final: word.word_is_final,
-  }))
-  return rows
+  }));
+  return rows;
 }

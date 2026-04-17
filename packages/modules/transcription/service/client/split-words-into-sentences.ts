@@ -1,9 +1,9 @@
-import { TranscriptWithWordNested } from '@/types/transcriptions/transcription.db'
+import { TranscriptWithWordNested } from "@repo/types/transcriptions/transcription.db";
 
-type Word = TranscriptWithWordNested['transcription_words'][number]
-const COMMA_MIN_PAUSE = 400
-const COMMA_MAX_PAUSE = 500
-const SENTENCE_PAUSE_THRESHOLD = 800
+type Word = TranscriptWithWordNested["transcription_words"][number];
+const COMMA_MIN_PAUSE = 400;
+const COMMA_MAX_PAUSE = 500;
+const SENTENCE_PAUSE_THRESHOLD = 800;
 
 /**
  * Split a sequence of timed words into sentences and normalize each sentence.
@@ -14,53 +14,53 @@ const SENTENCE_PAUSE_THRESHOLD = 800
  * @returns An array of sentences, where each sentence is an array of normalized `Word` objects
  */
 export function splitWordsIntoSentences(words: Word[] = []) {
-  if (!words.length) return []
+  if (!words.length) return [];
 
-  const sentences: Word[][] = []
-  let current: Word[] = []
+  const sentences: Word[][] = [];
+  let current: Word[] = [];
 
   for (let i = 0; i < words.length; i++) {
-    const word = words[i]
-    const next = words[i + 1]
+    const word = words[i];
+    const next = words[i + 1];
 
-    if (!word.start_time || !word.end_time) continue
+    if (!word.start_time || !word.end_time) continue;
 
-    let newWord = { ...word }
+    let newWord = { ...word };
 
     if (next?.start_time) {
-      const pause = next.start_time - word.end_time
+      const pause = next.start_time - word.end_time;
 
       const isPauseComa =
         pause >= COMMA_MIN_PAUSE &&
         pause <= COMMA_MAX_PAUSE &&
-        !/[,.!?]$/.test(newWord.text)
+        !/[,.!?]$/.test(newWord.text);
 
-      const isEndSentence = pause > SENTENCE_PAUSE_THRESHOLD
+      const isEndSentence = pause > SENTENCE_PAUSE_THRESHOLD;
 
       if (isPauseComa) {
-        newWord.text += ','
+        newWord.text += ",";
       }
 
       if (isEndSentence) {
-        current.push(newWord)
-        sentences.push(normalizeSentence(current))
-        current = []
-        continue
+        current.push(newWord);
+        sentences.push(normalizeSentence(current));
+        current = [];
+        continue;
       }
     }
 
-    current.push(newWord)
+    current.push(newWord);
 
-    const hasEndingPunctuation = /[.!?]$/.test(newWord.text)
-    const isLast = i === words.length - 1
+    const hasEndingPunctuation = /[.!?]$/.test(newWord.text);
+    const isLast = i === words.length - 1;
 
     if (hasEndingPunctuation || isLast) {
-      sentences.push(normalizeSentence(current))
-      current = []
+      sentences.push(normalizeSentence(current));
+      current = [];
     }
   }
 
-  return sentences
+  return sentences;
 }
 
 /**
@@ -73,14 +73,14 @@ export function splitWordsIntoSentences(words: Word[] = []) {
  * @returns A new array of word objects representing the normalized sentence.
  */
 function normalizeSentence(words: Word[]): Word[] {
-  let result = words.map(w => ({ ...w })) // clone
+  let result = words.map((w) => ({ ...w })); // clone
 
-  result = capitalizeFirstWord(result)
-  result = capitalizePronounI(result)
-  result = normalizeComma(result)
-  result = ensureEndingPunctuation(result)
+  result = capitalizeFirstWord(result);
+  result = capitalizePronounI(result);
+  result = normalizeComma(result);
+  result = ensureEndingPunctuation(result);
 
-  return result
+  return result;
 }
 
 /**
@@ -90,15 +90,15 @@ function normalizeSentence(words: Word[]): Word[] {
  * @returns The input array with the first word's `text` updated so its initial character is uppercase. If the array is empty, it is returned unchanged.
  */
 function capitalizeFirstWord(words: Word[]): Word[] {
-  if (!words.length) return words
+  if (!words.length) return words;
 
-  const first = words[0]
+  const first = words[0];
   words[0] = {
     ...first,
     text: first.text.charAt(0).toUpperCase() + first.text.slice(1),
-  }
+  };
 
-  return words
+  return words;
 }
 
 /**
@@ -110,16 +110,16 @@ function capitalizeFirstWord(words: Word[]): Word[] {
  * @returns A new array of word objects with the pronoun "I" capitalized where applicable
  */
 function capitalizePronounI(words: Word[]): Word[] {
-  return words.map(w => {
-    let text = w.text
+  return words.map((w) => {
+    let text = w.text;
 
-    if (/^i$/i.test(text)) text = 'I'
+    if (/^i$/i.test(text)) text = "I";
     else if (/^i['’]/i.test(text)) {
-      text = 'I' + text.slice(1)
+      text = "I" + text.slice(1);
     }
 
-    return { ...w, text }
-  })
+    return { ...w, text };
+  });
 }
 
 /**
@@ -129,14 +129,14 @@ function capitalizePronounI(words: Word[]): Word[] {
  * @returns The updated list of words with spaces before commas removed in each `text`
  */
 function normalizeComma(words: Word[]): Word[] {
-  return words.map(w => {
-    let text = w.text
+  return words.map((w) => {
+    let text = w.text;
 
     // remove space before comma if exists
-    text = text.replace(/\s+,/g, ',')
+    text = text.replace(/\s+,/g, ",");
 
-    return { ...w, text }
-  })
+    return { ...w, text };
+  });
 }
 
 /**
@@ -145,17 +145,17 @@ function normalizeComma(words: Word[]): Word[] {
  * @returns The input `words` array where the final word's `text` is appended with `.` if it did not already end with `.`, `!`, or `?`.
  */
 function ensureEndingPunctuation(words: Word[]): Word[] {
-  if (!words.length) return words
+  if (!words.length) return words;
 
-  const lastIndex = words.length - 1
-  const last = words[lastIndex]
+  const lastIndex = words.length - 1;
+  const last = words[lastIndex];
 
   if (!/[.!?]$/.test(last.text)) {
     words[lastIndex] = {
       ...last,
-      text: last.text + '.',
-    }
+      text: last.text + ".",
+    };
   }
 
-  return words
+  return words;
 }

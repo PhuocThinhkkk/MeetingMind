@@ -1,11 +1,11 @@
-import { getEventById } from '@/packages/modules/transcription/repository/server/events-operations'
-import { getTokenByUserId } from '@/packages/modules/calendar/repository/server/google-token-operations'
-import { getUserAuthInSupabaseToken } from '@/packages/lib/supabase-auth-server'
-import { validateEventAndUserIdOnServer } from '@/lib/validations/event-validations'
+import { getEventById } from '@repo/modules/transcription/repository/server/events-operations'
+import { getTokenByUserId } from '@repo/modules/calendar/repository/server/google-token-operations'
+import { getUserAuthInSupabaseToken } from '@repo/utils/supabase-auth-server'
+import { validateEventAndUserIdOnServer } from '@repo/modules/transcription/validations/event-validations'
 import {
   addEventToGoogleCalendar,
   refreshTokenIfExpired,
-} from '@/packages/modules/calendar/service/share/token-managements'
+} from '@repo/modules/calendar/service/share/token-managements'
 import { NextRequest, NextResponse } from 'next/server'
 
 /**

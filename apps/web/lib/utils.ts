@@ -1,4 +1,4 @@
-import { log } from '@/packages/utils/logger'
+import { log } from '@repo/utils/logger'
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 

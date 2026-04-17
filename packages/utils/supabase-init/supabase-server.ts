@@ -1,6 +1,6 @@
-'server-only'
-import { Database } from '@/types/database.types'
-import { createClient } from '@supabase/supabase-js'
+"server-only";
+import { Database } from "@repo/types/database.types";
+import { createClient } from "@supabase/supabase-js";
 
 export const supabaseAdmin = createClient<Database>(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -9,5 +9,5 @@ export const supabaseAdmin = createClient<Database>(
     auth: {
       persistSession: false,
     },
-  }
-)
+  },
+);

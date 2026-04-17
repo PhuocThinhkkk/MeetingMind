@@ -1,12 +1,15 @@
-import { QALogInsert, QALogRow } from '@/types/transcriptions/transcription.db'
-import { QALog } from '@/types/utils'
-import { log } from '@/packages/utils/logger'
+import {
+  QALogInsert,
+  QALogRow,
+} from "@repo/types/transcriptions/transcription.db";
+import { QALog } from "@repo/types/utils";
+import { log } from "@repo/utils/logger";
 
 export type QARelation = {
-  user_id: string
-  audio_id: string
-  transcript_id: string
-}
+  user_id: string;
+  audio_id: string;
+  transcript_id: string;
+};
 /**
  * Attach relation metadata to each QA log entry and produce insert-ready records.
  *
@@ -17,15 +20,15 @@ export type QARelation = {
  */
 export function adaptQA(qaLog: QALog[], relation: QARelation): QALogInsert[] {
   if (!qaLog || qaLog.length === 0) {
-    log.error('qa logs array error:  ', { qaLog })
-    throw new Error('The qa logs array is wrong in adapt function')
+    log.error("qa logs array error:  ", { qaLog });
+    throw new Error("The qa logs array is wrong in adapt function");
   }
 
-  const res = qaLog.map(qa => ({
+  const res = qaLog.map((qa) => ({
     user_id: relation.user_id,
     // will implement transcript relation later
     audio_id: relation.audio_id,
     ...qa,
-  }))
-  return res
+  }));
+  return res;
 }
