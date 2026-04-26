@@ -1,13 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserAuthInSupabaseToken } from '@repo/utils/supabase-auth-server'
-import { log } from '@repo/utils/logger'
-import { createAudioUploadUrl } from '@repo/modules/transcription/repository/server/audio-upload-operations'
+import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
+import { log } from '@/utils/logger'
+import { createAudioUploadUrl } from '@/modules/transcription/repository/server/audio-upload-operations'
 import {
   getMonthlyUploadCount,
   getMonthlyUsageSeconds,
   getUserPlan,
-} from '@repo/modules/billing/repository/server/limits-audio-upload-operations'
-import { checkTranscriptionAllowed } from '@repo/modules/transcription/validations/usage.limit'
+} from '@/modules/billing/repository/server/limits-audio-upload-operations'
+import { checkTranscriptionAllowed } from '@/modules/transcription/validations/usage.limit'
 export type CreateUrlUploadBody = {
   name: string
   duration: number

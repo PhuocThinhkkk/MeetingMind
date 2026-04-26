@@ -3,7 +3,7 @@
 import { useState } from 'react'
 import { Clock, MapPin, Calendar, ArrowRight, Check } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { EventItemRow } from '@repo/types/transcriptions/transcription.db'
+import { EventItemRow } from '@/types/transcriptions/transcription.db'
 import { toast } from '@/hooks/use-toast'
 
 interface UnsyncedEventsProps {

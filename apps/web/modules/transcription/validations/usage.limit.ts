@@ -1,5 +1,5 @@
-import { PlanKey } from "@repo/utils/constants/plans";
-import { PLAN_LIMITS } from "@repo/utils/constants/limits";
+import { PlanKey } from "@/utils/constants/plans";
+import { PLAN_LIMITS } from "@/utils/constants/limits";
 /**
  * Determine whether a transcription request is permitted under the given plan's per-file and monthly usage limits.
  *

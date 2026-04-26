@@ -1,6 +1,6 @@
-import { MeetingExtractionResult } from "@repo/types/llm/llm-abstract";
-import { supabaseAdmin } from "@repo/utils/supabase-init/supabase-server";
-import { log } from "@repo/utils/logger";
+import { MeetingExtractionResult } from '@/types/llm/llm-abstract'
+import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
+import { log } from '@/utils/logger'
 
 /**
  * Deletes any existing events for the given audio ID, inserts the provided events for that audio ID, and returns the inserted rows.
@@ -12,33 +12,33 @@ import { log } from "@repo/utils/logger";
  */
 export async function insertManyEventsByAudioId(
   audioId: string,
-  eventsArray: MeetingExtractionResult["events"],
+  eventsArray: MeetingExtractionResult['events']
 ) {
-  deleteAllExistingEventsByAudioId(audioId);
+  deleteAllExistingEventsByAudioId(audioId)
 
-  const formattedEvents = eventsArray.map((event) => ({
+  const formattedEvents = eventsArray.map(event => ({
     audio_id: audioId,
     title: event.title,
     description: event.description,
     start_time: event.start_time ?? new Date().toISOString(),
     end_time: event.end_time,
     location: event.location,
-  }));
+  }))
 
   const { data, error } = await supabaseAdmin
-    .from("events")
+    .from('events')
     .insert(formattedEvents)
-    .select("*");
+    .select('*')
 
   if (error) {
-    log.error("Error when insert events: ", {
+    log.error('Error when insert events: ', {
       error,
       audioId,
       eventsArray,
-    });
-    throw error;
+    })
+    throw error
   }
-  return data;
+  return data
 }
 /**
  * Fetches all event records associated with the given audio ID from the `events` table.
@@ -49,19 +49,19 @@ export async function insertManyEventsByAudioId(
  */
 export async function getAllEventsByAudioId(audioId: string) {
   const { data, error } = await supabaseAdmin
-    .from("events")
-    .select("*")
-    .eq("audio_id", audioId);
+    .from('events')
+    .select('*')
+    .eq('audio_id', audioId)
 
   if (error) {
-    log.error("Error when insert events: ", {
+    log.error('Error when insert events: ', {
       error,
       audioId,
       data,
-    });
-    throw error;
+    })
+    throw error
   }
-  return data;
+  return data
 }
 
 /**
@@ -72,16 +72,16 @@ export async function getAllEventsByAudioId(audioId: string) {
  */
 async function deleteAllExistingEventsByAudioId(audioId: string) {
   const { error } = await supabaseAdmin
-    .from("events")
+    .from('events')
     .delete()
-    .eq("audio_id", audioId);
+    .eq('audio_id', audioId)
 
   if (error) {
-    log.error("Error when deleting events: ", {
+    log.error('Error when deleting events: ', {
       audioId,
       error,
-    });
-    throw error;
+    })
+    throw error
   }
 }
 /**
@@ -93,17 +93,17 @@ async function deleteAllExistingEventsByAudioId(audioId: string) {
  */
 export async function getEventById(eventId: string) {
   const { data, error } = await supabaseAdmin
-    .from("events")
-    .select("*")
-    .eq("id", eventId)
-    .single();
+    .from('events')
+    .select('*')
+    .eq('id', eventId)
+    .single()
 
   if (error) {
-    log.error("Error when query event: ", {
+    log.error('Error when query event: ', {
       eventId,
       error,
-    });
-    throw error;
+    })
+    throw error
   }
-  return data;
+  return data
 }

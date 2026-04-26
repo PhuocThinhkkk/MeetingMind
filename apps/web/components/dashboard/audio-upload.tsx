@@ -1,6 +1,6 @@
 'use client'
 
-import { log } from '@repo/utils/logger'
+import { log } from '@/utils/logger'
 import { useState, useCallback } from 'react'
 import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'

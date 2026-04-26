@@ -1,9 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { log } from '@repo/utils/logger'
-import { getUserAuthInSupabaseToken } from '@repo/utils/supabase-auth-server'
-import { getLLM } from '@repo/types/llm/llm-factory'
-import { buildMeetingSummaryPrompt } from '@repo/types/llm/prompt-builder'
-import { MeetingExtractionResult } from '@repo/types/llm/llm-abstract'
+import { log } from '@/utils/logger'
+import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
+import { getLLM } from '@/types/llm/llm-factory'
+import { buildMeetingSummaryPrompt } from '@/types/llm/prompt-builder'
+import { MeetingExtractionResult } from '@/types/llm/llm-abstract'
 
 /**
  * Generates a meeting summary and extracted events from a transcript after authenticating the user.

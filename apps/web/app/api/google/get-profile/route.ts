@@ -1,7 +1,7 @@
-import { getTokenByUserId } from '@repo/modules/calendar/repository/server/google-token-operations'
-import { getUserAuthInSupabaseToken } from '@repo/utils/supabase-auth-server'
-import { refreshTokenIfExpired } from '@repo/modules/calendar/service/share/token-managements'
-import { getGoogleUserProfile } from '@repo/modules/calendar/service/share/user-profile'
+import { getTokenByUserId } from '@/modules/calendar/repository/server/google-token-operations'
+import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
+import { refreshTokenIfExpired } from '@/modules/calendar/service/share/token-managements'
+import { getGoogleUserProfile } from '@/modules/calendar/service/share/user-profile'
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(req: NextRequest) {

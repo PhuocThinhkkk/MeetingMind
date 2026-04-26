@@ -1,7 +1,7 @@
-import { log } from '@repo/utils/logger'
-import { createUserToken } from '@repo/modules/calendar/repository/server/google-token-operations'
-import { getUserAuthInSupabaseToken } from '@repo/utils/supabase-auth-server'
-import { GoogleTokenResponse } from '@repo/types/google-response/google.response.type'
+import { log } from '@/utils/logger'
+import { createUserToken } from '@/modules/calendar/repository/server/google-token-operations'
+import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
+import { GoogleTokenResponse } from '@/types/google-response/google.response.type'
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 

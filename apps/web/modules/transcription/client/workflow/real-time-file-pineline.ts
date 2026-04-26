@@ -1,12 +1,12 @@
-import { sanitizedFileName } from "@repo/modules/transcription/service/client/extract-file-name";
+import { sanitizedFileName } from "@/modules/transcription/service/client/extract-file-name";
 import { getAudioDuration } from "@/lib/transcript/transcript-realtime-utils";
 import { fetchPresignedUrlAndUpload, triggerAnalyze } from "./utils";
-import { log } from "@repo/utils/logger";
+import { log } from "@/utils/logger";
 import {
   saveTranscript,
   saveTranscriptWords,
-} from "@repo/modules/transcription/repository/client/transcription-operations";
-import { SaveTranscriptInput } from "@repo/types/transcriptions/transcription.db";
+} from "@/modules/transcription/repository/client/transcription-operations";
+import { SaveTranscriptInput } from "@/types/transcriptions/transcription.db";
 import { updateAudioStatus } from "../../repository/client/audio-operations";
 /**
  * Uploads a local audio file, saves its realtime transcript and words, and triggers analysis for the uploaded audio.

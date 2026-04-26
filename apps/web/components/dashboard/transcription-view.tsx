@@ -1,6 +1,6 @@
 'use client'
 
-import { log } from '@repo/utils/logger'
+import { log } from '@/utils/logger'
 import { useState, useEffect } from 'react'
 import {
   Dialog,
@@ -31,7 +31,7 @@ import {
   CheckCircle,
   Loader2,
 } from 'lucide-react'
-import { supabase } from '@repo/utils/supabase-init/supabase-browser'
+import { supabase } from '@/lib/supabase-init/supabase-browser'
 
 interface TranscriptionViewProps {
   file: any

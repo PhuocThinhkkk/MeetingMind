@@ -1,7 +1,7 @@
 import "server-only";
 import { createServerClient } from "@supabase/auth-helpers-nextjs";
 import { cookies } from "next/headers";
-import { Database } from "@repo/types/database.types";
+import { Database } from "@/types/database.types";
 
 /**
  * Create a Supabase server client that reads and writes auth cookies via Next.js server cookies.

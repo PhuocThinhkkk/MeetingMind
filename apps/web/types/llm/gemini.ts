@@ -1,6 +1,6 @@
 import { GoogleGenerativeAI } from "@google/generative-ai";
 import { LLMProvider, MeetingExtractionResult } from "./llm-abstract";
-import { log } from "@repo/utils/logger";
+import { log } from "@/utils/logger";
 import { PromptBuilder } from "./prompt-builder";
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY!);

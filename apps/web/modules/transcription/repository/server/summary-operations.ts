@@ -1,6 +1,6 @@
-import { log } from "@repo/utils/logger";
-import { supabaseAdmin } from "@repo/utils/supabase-init/supabase-server";
-import { MeetingExtractionResult } from "@repo/types/llm/llm-abstract";
+import { log } from '@/utils/logger'
+import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
+import { MeetingExtractionResult } from '@/types/llm/llm-abstract'
 
 /**
  * Retrieve the summary record for a given audio ID from the summaries table.
@@ -10,12 +10,12 @@ import { MeetingExtractionResult } from "@repo/types/llm/llm-abstract";
  */
 export async function getSummariesByAudioId(audioId: string) {
   const { data: existingSummary } = await supabaseAdmin
-    .from("summaries")
-    .select("*")
-    .eq("audio_id", audioId)
-    .maybeSingle();
+    .from('summaries')
+    .select('*')
+    .eq('audio_id', audioId)
+    .maybeSingle()
 
-  return existingSummary;
+  return existingSummary
 }
 
 /**
@@ -30,25 +30,25 @@ export async function getSummariesByAudioId(audioId: string) {
  */
 export async function saveSummaryByAudioId(
   audioId: string,
-  summary: MeetingExtractionResult["summary"],
+  summary: MeetingExtractionResult['summary']
 ) {
-  await deleteExistingSummaryByAudioId(audioId);
+  await deleteExistingSummaryByAudioId(audioId)
 
-  const { error } = await supabaseAdmin.from("summaries").insert({
+  const { error } = await supabaseAdmin.from('summaries').insert({
     audio_id: audioId,
     text: summary.text,
     highlights: summary.highlights,
     todo: summary.todo,
     key_topics: summary.key_topics,
     sentiment: summary.sentiment,
-  });
+  })
 
   if (error) {
-    log.error("Error when saving summary: ", {
+    log.error('Error when saving summary: ', {
       audioId,
       summary: summary,
-    });
-    throw error;
+    })
+    throw error
   }
 }
 
@@ -60,15 +60,15 @@ export async function saveSummaryByAudioId(
  */
 async function deleteExistingSummaryByAudioId(audioId: string) {
   const { error } = await supabaseAdmin
-    .from("summaries")
+    .from('summaries')
     .delete()
-    .eq("audio_id", audioId);
+    .eq('audio_id', audioId)
 
   if (error) {
-    log.error("Error when deleting summary: ", {
+    log.error('Error when deleting summary: ', {
       audioId,
       error,
-    });
-    throw error;
+    })
+    throw error
   }
 }

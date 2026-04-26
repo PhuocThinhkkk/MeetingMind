@@ -1,6 +1,6 @@
-import { TranscriptWordInsert } from "@repo/types/transcriptions/transcription.db";
-import { AssemblyAIWord } from "@repo/types/transcriptions/transcription.assembly.upload";
-import { RealtimeTranscriptionWord } from "@repo/types/transcriptions/transcription.ws";
+import { TranscriptWordInsert } from "@/types/transcriptions/transcription.db";
+import { AssemblyAIWord } from "@/types/transcriptions/transcription.assembly.upload";
+import { RealtimeTranscriptionWord } from "@/types/transcriptions/transcription.ws";
 /**
  * Convert AssemblyAI word objects into TranscriptWordInsert records for a given transcription ID.
  *

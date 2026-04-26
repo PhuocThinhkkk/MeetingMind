@@ -2,8 +2,8 @@
 
 import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
-import { TranscriptWithWordNested } from '@repo/types/transcriptions/transcription.db'
-import { splitWordsIntoSentences } from '@repo/modules/transcription/service/client/split-words-into-sentences'
+import { TranscriptWithWordNested } from '@/types/transcriptions/transcription.db'
+import { splitWordsIntoSentences } from '@/modules/transcription/service/client/split-words-into-sentences'
 
 type Word = TranscriptWithWordNested['transcription_words'][number]
 

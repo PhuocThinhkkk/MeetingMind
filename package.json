@@ -1,12 +1,27 @@
 {
   "name": "meetingmind",
-  "private": true,
-  "workspaces": [
-    "apps/*",
-    "packages/*"
-  ],
+  "version": "1.0.0",
+  "homepage": "https://github.com/PhuocThinhkkk/MeetingMind#readme",
+  "bugs": {
+    "url": "https://github.com/PhuocThinhkkk/MeetingMind/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PhuocThinhkkk/MeetingMind.git"
+  },
+  "license": "ISC",
+  "author": "PhuocThinhkkk",
+  "devDependencies": {
+    "husky": "^9.1.7",
+    "lint-staged": "^16.4.0",
+    "prettier": "^3.8.3"
+  },
+  "lint-staged": {
+    "apps/web/**/*.{js,ts,tsx,jsx}": [
+      "prettier --write"
+    ]
+  },
   "scripts": {
-    "dev:web": "npm run dev --workspace=apps/web",
-    "build:web": "npm run build --workspace=apps/web"
+    "prepare": "husky"
   }
 }

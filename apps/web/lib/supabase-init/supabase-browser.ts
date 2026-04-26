@@ -1,4 +1,4 @@
-import { Database } from "@repo/types/database.types";
+import { Database } from "@/types/database.types";
 import { createBrowserClient } from "@supabase/auth-helpers-nextjs";
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL!;

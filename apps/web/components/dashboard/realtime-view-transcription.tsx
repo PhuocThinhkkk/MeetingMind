@@ -11,7 +11,7 @@ import {
   Sparkles,
   Languages,
 } from 'lucide-react'
-import { RealtimeTranscriptionWord } from '@repo/types/transcriptions/transcription.ws'
+import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
 import { FeatureLockWrapper } from '../coming-soon-wrapper'
 
 interface RealTimeTranscriptionPageProps {

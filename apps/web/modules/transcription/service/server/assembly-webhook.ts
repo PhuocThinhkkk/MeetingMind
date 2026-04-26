@@ -1,4 +1,4 @@
-import { log } from "@repo/utils/logger";
+import { log } from "@/utils/logger";
 
 /**
  * Registers an audio file with AssemblyAI and configures a webhook for transcript delivery.

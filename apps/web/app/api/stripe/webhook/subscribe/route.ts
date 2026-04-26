@@ -1,17 +1,17 @@
-import { log } from '@repo/utils/logger'
+import { log } from '@/utils/logger'
 import { NextResponse } from 'next/server'
-import { stripe } from '@repo/utils/stripe'
+import { stripe } from '@/lib/stripe'
 import type Stripe from 'stripe'
 import {
   assertInvoiceRuntime,
   assertSubscriptionRuntime,
-} from '@repo/modules/billing/service/server/assertion.stripe'
+} from '@/modules/billing/service/server/assertion.stripe'
 import {
   createStripeSubscription,
   deleteStripeSubscription,
   invoiceStripeSubscription,
   updateStripeSubscription,
-} from '@repo/modules/billing/repository/server/stripe-subscription-operations'
+} from '@/modules/billing/repository/server/stripe-subscription-operations'
 
 /**
  * Handle incoming Stripe webhook POST requests, verify the signature, and route relevant events to subscription and invoice handlers.

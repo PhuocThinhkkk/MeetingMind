@@ -1,5 +1,5 @@
 "server-only";
-import { Database } from "@repo/types/database.types";
+import { Database } from "@/types/database.types";
 import { createClient } from "@supabase/supabase-js";
 
 export const supabaseAdmin = createClient<Database>(

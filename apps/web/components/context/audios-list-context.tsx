@@ -1,7 +1,7 @@
 'use client'
 
 import React from 'react'
-import { AudioFileRow } from '@repo/types/transcriptions/transcription.db'
+import { AudioFileRow } from '@/types/transcriptions/transcription.db'
 
 type AudioContextType = {
   audios: AudioFileRow[]

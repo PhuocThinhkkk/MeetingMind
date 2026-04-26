@@ -1,12 +1,12 @@
 import {
   EventItemRow,
   GoogleTokenRow,
-} from "@repo/types/transcriptions/transcription.db";
+} from "@/types/transcriptions/transcription.db";
 import { toAllDayEvent } from "./utils";
 import {
   updateEventAddedToGoogleInSupabase,
   updateRefreshTokenSupabase,
-} from "@repo/modules/calendar/repository/server/google-token-operations";
+} from "@/modules/calendar/repository/server/google-token-operations";
 
 export type GoogleRefreshTokenResponse = {
   access_token: string;

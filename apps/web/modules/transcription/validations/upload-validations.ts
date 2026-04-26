@@ -1,4 +1,4 @@
-import { log } from "@repo/utils/logger";
+import { log } from "@/utils/logger";
 
 /**
  * Validates whether a storage file path belongs to the given user.

@@ -1,6 +1,6 @@
 import OpenAI from "openai";
 import { LLMProvider, MeetingExtractionResult } from "./llm-abstract";
-import { log } from "@repo/utils/logger";
+import { log } from "@/utils/logger";
 import { PromptBuilder } from "./prompt-builder";
 
 const openai = new OpenAI({

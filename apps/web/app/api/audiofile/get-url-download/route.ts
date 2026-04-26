@@ -1,8 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { getUserAuthInSupabaseToken } from '@repo/utils/supabase-auth-server'
-import { log } from '@repo/utils/logger'
-import { getSignedAudioUrl } from '@repo/modules/transcription/repository/server/storage-operations'
-import { validateFilePathOwner } from '@repo/modules/transcription/validations/upload-validations'
+import { getUserAuthInSupabaseToken } from '@/lib/supabase-auth-server'
+import { log } from '@/utils/logger'
+import { getSignedAudioUrl } from '@/modules/transcription/repository/server/storage-operations'
+import { validateFilePathOwner } from '@/modules/transcription/validations/upload-validations'
 
 export type GetUrlDownloadBody = {
   path: string

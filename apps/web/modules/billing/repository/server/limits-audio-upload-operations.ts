@@ -1,7 +1,7 @@
-import { PLANS } from "@repo/utils/constants/limits";
-import { PlanKey } from "@repo/utils/constants/plans";
-import { getCurrentMonthRange } from "@repo/utils/time-logic";
-import { supabaseAdmin } from "@repo/utils/supabase-init/supabase-server";
+import { PLANS } from '@/utils/constants/limits'
+import { PlanKey } from '@/utils/constants/plans'
+import { getCurrentMonthRange } from '@/utils/time-logic'
+import { supabaseAdmin } from '@/lib/supabase-init/supabase-server'
 
 /**
  * Calculate the total duration, in seconds, of a user's audio files created during the current month.
@@ -10,21 +10,21 @@ import { supabaseAdmin } from "@repo/utils/supabase-init/supabase-server";
  * @returns The sum of the `duration` fields (in seconds) for the user's audio files created within the current month
  */
 export async function getMonthlyUsageSeconds(userId: string) {
-  const { start, end } = getCurrentMonthRange();
+  const { start, end } = getCurrentMonthRange()
 
   const { data, error } = await supabaseAdmin
-    .from("audio_files")
-    .select("duration")
-    .eq("user_id", userId)
-    .gte("created_at", start)
-    .lt("created_at", end);
+    .from('audio_files')
+    .select('duration')
+    .eq('user_id', userId)
+    .gte('created_at', start)
+    .lt('created_at', end)
 
-  if (error) throw error;
+  if (error) throw error
 
   const totalSeconds =
-    data?.reduce((sum, file) => sum + (file.duration || 0), 0) || 0;
+    data?.reduce((sum, file) => sum + (file.duration || 0), 0) || 0
 
-  return totalSeconds;
+  return totalSeconds
 }
 
 /**
@@ -35,18 +35,18 @@ export async function getMonthlyUsageSeconds(userId: string) {
  * @throws The database error raised when the query fails
  */
 export async function getMonthlyUploadCount(userId: string) {
-  const { start, end } = getCurrentMonthRange();
+  const { start, end } = getCurrentMonthRange()
 
   const { count, error } = await supabaseAdmin
-    .from("audio_files")
-    .select("*", { count: "exact", head: true })
-    .eq("user_id", userId)
-    .gte("created_at", start)
-    .lt("created_at", end);
+    .from('audio_files')
+    .select('*', { count: 'exact', head: true })
+    .eq('user_id', userId)
+    .gte('created_at', start)
+    .lt('created_at', end)
 
-  if (error) throw error;
+  if (error) throw error
 
-  return count || 0;
+  return count || 0
 }
 
 /**
@@ -57,18 +57,18 @@ export async function getMonthlyUploadCount(userId: string) {
  */
 export async function getUserPlan(userId: string): Promise<PlanKey> {
   const { data, error } = await supabaseAdmin
-    .from("subscriptions")
-    .select("status")
-    .eq("user_id", userId)
-    .maybeSingle();
+    .from('subscriptions')
+    .select('status')
+    .eq('user_id', userId)
+    .maybeSingle()
 
-  if (error) throw error;
+  if (error) throw error
 
-  if (!data) return PLANS.FREE;
+  if (!data) return PLANS.FREE
 
-  if (data.status === "active" || data.status === "trialing") {
-    return PLANS.PRO;
+  if (data.status === 'active' || data.status === 'trialing') {
+    return PLANS.PRO
   }
 
-  return PLANS.FREE;
+  return PLANS.FREE
 }

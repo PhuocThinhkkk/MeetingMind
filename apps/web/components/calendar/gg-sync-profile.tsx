@@ -1,13 +1,13 @@
 'use client'
 
 import { useEffect, useState } from 'react'
-import { GoogleTokenRow } from '@repo/types/transcriptions/transcription.db'
+import { GoogleTokenRow } from '@/types/transcriptions/transcription.db'
 import {
   requestGoogleUserProfile,
   UserInforGoogleCalendar,
-} from '@repo/modules/calendar/service/share/user-profile'
+} from '@/modules/calendar/service/share/user-profile'
 import { Loader2, Calendar, Link2 } from 'lucide-react'
-import { log } from '@repo/utils/logger'
+import { log } from '@/utils/logger'
 import { AvatarFallback, AvatarImage, Avatar } from '@/components/ui/avatar'
 
 interface Props {

@@ -1,6 +1,6 @@
 'use client'
 
-import { Subscription } from '@repo/modules/billing/service/server/types'
+import { Subscription } from '@/modules/billing/service/server/types'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { format } from 'date-fns'
 

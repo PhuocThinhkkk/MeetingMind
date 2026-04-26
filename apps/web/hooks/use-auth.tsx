@@ -1,6 +1,6 @@
 'use client'
 
-import { log } from '@repo/utils/logger'
+import { log } from '@/utils/logger'
 import {
   useState,
   useEffect,
@@ -9,7 +9,7 @@ import {
   ReactNode,
 } from 'react'
 import { User, Session } from '@supabase/supabase-js'
-import { supabase } from '@repo/utils/supabase-init/supabase-browser'
+import { supabase } from '@/lib/supabase-init/supabase-browser'
 
 export interface AuthContextType {
   user: User | null

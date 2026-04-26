@@ -1,5 +1,5 @@
-import { log } from "@repo/utils/logger";
-import { EventItemRow } from "@repo/types/transcriptions/transcription.db";
+import { log } from "@/utils/logger";
+import { EventItemRow } from "@/types/transcriptions/transcription.db";
 
 /**
  * Converts an EventItemRow into a Google Calendar all-day event object.

@@ -23,9 +23,9 @@ import { CalendarIcon } from 'lucide-react'
 import { format } from 'date-fns'
 import { cn } from '@/lib/utils'
 import { useToast } from '@/hooks/use-toast'
-import { updateEventById } from '@repo/modules/transcription/repository/client/events-sumaries-operations'
-import { EventItemRow } from '@repo/types/transcriptions/transcription.db'
-import { log } from '@repo/utils/logger'
+import { updateEventById } from '@/modules/transcription/repository/client/events-sumaries-operations'
+import { EventItemRow } from '@/types/transcriptions/transcription.db'
+import { log } from '@/utils/logger'
 
 interface EditEventModalProps {
   open: boolean

@@ -11,19 +11,19 @@ import {
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { formatDate } from '@repo/utils/ui-format/time-format'
+import { formatDate } from '@/utils/ui-format/time-format'
 import {
   QALogBase,
   QALogRow,
   TranscriptRow,
-} from '@repo/types/transcriptions/transcription.db'
-import { QALog } from '@repo/types/utils'
+} from '@/types/transcriptions/transcription.db'
+import { QALog } from '@/types/utils'
 import { toast } from 'sonner'
 import {
   getQaLogsByAudioId,
   insertQALogs,
-} from '@repo/modules/transcription/repository/client/qa-log-operations'
-import { log } from '@repo/utils/logger'
+} from '@/modules/transcription/repository/client/qa-log-operations'
+import { log } from '@/utils/logger'
 import { useAuth } from '@/hooks/use-auth'
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
 

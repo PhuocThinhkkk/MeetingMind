@@ -1,9 +1,9 @@
 import {
   QALogInsert,
   QALogRow,
-} from "@repo/types/transcriptions/transcription.db";
-import { QALog } from "@repo/types/utils";
-import { log } from "@repo/utils/logger";
+} from "@/types/transcriptions/transcription.db";
+import { QALog } from "@/types/utils";
+import { log } from "@/utils/logger";
 
 export type QARelation = {
   user_id: string;

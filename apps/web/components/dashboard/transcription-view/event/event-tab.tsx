@@ -14,8 +14,8 @@ import { useTranscriptionView } from '@/components/context/transcription-view-co
 import { useRouter } from 'next/navigation'
 import { EditEventModal } from './edit-event-modal'
 import { useToast } from '@/hooks/use-toast'
-import { EventItemRow } from '@repo/types/transcriptions/transcription.db'
-import { deleteEventById } from '@repo/modules/transcription/repository/client/events-sumaries-operations'
+import { EventItemRow } from '@/types/transcriptions/transcription.db'
+import { deleteEventById } from '@/modules/transcription/repository/client/events-sumaries-operations'
 
 export function EventsTab() {
   const { events, deleteEvent, updateEvent } = useTranscriptionView()

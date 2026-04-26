@@ -1,7 +1,7 @@
-import { log } from '@repo/utils/logger'
+import { log } from '@/utils/logger'
 import { NextResponse } from 'next/server'
-import { stripe } from '@repo/utils/stripe'
-import { getSupabseAuthServer } from '@repo/utils/supabase-auth-server'
+import { stripe } from '@/lib/stripe'
+import { getSupabseAuthServer } from '@/lib/supabase-auth-server'
 
 /**
  * Create a Stripe Checkout Session for the authenticated user and return the session URL.

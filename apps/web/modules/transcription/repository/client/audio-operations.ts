@@ -1,13 +1,13 @@
-import { log } from "@repo/utils/logger";
-import { supabase } from "@repo/utils/supabase-init/supabase-browser";
-import { sanitizedFileName } from "@repo/modules/transcription/service/client/extract-file-name";
-import { getAudioDuration } from "@/lib/transcript/transcript-realtime-utils";
+import { log } from '@/utils/logger'
+import { supabase } from '@/lib/supabase-init/supabase-browser'
+import { sanitizedFileName } from '@/modules/transcription/service/client/extract-file-name'
+import { getAudioDuration } from '@/lib/transcript/transcript-realtime-utils'
 import {
   AudioFileRow,
   AudioFileStatus,
   AudioFileWithTranscriptNested,
-} from "@repo/types/transcriptions/transcription.db";
-import { CreateUploadUrlResult } from "@repo/types/transcriptions/transcription.storage.upload";
+} from '@/types/transcriptions/transcription.db'
+import { CreateUploadUrlResult } from '@/types/transcriptions/transcription.storage.upload'
 
 /**
  * Retrieve a user's audio files with their associated transcript (first transcript or `null`), ordered newest first.
@@ -17,29 +17,29 @@ import { CreateUploadUrlResult } from "@repo/types/transcriptions/transcription.
  * @throws The Supabase error when the database query fails
  */
 export async function getAudioHistory(
-  userId: string,
+  userId: string
 ): Promise<AudioFileWithTranscriptNested[]> {
   const { data, error } = await supabase
-    .from("audio_files")
+    .from('audio_files')
     .select(
       `
       *,
       transcript:transcripts!left(*)
-    `,
+    `
     )
-    .eq("user_id", userId)
-    .order("created_at", { ascending: false });
+    .eq('user_id', userId)
+    .order('created_at', { ascending: false })
 
   if (error) {
-    log.error("Supabase error:", error);
-    throw error;
+    log.error('Supabase error:', error)
+    throw error
   }
-  const formatted = data?.map((a) => ({
+  const formatted = data?.map(a => ({
     ...a,
     transcript: a.transcript?.[0],
-  }));
+  }))
 
-  return formatted ?? [];
+  return formatted ?? []
 }
 
 /**
@@ -58,33 +58,33 @@ export async function getAudioHistory(
 export async function saveAudioFile(
   file: File,
   userId: string,
-  uploadRes: CreateUploadUrlResult,
+  uploadRes: CreateUploadUrlResult
 ) {
-  const mimeType = file.type;
-  const fileSize = file.size;
+  const mimeType = file.type
+  const fileSize = file.size
 
   if (!mimeType || mimeType.length === 0) {
-    throw new Error("Blob must have a valid MIME type");
+    throw new Error('Blob must have a valid MIME type')
   }
   if (!fileSize || fileSize <= 0) {
-    throw new Error("Blob must have a valid file size");
+    throw new Error('Blob must have a valid file size')
   }
 
-  let duration;
+  let duration
   try {
-    duration = await getAudioDuration(file);
+    duration = await getAudioDuration(file)
   } catch (err) {
-    log.error("Error when saving audio file: ", err);
+    log.error('Error when saving audio file: ', err)
   }
   if (duration == undefined) {
-    duration = 0;
+    duration = 0
   }
-  const name = sanitizedFileName(file.name);
-  await uploadAudioFileUsingPath(uploadRes.signedUrl, file);
-  const status: AudioFileStatus = "pending";
+  const name = sanitizedFileName(file.name)
+  await uploadAudioFileUsingPath(uploadRes.signedUrl, file)
+  const status: AudioFileStatus = 'pending'
 
   const { data, error } = await supabase
-    .from("audio_files")
+    .from('audio_files')
     .insert({
       user_id: userId,
       name,
@@ -94,16 +94,16 @@ export async function saveAudioFile(
       mime_type: mimeType,
       transcription_status: status,
     })
-    .select("*")
-    .single();
+    .select('*')
+    .single()
 
   if (error) {
-    log.error("DB insert error:", error);
-    throw error;
+    log.error('DB insert error:', error)
+    throw error
   }
-  log.info("Audio file saved:", data);
+  log.info('Audio file saved:', data)
 
-  return data as AudioFileRow;
+  return data as AudioFileRow
 }
 
 /**
@@ -114,17 +114,17 @@ export async function saveAudioFile(
  * @throws Error - If the upload HTTP response is not OK.
  */
 export async function uploadAudioFileUsingPath(uploadUrl: string, file: File) {
-  log.info("upload file to url: ", { uploadUrl });
+  log.info('upload file to url: ', { uploadUrl })
   const res = await fetch(uploadUrl, {
-    method: "PUT",
+    method: 'PUT',
     headers: {
-      "Content-Type": file.type,
+      'Content-Type': file.type,
     },
     body: file,
-  });
+  })
   if (!res.ok) {
-    log.error("Error in upload file to storage.");
-    throw new Error("Can not upload file ");
+    log.error('Error in upload file to storage.')
+    throw new Error('Can not upload file ')
   }
 }
 
@@ -138,19 +138,19 @@ export async function uploadAudioFileUsingPath(uploadUrl: string, file: File) {
  */
 export async function updateAudioName(audioId: string, newName: string) {
   const { data, error } = await supabase
-    .from("audio_files")
+    .from('audio_files')
     .update({ name: newName, updated_at: new Date().toISOString() })
-    .eq("id", audioId)
+    .eq('id', audioId)
     .select()
-    .single();
+    .single()
 
   if (error) {
-    log.error("❌ Error updating audio name:", error);
-    throw error;
+    log.error('❌ Error updating audio name:', error)
+    throw error
   }
 
-  log.info("✅ Audio name updated:", data);
-  return data as AudioFileRow;
+  log.info('✅ Audio name updated:', data)
+  return data as AudioFileRow
 }
 
 /**
@@ -162,25 +162,25 @@ export async function updateAudioName(audioId: string, newName: string) {
  */
 export async function updateAudioStatus(
   audioId: string,
-  newStatus: AudioFileStatus,
+  newStatus: AudioFileStatus
 ) {
   const { data, error } = await supabase
-    .from("audio_files")
+    .from('audio_files')
     .update({
       transcription_status: newStatus,
       updated_at: new Date().toISOString(),
     })
-    .eq("id", audioId)
+    .eq('id', audioId)
     .select()
-    .single();
+    .single()
 
   if (error) {
-    log.error("❌ Error updating audio status:", error);
-    throw error;
+    log.error('❌ Error updating audio status:', error)
+    throw error
   }
 
-  log.info("✅ Audio status updated:", data);
-  return data as AudioFileRow;
+  log.info('✅ Audio status updated:', data)
+  return data as AudioFileRow
 }
 
 /**
@@ -192,17 +192,17 @@ export async function updateAudioStatus(
  */
 export async function deleteAudioById(audioId: string) {
   const { error } = await supabase
-    .from("audio_files")
+    .from('audio_files')
     .delete()
-    .eq("id", audioId);
+    .eq('id', audioId)
 
   if (error) {
-    log.error("❌ Error deleting audio:", error);
-    throw error;
+    log.error('❌ Error deleting audio:', error)
+    throw error
   }
 
-  log.info(`🗑️ Audio with ID ${audioId} deleted`);
-  return true;
+  log.info(`🗑️ Audio with ID ${audioId} deleted`)
+  return true
 }
 
 /**
@@ -214,17 +214,17 @@ export async function deleteAudioById(audioId: string) {
  */
 export async function getAudioById(audioId: string) {
   const { data, error } = await supabase
-    .from("audio_files")
-    .select("*")
-    .eq("id", audioId)
-    .single();
+    .from('audio_files')
+    .select('*')
+    .eq('id', audioId)
+    .single()
 
   if (error) {
-    log.error("error: ", {
+    log.error('error: ', {
       error,
       data,
-    });
-    throw new Error("Error when get audio by id");
+    })
+    throw new Error('Error when get audio by id')
   }
-  return data;
+  return data
 }

@@ -1,10 +1,10 @@
 'use client'
 import type * as React from 'react'
-import { log } from '@repo/utils/logger'
+import { log } from '@/utils/logger'
 import { usePathname } from 'next/navigation'
 import { useAuth } from '@/hooks/use-auth'
 import { useState, useEffect } from 'react'
-import { supabase } from '@repo/utils/supabase-init/supabase-browser'
+import { supabase } from '@/lib/supabase-init/supabase-browser'
 import {
   Sidebar,
   SidebarContent,

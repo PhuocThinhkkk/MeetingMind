@@ -1,10 +1,7 @@
-import { supabase } from "@repo/utils/supabase-init/supabase-browser";
-import { log } from "@repo/utils/logger";
-import { QALog } from "@repo/types/utils";
-import {
-  adaptQA,
-  QARelation,
-} from "@repo/modules/transcription/adapters/qa-log";
+import { supabase } from '@/lib/supabase-init/supabase-browser'
+import { log } from '@/utils/logger'
+import { QALog } from '@/types/utils'
+import { adaptQA, QARelation } from '@/modules/transcription/adapters/qa-log'
 
 /**
  * Fetches QA log records for the specified audio ID.
@@ -15,15 +12,15 @@ import {
  */
 export async function getQaLogsByAudioId(audioId: string) {
   const { data, error } = await supabase
-    .from("qa_logs")
-    .select("*")
-    .eq("audio_id", audioId);
+    .from('qa_logs')
+    .select('*')
+    .eq('audio_id', audioId)
 
   if (error) {
-    log.error("error: ", error);
-    throw new Error(`Error when get qa logs by audio id ${audioId}`);
+    log.error('error: ', error)
+    throw new Error(`Error when get qa logs by audio id ${audioId}`)
   }
-  return data;
+  return data
 }
 
 /**
@@ -34,18 +31,18 @@ export async function getQaLogsByAudioId(audioId: string) {
  * @throws The database error encountered if the insert operation fails
  */
 export async function insertQALogs(qaLogs: QALog[], data: QARelation) {
-  const insertedData = adaptQA(qaLogs, data);
+  const insertedData = adaptQA(qaLogs, data)
   const { error } = await supabase
-    .from("qa_logs")
+    .from('qa_logs')
     .insert(insertedData)
-    .select("*");
+    .select('*')
 
   if (error) {
-    log.error("There was an error when inserting qa log", {
+    log.error('There was an error when inserting qa log', {
       qaLogs,
       data,
       error,
-    });
-    throw error;
+    })
+    throw error
   }
 }

@@ -1,6 +1,6 @@
 'use client'
 
-import { EventItemRow } from '@repo/types/transcriptions/transcription.db'
+import { EventItemRow } from '@/types/transcriptions/transcription.db'
 import { Clock, MapPin, Zap } from 'lucide-react'
 
 interface NextEventProps {

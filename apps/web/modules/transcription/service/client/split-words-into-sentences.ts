@@ -1,4 +1,4 @@
-import { TranscriptWithWordNested } from "@repo/types/transcriptions/transcription.db";
+import { TranscriptWithWordNested } from "@/types/transcriptions/transcription.db";
 
 type Word = TranscriptWithWordNested["transcription_words"][number];
 const COMMA_MIN_PAUSE = 400;

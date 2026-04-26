@@ -1,6 +1,6 @@
 'use client'
 
-import { log } from '@repo/utils/logger'
+import { log } from '@/utils/logger'
 import { useSearchParams } from 'next/navigation'
 import { useState, useEffect } from 'react'
 import { useRouter } from 'next/navigation'
@@ -21,14 +21,14 @@ import {
   AudioFileRow,
   AudioFileWithTranscriptNested,
   SaveTranscriptInput,
-} from '@repo/types/transcriptions/transcription.db'
-import { getAudioHistory } from '@repo/modules/transcription/repository/client/audio-operations'
-import { formatDateShorted, formatDuration } from '@repo/utils/ui-format/time-format'
+} from '@/types/transcriptions/transcription.db'
+import { getAudioHistory } from '@/modules/transcription/repository/client/audio-operations'
+import { formatDateShorted, formatDuration } from '@/utils/ui-format/time-format'
 import { FeatureLockWrapper } from '@/components/coming-soon-wrapper'
-import { fileUploadPineline } from '@repo/modules/transcription/client/workflow/upload-file-pineline'
+import { fileUploadPineline } from '@/modules/transcription/client/workflow/upload-file-pineline'
 import { TranscriptionViewProvider } from '@/components/context/transcription-view-context'
 import { TranscriptionDialog } from '@/components/dashboard/transcription-view/transcription-main-view-dialog'
-import { realtimeUploadPineline } from '@repo/modules/transcription/client/workflow/real-time-file-pineline'
+import { realtimeUploadPineline } from '@/modules/transcription/client/workflow/real-time-file-pineline'
 import { toast } from '@/hooks/use-toast'
 
 export default function HomePageEntry() {

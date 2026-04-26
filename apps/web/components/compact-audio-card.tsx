@@ -5,11 +5,11 @@ import { useState } from 'react'
 import { StatusBadge } from '@/components/status-badge'
 import { useRouter } from 'next/navigation'
 import TimeDisplay from '@/components/time-display'
-import { AudioFileRow } from '@repo/types/transcriptions/transcription.db'
-import { formatDuration, formatFileSize } from '@/lib/ui-format/time-format'
+import { AudioFileRow } from '@/types/transcriptions/transcription.db'
+import { formatDuration, formatFileSize } from '@/utils/ui-format/time-format'
 import { FileAudio, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { log } from '@repo/utils/logger'
+import { log } from '@/utils/logger'
 import {
   AlertDialog,
   AlertDialogAction,
@@ -34,7 +34,7 @@ import { useAudio } from '@/components/context/audios-list-context'
 import {
   deleteAudioById,
   updateAudioName,
-} from '@repo/modules/transcription/repository/client/audio-operations'
+} from '@/modules/transcription/repository/client/audio-operations'
 import { toast } from 'sonner'
 
 type CompactAudioCardProps = {

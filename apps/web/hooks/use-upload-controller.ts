@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { blobToFile } from '@/lib/transcript/blob-to-file'
 import { toast } from './use-toast'
 const AUDIO_NAME_INIT = 'Unknown name'
-import { SaveTranscriptInput } from '@repo/types/transcriptions/transcription.db'
+import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
 
 export type UploadState = 'idle' | 'uploading' | 'error'
 /**

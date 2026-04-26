@@ -14,11 +14,11 @@ import {
   FileAudio,
 } from 'lucide-react'
 
-import { validateAudioTime } from '@repo/modules/transcription/validations/audio-validations'
+import { validateAudioTime } from '@/modules/transcription/validations/audio-validations'
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
 import { TranscriptSentences } from './transcript-sentences'
-import { fetchUrlDownload } from '@repo/modules/transcription/client/workflow/utils'
-import { log } from '@repo/utils/logger'
+import { fetchUrlDownload } from '@/modules/transcription/client/workflow/utils'
+import { log } from '@/utils/logger'
 
 export function TranscriptTab() {
   const { audio: audioFile, transcript } = useTranscriptionView()
