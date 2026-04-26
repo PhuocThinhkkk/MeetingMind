@@ -16,10 +16,6 @@ const nextConfig = {
       },
     ],
   },
-  transpilePackages: ['@repo/modules', '@repo/types', '@repo/utils'],
-  experimental: {
-    externalDir: true,
-  },
 }
 
 module.exports = nextConfig

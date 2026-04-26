@@ -40,3 +40,5 @@ supabase/.temp/
 socket-server/.env
 
 backups/
+
+folder_structure.txt
