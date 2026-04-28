@@ -5,6 +5,13 @@ import { GoogleTokenResponse } from '@/types/google-response/google.response.typ
 import { cookies } from 'next/headers'
 import { NextResponse } from 'next/server'
 
+type OAuthStatePayload = {
+  csrf: string
+  userId: string
+  redirectTo: string
+  mobile?: boolean
+}
+
 /**
  * Handle Google's OAuth callback: validate state, exchange the authorization code for tokens,
  * persist the tokens for the authenticated user, and redirect to the configured URL on success.
@@ -16,10 +23,37 @@ export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
   const code = searchParams.get('code')
   const error = searchParams.get('error')
-  const state = searchParams.get('state')
+  const encodedState = searchParams.get('state')
   const storedState = (await cookies()).get('google_oauth_state')?.value
 
-  if (!state || !storedState || state !== storedState) {
+  if (!encodedState) {
+    return NextResponse.json(
+      { error: 'Invalid state parameter' },
+      { status: 400 }
+    )
+  }
+
+  let state: OAuthStatePayload | null = null
+  try {
+    state = JSON.parse(
+      Buffer.from(encodedState, 'base64url').toString('utf8')
+    ) as OAuthStatePayload
+  } catch (parseError) {
+    log.error('Invalid OAuth state payload', parseError)
+    return NextResponse.json(
+      { error: 'Invalid state parameter' },
+      { status: 400 }
+    )
+  }
+
+  const isMobile = Boolean(state.mobile)
+  if (!state?.csrf || !state.userId || !state.redirectTo) {
+    return NextResponse.json(
+      { error: 'Invalid state parameter' },
+      { status: 400 }
+    )
+  }
+  if (!isMobile && (!storedState || storedState !== state.csrf)) {
     return NextResponse.json(
       { error: 'Invalid state parameter' },
       { status: 400 }
@@ -42,9 +76,13 @@ export async function GET(req: Request) {
     )
   }
 
-  const user = await getUserAuthInSupabaseToken()
-  if (!user?.id) {
-    return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+  let userId = state.userId
+  if (!isMobile) {
+    const user = await getUserAuthInSupabaseToken()
+    if (!user?.id) {
+      return NextResponse.json({ error: 'Forbidden' }, { status: 403 })
+    }
+    userId = user.id
   }
 
   const tokenRes = await fetch('https://oauth2.googleapis.com/token', {
@@ -78,12 +116,7 @@ export async function GET(req: Request) {
     )
   }
 
-  await createUserToken(user.id, tokens)
+  await createUserToken(userId, tokens)
 
-  const redirect_url = process.env.REDIRECT_URL_AFTER_GOOGLE_INTEGRATION
-  if (!redirect_url) {
-    log.error('redirect url not found!')
-    return NextResponse.json({ error: 'Server Error' }, { status: 500 })
-  }
-  return Response.redirect(redirect_url)
+  return Response.redirect(state.redirectTo)
 }
