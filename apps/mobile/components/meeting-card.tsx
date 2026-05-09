@@ -1,11 +1,10 @@
 import { router } from 'expo-router';
-import React from 'react';
 import { StyleSheet, View } from 'react-native';
 import { Card, Text } from 'react-native-paper';
 
+import { StatusChip } from '@/components/status-chip';
 import { formatDuration, formatRelativeDate } from '@/lib/format';
 import { AudioWithTranscript } from '@/types/domain';
-import { StatusChip } from '@/components/status-chip';
 
 export function MeetingCard({ meeting }: { meeting: AudioWithTranscript }) {
   return (
@@ -23,7 +22,9 @@ export function MeetingCard({ meeting }: { meeting: AudioWithTranscript }) {
               {meeting.transcript?.text || 'Transcript is still processing. Summary and events will appear here when it is ready.'}
             </Text>
           </View>
-          <StatusChip status={meeting.transcription_status} />
+          <View>
+            <StatusChip status={meeting.transcription_status} />
+          </View>
         </View>
       </Card.Content>
     </Card>
@@ -46,6 +47,7 @@ const styles = StyleSheet.create({
   },
   title: {
     fontWeight: '700',
+    color: "#000000",
   },
   meta: {
     color: '#5D6470',

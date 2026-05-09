@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { StyleSheet } from 'react-native';
 import { Searchbar, SegmentedButtons, Text } from 'react-native-paper';
 
@@ -80,6 +80,9 @@ function LibraryContent() {
         buttons={FILTERS.map(value => ({
           value,
           label: value === 'all' ? 'All' : value.charAt(0).toUpperCase() + value.slice(1),
+        labelStyle: {
+      color: value === status ? '#ffffff' : '#5D6470',
+    },
         }))}
       />
 
