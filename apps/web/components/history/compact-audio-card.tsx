@@ -5,7 +5,10 @@ import { useState } from 'react'
 import { StatusBadge } from '@/components/status-badge'
 import { useRouter } from 'next/navigation'
 import TimeDisplay from '@/components/time-display'
-import { AudioFileRow } from '@/types/transcriptions/transcription.db'
+import {
+  AudioFileRow,
+  AudioFileWithTranscriptNested,
+} from '@/types/transcriptions/transcription.db'
 import { formatDuration, formatFileSize } from '@/utils/ui-format/time-format'
 import { FileAudio, Pencil, Trash2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
@@ -38,7 +41,7 @@ import {
 import { toast } from 'sonner'
 
 type CompactAudioCardProps = {
-  audio: AudioFileRow
+  audio: AudioFileWithTranscriptNested
 }
 
 /**
@@ -68,11 +71,21 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
     e.stopPropagation()
     setShowDeleteDialog(true)
   }
+  function getAudioText(text: string | undefined) {
+    let audioText
+    if (text) {
+      if (text.length >= 500) audioText = text.slice(0, 500) + '...'
+      else audioText = text
+    } else {
+      audioText = 'No audio text found'
+    }
+    return audioText
+  }
 
   return (
     <>
       <Card
-        className="p-3 hover:bg-accent/50 transition-colors cursor-pointer"
+        className="flex-col p-3 hover:bg-accent/50 transition-colors cursor-pointer"
         onClick={handleClick}
         onKeyDown={e => {
           if (e.key === 'Enter' || e.key === ' ') {
@@ -83,14 +96,16 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
         role="button"
         tabIndex={0}
       >
-        <div className="flex items-center gap-2 mb-2">
+        <div className="flex-1 flex items-center gap-2 mb-2">
           <div className="p-2 bg-primary/10 rounded-lg shrink-0">
             <FileAudio className="w-4 h-4 text-primary" />
           </div>
 
-          <h3 className="font-medium text-sm text-foreground truncate flex-1 min-w-0">
-            {audio.name}
-          </h3>
+          <div className="flex-1 ">
+            <h3 className="font-medium text-sm text-foreground truncate min-w-0">
+              {audio.name}
+            </h3>
+          </div>
 
           <Button
             variant="ghost"
@@ -111,6 +126,12 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
           >
             <Trash2 className="w-3.5 h-3.5" />
           </Button>
+        </div>
+
+        <div className="flex ml-8 mb-4">
+          <span className=" text-gray-400 text-sx">
+            {getAudioText(audio?.transcript?.text)}
+          </span>
         </div>
 
         <div className="flex items-start gap-3 pl-0">

@@ -1,10 +1,13 @@
 'use client'
 
-import { CompactAudioCard } from '@/components/compact-audio-card'
-import { AudioFileRow } from '@/types/transcriptions/transcription.db'
+import { CompactAudioCard } from '@/components/history/compact-audio-card'
+import {
+  AudioFileRow,
+  AudioFileWithTranscriptNested,
+} from '@/types/transcriptions/transcription.db'
 
 type AudioHistoryListProps = {
-  audioHistory: AudioFileRow[]
+  audioHistory: AudioFileWithTranscriptNested[]
 }
 
 /**
@@ -33,7 +36,7 @@ export function AudioHistoryList({ audioHistory }: AudioHistoryListProps) {
         .map(([day, audios]) => (
           <div key={day}>
             <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">
-              {day}
+              {day} with total {audios.length} audios
             </h2>
             <div className="space-y-2">
               {audios.map(audio => (
