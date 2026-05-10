@@ -9,7 +9,35 @@ export type PromptBuilder = {
  *
  * @returns An object with a `prompt` string that embeds the provided transcript and specifies the required JSON schema for `summary` (including `text`, `highlights`, `todo`, `key_topics`, and `sentiment`) and `events` (objects with `title`, `description`, `start_time`, `end_time`, and `location`).
  */
-export function buildMeetingSummaryPrompt(transcript: string): PromptBuilder {
+export function buildMeetingSummaryPrompt(
+  transcript: string,
+  includeSummary = true,
+  includeEvent = true
+): PromptBuilder {
+  if (!includeEvent && !includeSummary) {
+    throw new Error('Include at least summary or event when building prompt.')
+  }
+
+  const eventJsonFormat = `
+  "events": [
+    {
+      "title": "",
+      "description": "",
+      "start_time": "ISO8601",
+      "end_time": "ISO8601 or null",
+      "location": null
+    }
+  ]
+  `
+  const summaryJsonFormat = `
+ "summary": {
+    "text": "",
+    "highlights": [],
+    "todo": [],
+    "key_topics": [],
+    "sentiment": ""
+  }
+  `
   const nowUtc = new Date().toISOString()
   // Example: 2026-02-27T08:31:12.123Z
 
@@ -37,22 +65,9 @@ ${transcript}
 
 Return:
 {
-  "summary": {
-    "text": "",
-    "highlights": [],
-    "todo": [],
-    "key_topics": [],
-    "sentiment": ""
-  },
-  "events": [
-    {
-      "title": "",
-      "description": "",
-      "start_time": "ISO8601",
-      "end_time": "ISO8601 or null",
-      "location": null
-    }
-  ]
+${includeSummary ? summaryJsonFormat : ''}
+ ,
+  ${includeEvent ? eventJsonFormat : ''}
 }
 `,
   }

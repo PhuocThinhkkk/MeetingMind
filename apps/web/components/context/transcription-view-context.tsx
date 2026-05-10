@@ -66,13 +66,12 @@ export function useTranscriptionViewData(audioId: string) {
           getTranscriptWordNestedByAudioId(audioId),
         ])
 
-
       setAudio(audioData)
       setSummary(analyzed.summary)
       setEvents(analyzed.events)
       setQaLogs(qaLogsData)
       setTranscript(transcriptData)
-      log.info("Transcript view fetch all.")
+      log.info('Transcript view fetch all.')
     } catch (e) {
       log.error('useTranscriptionViewData error', e)
       setError(e)
@@ -152,6 +151,7 @@ type TranscriptionViewContextValue = {
   loading: boolean
   error: unknown
 
+  refreshAll: () => void
   appendQaLog: (log: QALogRow) => void
   setQaLogs: (logs: QALogRow[]) => void
   refreshQaLogs: () => Promise<void>
@@ -191,6 +191,7 @@ export function TranscriptionViewProvider({
     loading: view.loading,
     error: view.error,
 
+    refreshAll: view.refetchAll,
     appendQaLog: view.appendQaLog,
     setQaLogs: view.setQaLogs,
     refreshQaLogs: view.refreshQaLogs,

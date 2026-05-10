@@ -2,21 +2,62 @@ import { useTranscriptionView } from '@/components/context/transcription-view-co
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { CheckCircle } from 'lucide-react'
+import { log } from '@/utils/logger'
+import { Button } from '@/components/ui/button'
+import { useState } from 'react'
+import { toast } from '@/hooks/use-toast'
 
 export function SummaryTab() {
-  const { summary } = useTranscriptionView()
-  if (!summary) {
-    return <p className="text-gray-500">No summary available.</p>
+  const { summary, audioId, refreshAll } = useTranscriptionView()
+  const [retryLoading, setRetryLoading] = useState(false)
+  const isNoSummary = !summary?.text.length
+  async function refreshSummary() {
+    setRetryLoading(true)
+    try {
+      const summary = await getNewSummary(audioId)
+      refreshAll()
+      toast({
+        title: 'Success to refresh summary',
+      })
+    } catch (e) {
+      log.error(`${e}`)
+      toast({
+        title: 'Error when refresh summary',
+        description: `${e}`,
+        variant: 'destructive',
+      })
+    }
+    setRetryLoading(false)
   }
-
+  if (!summary) {
+    return (
+      <>
+        <p className="text-gray-500">No summary available.</p>
+        <div className="p-4 w-full flex justify-center">
+          <Button disabled={retryLoading} onClick={refreshSummary}>
+            Retry
+          </Button>
+        </div>
+      </>
+    )
+  }
   return (
     <ScrollArea className="space-y-4 h-[70vh] pr-2 ">
-      <Card className='mb-4'>
+      <Card className="mb-4">
         <CardHeader>
           <CardTitle>AI Summary</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-gray-700 leading-relaxed">{summary.text}</p>
+          <p className=" text-gray-700 leading-relaxed">
+            {isNoSummary ? 'no summary found' : summary.text}
+          </p>
+          {isNoSummary ? (
+            <div className="p-4 w-full flex justify-center">
+              <Button disabled={retryLoading} onClick={refreshSummary}>
+                Retry
+              </Button>
+            </div>
+          ) : null}
         </CardContent>
       </Card>
 
@@ -52,7 +93,18 @@ export function SummaryTab() {
             </ul>
           </CardContent>
         </Card>
-      </div >
-    </ScrollArea >
+      </div>
+    </ScrollArea>
   )
+}
+
+async function getNewSummary(audioId: string) {
+  const res = await fetch(`/api/audiofile/${audioId}/analyze/summary`, {
+    method: 'POST',
+  })
+  if (!res.ok) {
+    throw new Error(`Response summary error, status: ${res.status}`)
+  }
+  const data = await res.json()
+  return data.summary
 }
