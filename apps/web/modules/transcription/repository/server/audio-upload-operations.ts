@@ -99,7 +99,7 @@ export async function getStorageFileSize(
     throw new Error('File not found in storage')
   }
 
-  return file.metadata.size || file.metadata.file_size || 0
+  return file?.metadata?.size || file?.metadata?.file_size || 0
 }
 
 /**
@@ -187,7 +187,7 @@ export async function updateAudioComplete(
       text: transcript.text ?? '',
       language: transcript.language_code ?? 'en-US',
       confidence_score: transcript.confidence,
-      duration: transcript.duration,
+      //duration: transcript.duration,
     })
     .select('*')
     .single()
