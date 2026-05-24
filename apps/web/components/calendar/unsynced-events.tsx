@@ -1,10 +1,24 @@
 'use client'
 
 import { useState } from 'react'
-import { Clock, MapPin, Calendar, ArrowRight, Check } from 'lucide-react'
+import {
+  Clock,
+  MapPin,
+  Calendar,
+  ArrowRight,
+  Check,
+  Link as LinkIcon,
+} from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { EventItemRow } from '@/types/transcriptions/transcription.db'
 import { toast } from '@/hooks/use-toast'
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip'
+import Link from 'next/link'
 
 interface UnsyncedEventsProps {
   events: EventItemRow[]
@@ -97,7 +111,21 @@ function RenderUnsyncedEvent({
   return (
     <div className="flex items-start justify-between gap-4">
       <div className="flex-1 min-w-0">
-        <h4 className="font-semibold text-slate-900">{event.title}</h4>
+        <div className="flex gap-4 items-center">
+          <h4 className="font-semibold text-slate-900">{event.title}</h4>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <Link href={`/history?audioId=${event.audio_id}`}>
+                  <LinkIcon className="transition h-4 w-4 hover:cursor-pointer rounded hover:bg-gray-400 duration-300 ease-in-out hover:-translate-y-1 hover:scale-110 " />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>Go to this audio.</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
 
         {event.description && (
           <p className="text-sm text-slate-600 mt-1 line-clamp-2">
