@@ -129,7 +129,7 @@ export function CompactAudioCard({ audio }: CompactAudioCardProps) {
         </div>
 
         <div className="flex ml-8 mb-4">
-          <span className=" text-gray-400 text-sx">
+          <span className="text-muted-foreground text-xs">
             {getAudioText(audio?.transcript?.text)}
           </span>
         </div>

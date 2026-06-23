@@ -23,7 +23,10 @@ import {
   SaveTranscriptInput,
 } from '@/types/transcriptions/transcription.db'
 import { getAudioHistory } from '@/modules/transcription/repository/client/audio-operations'
-import { formatDateShorted, formatDuration } from '@/utils/ui-format/time-format'
+import {
+  formatDateShorted,
+  formatDuration,
+} from '@/utils/ui-format/time-format'
 import { FeatureLockWrapper } from '@/components/coming-soon-wrapper'
 import { fileUploadPineline } from '@/modules/transcription/client/workflow/upload-file-pineline'
 import { TranscriptionViewProvider } from '@/components/context/transcription-view-context'
@@ -87,7 +90,11 @@ export default function HomePageEntry() {
       handleFileTranscriptionView(audioFile.audio)
     } catch (error: any) {
       log.error('Error uploading file:', error)
-      toast({ title: "File upload error.", description: error.message, variant: "destructive" })
+      toast({
+        title: 'File upload error.',
+        description: error.message,
+        variant: 'destructive',
+      })
     } finally {
       setUploading(false)
     }
@@ -123,7 +130,11 @@ export default function HomePageEntry() {
       handleFileTranscriptionView(audioFile.audio)
     } catch (error: any) {
       log.error('Error uploading file:', error)
-      toast({ title: "File upload error.", description: error.message, variant: "destructive" })
+      toast({
+        title: 'File upload error.',
+        description: error.message,
+        variant: 'destructive',
+      })
     } finally {
       setUploading(false)
     }
@@ -140,15 +151,15 @@ export default function HomePageEntry() {
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'done':
-        return 'bg-green-100 text-green-800 border-green-200'
+        return 'bg-[hsl(var(--success)/0.12)] text-[hsl(var(--success))] border-[hsl(var(--success)/0.2)]'
       case 'processing':
-        return 'bg-blue-100 text-blue-800 border-blue-200'
+        return 'bg-primary/10 text-primary border-primary/20'
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200'
+        return 'bg-[hsl(var(--chart-4)/0.12)] text-[hsl(var(--chart-4))] border-[hsl(var(--chart-4)/0.2)]'
       case 'failed':
-        return 'bg-red-100 text-red-800 border-red-200'
+        return 'bg-destructive/10 text-destructive border-destructive/20'
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200'
+        return 'bg-muted text-muted-foreground border-border'
     }
   }
 
@@ -157,14 +168,14 @@ export default function HomePageEntry() {
   }
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-background text-foreground">
       <div className="flex">
         {/* Main Content */}
         <div className="flex-1 p-6">
           <div className="max-w-7xl mx-auto">
             {/* Header */}
             <div className="flex flex-col mb-8 animate-fade-in">
-              <p className="text-gray-600">
+              <p className="text-muted-foreground">
                 Upload, transcribe, and analyze your meetings with AI
               </p>
             </div>
@@ -178,7 +189,7 @@ export default function HomePageEntry() {
               />
             </div>
 
-            <Card className="animate-slide-up hover-lift">
+            <Card className="animate-slide-up hover-lift border-border bg-card text-card-foreground">
               <CardHeader>
                 <CardTitle className="flex items-center">
                   <FileAudio className="w-5 h-5 mr-2" />
@@ -191,8 +202,8 @@ export default function HomePageEntry() {
               <CardContent>
                 {audioFiles.length === 0 ? (
                   <div className="text-center py-8">
-                    <FileAudio className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                    <p className="text-gray-500">
+                    <FileAudio className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                    <p className="text-muted-foreground">
                       No meetings yet. Upload your first audio file to get
                       started!
                     </p>
@@ -202,19 +213,19 @@ export default function HomePageEntry() {
                     {audioFiles.slice(0, 5).map((file, index) => (
                       <div
                         key={file.id}
-                        className="flex items-center justify-between p-4 border rounded-lg hover:bg-gray-50 transition-colors cursor-pointer animate-fade-in hover-lift"
+                        className="flex items-center justify-between rounded-lg border border-border bg-card p-4 transition-colors cursor-pointer hover:bg-accent/50 animate-fade-in hover-lift"
                         style={{ animationDelay: `${index * 100}ms` }}
                         onClick={() => handleFileTranscriptionView(file)}
                       >
                         <div className="flex items-center space-x-4">
-                          <div className="w-10 h-10 bg-blue-100 rounded-lg flex items-center justify-center">
-                            <FileAudio className="w-5 h-5 text-blue-600" />
+                          <div className="w-10 h-10 rounded-lg flex items-center justify-center bg-primary/10">
+                            <FileAudio className="w-5 h-5 text-primary" />
                           </div>
                           <div>
-                            <h4 className="font-medium text-gray-900">
+                            <h4 className="font-medium text-foreground">
                               {file.name}
                             </h4>
-                            <div className="flex items-center space-x-2 text-sm text-gray-500">
+                            <div className="flex items-center space-x-2 text-sm text-muted-foreground">
                               <Clock className="w-4 h-4" />
                               <span>{formatDuration(file.duration ?? 0)}</span>
                               <span>•</span>
@@ -232,7 +243,7 @@ export default function HomePageEntry() {
                           <Button
                             variant="ghost"
                             size="sm"
-                            className="hover:bg-gray-100"
+                            className="hover:bg-accent"
                           >
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>

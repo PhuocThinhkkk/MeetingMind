@@ -84,10 +84,10 @@ export default function SignupPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8 animate-fade-in">
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">
+          <h1 className="text-2xl font-bold text-foreground mb-2">
             Join us today
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Create your meeting transcription account
           </p>
         </div>
@@ -112,7 +112,7 @@ export default function SignupPage() {
               <div className="space-y-2">
                 <Label htmlFor="name">Full Name</Label>
                 <div className="relative">
-                  <User className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <User className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="name"
                     type="text"
@@ -128,7 +128,7 @@ export default function SignupPage() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
@@ -144,7 +144,7 @@ export default function SignupPage() {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
@@ -162,7 +162,7 @@ export default function SignupPage() {
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="confirmPassword"
                     type="password"
@@ -179,7 +179,7 @@ export default function SignupPage() {
 
               <Button
                 type="submit"
-                className="w-full bg-green-600 hover:bg-green-700 transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                className="w-full bg-primary hover:bg-primary/90 transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl text-primary-foreground"
                 disabled={loading}
               >
                 {loading ? (
@@ -194,11 +194,11 @@ export default function SignupPage() {
             <GoogleSignInButton />
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Already have an account?{' '}
                 <Link
                   href="/auth/login"
-                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors hover:underline"
+                  className="text-primary hover:opacity-80 font-medium transition-colors hover:underline"
                 >
                   Sign in
                 </Link>
@@ -226,18 +226,18 @@ function VerificationMessage({ email }: { email: string }) {
         <Card className="shadow-xl border-0 bg-white/80 backdrop-blur-sm animate-scale-in hover-lift">
           <CardContent className="pt-6">
             <div className="text-center">
-              <div className="w-16 h-16 bg-green-600 rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg animate-pulse">
+              <div className="w-16 h-16 bg-primary rounded-full mx-auto mb-4 flex items-center justify-center shadow-lg animate-pulse text-primary-foreground">
                 <CheckCircle className="w-8 h-8 text-white" />
               </div>
-              <h2 className="text-2xl font-bold text-gray-900 mb-2">
+              <h2 className="text-2xl font-bold text-foreground mb-2">
                 Check your email
               </h2>
-              <p className="text-gray-600 mb-6">
+              <p className="text-muted-foreground mb-6">
                 We have sent a verification link to <strong>{email}</strong>
               </p>
               <div className="space-y-4">
-                <div className="p-4 bg-blue-50 rounded-lg border border-blue-200">
-                  <p className="text-sm text-blue-800">
+                <div className="p-4 bg-primary/5 rounded-lg border border-primary/20">
+                  <p className="text-sm text-foreground">
                     Click the link in the email to verify your account and
                     complete the setup.
                   </p>

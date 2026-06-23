@@ -172,8 +172,8 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
             <Badge
               className={
                 file.transcription_status === 'done'
-                  ? 'bg-green-100 text-green-800 border-green-200'
-                  : 'bg-blue-100 text-blue-800 border-blue-200'
+                  ? 'bg-[hsl(var(--success)/0.12)] text-[hsl(var(--success))] border-[hsl(var(--success)/0.2)]'
+                  : 'bg-primary/10 text-primary border-primary/20'
               }
             >
               {file.transcription_status}
@@ -183,7 +183,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
 
         {loading ? (
           <div className="flex items-center justify-center h-96">
-            <Loader2 className="w-8 h-8 animate-spin text-blue-600" />
+            <Loader2 className="w-8 h-8 animate-spin text-primary" />
           </div>
         ) : (
           <div className="flex h-full space-x-6">
@@ -201,7 +201,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                   <Card className="h-full hover-lift">
                     <CardHeader>
                       <CardTitle>Full Transcript</CardTitle>
-                      <div className="flex items-center space-x-4 text-sm text-gray-500">
+                      <div className="flex items-center space-x-4 text-sm text-muted-foreground">
                         <span className="flex items-center">
                           <Clock className="w-4 h-4 mr-1" />
                           Duration: {Math.floor(file.duration / 60)}:
@@ -222,7 +222,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                             .map((line: string, index: string) => (
                               <div
                                 key={index}
-                                className="p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors"
+                                className="p-3 bg-muted rounded-lg hover:bg-accent transition-colors"
                               >
                                 {line}
                               </div>
@@ -240,7 +240,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                         <CardTitle>AI Summary</CardTitle>
                       </CardHeader>
                       <CardContent>
-                        <p className="text-gray-700 leading-relaxed">
+                        <p className="text-foreground leading-relaxed">
                           {mockSummary.text}
                         </p>
                       </CardContent>
@@ -258,7 +258,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                             {mockSummary.highlights.map(
                               (highlight: string, index: number) => (
                                 <li key={index} className="flex items-start">
-                                  <div className="w-2 h-2 bg-blue-500 rounded-full mt-2 mr-3 flex-shrink-0"></div>
+                                  <div className="w-2 h-2 bg-primary rounded-full mt-2 mr-3 flex-shrink-0"></div>
                                   <span className="text-sm">{highlight}</span>
                                 </li>
                               )
@@ -278,7 +278,7 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                             {mockSummary.todo.map(
                               (item: string, index: number) => (
                                 <li key={index} className="flex items-start">
-                                  <CheckCircle className="w-4 h-4 text-green-500 mt-0.5 mr-3 flex-shrink-0" />
+                                  <CheckCircle className="w-4 h-4 text-[hsl(var(--success))] mt-0.5 mr-3 flex-shrink-0" />
                                   <span className="text-sm">{item}</span>
                                 </li>
                               )
@@ -306,16 +306,16 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                               key={index}
                               className="space-y-2 animate-fade-in"
                             >
-                              <div className="bg-blue-50 p-3 rounded-lg border border-blue-200">
-                                <p className="text-sm font-medium text-blue-900">
+                              <div className="bg-primary/5 p-3 rounded-lg border border-primary/20">
+                                <p className="text-sm font-medium text-foreground">
                                   Q: {qa.question}
                                 </p>
                               </div>
-                              <div className="bg-gray-50 p-3 rounded-lg border border-gray-200">
-                                <p className="text-sm text-gray-700">
+                              <div className="bg-muted p-3 rounded-lg border border-border">
+                                <p className="text-sm text-foreground">
                                   A: {qa.answer}
                                 </p>
-                                <p className="text-xs text-gray-500 mt-2">
+                                <p className="text-xs text-muted-foreground mt-2">
                                   {new Date(qa.created_at).toLocaleString()}
                                 </p>
                               </div>
@@ -362,8 +362,8 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                       <div className="space-y-4">
                         {events.length === 0 ? (
                           <div className="text-center py-8">
-                            <Calendar className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                            <p className="text-gray-500">
+                            <Calendar className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
+                            <p className="text-muted-foreground">
                               No events detected in this meeting.
                             </p>
                           </div>
@@ -375,21 +375,21 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                             >
                               <div className="flex items-start justify-between">
                                 <div>
-                                  <h4 className="font-medium text-gray-900">
+                                  <h4 className="font-medium text-foreground">
                                     {event.title}
                                   </h4>
-                                  <p className="text-sm text-gray-500 mt-1">
+                                  <p className="text-sm text-muted-foreground mt-1">
                                     {new Date(
                                       event.start_time
                                     ).toLocaleString()}
                                   </p>
-                                  <p className="text-sm text-gray-500">
+                                  <p className="text-sm text-muted-foreground">
                                     {event.location}
                                   </p>
                                 </div>
                                 <div className="flex items-center space-x-2">
                                   {event.added_to_google_calendar ? (
-                                    <Badge className="bg-green-100 text-green-800 border-green-200">
+                                    <Badge className="bg-[hsl(var(--success)/0.12)] text-[hsl(var(--success))] border-[hsl(var(--success)/0.2)]">
                                       <CheckCircle className="w-3 h-3 mr-1" />
                                       Added
                                     </Badge>
@@ -455,20 +455,20 @@ export function TranscriptionView({ file, onClose }: TranscriptionViewProps) {
                 </CardHeader>
                 <CardContent className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Duration:</span>
+                    <span className="text-muted-foreground">Duration:</span>
                     <span>
                       {Math.floor(file.duration / 60)}:
                       {(file.duration % 60).toString().padStart(2, '0')}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Created:</span>
+                    <span className="text-muted-foreground">Created:</span>
                     <span>
                       {new Date(file.created_at).toLocaleDateString()}
                     </span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Status:</span>
+                    <span className="text-muted-foreground">Status:</span>
                     <Badge className="text-xs">
                       {file.transcription_status}
                     </Badge>

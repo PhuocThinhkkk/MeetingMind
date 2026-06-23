@@ -72,10 +72,9 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
 
   return (
     <Card
-      className={`h-full group hover:shadow-lg transition-all duration-300 border-dashed border-2 animate-slide-up hover-lift ${dragActive
-        ? 'border-blue-400 bg-blue-50'
-        : 'border-gray-300 hover:border-blue-400'
-        }`}
+      className={`h-full group hover:shadow-lg transition-all duration-300 border-dashed border-2 animate-slide-up hover-lift border-border bg-card text-card-foreground ${
+        dragActive ? 'border-primary bg-primary/5' : 'hover:border-primary'
+      }`}
     >
       <CardContent className="p-8">
         <div
@@ -88,12 +87,12 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
           {selectedFile ? (
             <div className="space-y-4">
               <div className="flex items-center justify-center space-x-3">
-                <FileAudio className="w-8 h-8 text-blue-600" />
+                <FileAudio className="w-8 h-8 text-primary" />
                 <div className="text-left">
-                  <p className="font-medium text-gray-900">
+                  <p className="font-medium text-foreground">
                     {selectedFile.name}
                   </p>
-                  <p className="text-sm text-gray-500">
+                  <p className="text-sm text-muted-foreground">
                     {(selectedFile.size / 1024 / 1024).toFixed(2)} MB
                   </p>
                 </div>
@@ -101,7 +100,7 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
                   variant="ghost"
                   size="sm"
                   onClick={() => setSelectedFile(null)}
-                  className="text-gray-400 hover:text-red-600 transition-colors"
+                  className="text-muted-foreground hover:text-destructive transition-colors"
                   disabled={uploading}
                 >
                   <X className="w-4 h-4" />
@@ -127,13 +126,13 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
             </div>
           ) : (
             <>
-              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:bg-blue-200 transition-colors">
-                <Upload className="w-6 h-6 text-blue-600" />
+              <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:bg-primary/20 transition-colors">
+                <Upload className="w-6 h-6 text-primary" />
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">
+              <h3 className="text-lg font-semibold text-foreground mb-2">
                 Upload Audio File
               </h3>
-              <p className="text-gray-600 text-sm mb-4">
+              <p className="text-muted-foreground text-sm mb-4">
                 Drop your audio file here or click to browse
               </p>
               <input
@@ -155,7 +154,7 @@ export function AudioUpload({ onUpload }: AudioUploadProps) {
                   </span>
                 </Button>
               </label>
-              <p className="text-xs text-gray-500 mt-2">
+              <p className="text-xs text-muted-foreground mt-2">
                 Supports MP3, WAV, M4A files up to 100MB
               </p>
             </>

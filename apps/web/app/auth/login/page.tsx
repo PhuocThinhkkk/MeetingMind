@@ -49,13 +49,13 @@ export default function LoginPage() {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 to-slate-100 flex items-center justify-center p-4">
       <div className="w-full max-w-md">
         <div className="text-center mb-8 animate-fade-in">
-          <div className="w-16 h-16 bg-blue-600 rounded-xl mx-auto mb-4 flex items-center justify-center shadow-lg hover-lift">
+          <div className="w-16 h-16 bg-primary rounded-xl mx-auto mb-4 flex items-center justify-center shadow-lg hover-lift text-primary-foreground">
             <Mic className="w-8 h-8 text-white" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-2">
             Welcome back
           </h1>
-          <p className="text-gray-600">
+          <p className="text-muted-foreground">
             Sign in to your meeting transcription account
           </p>
         </div>
@@ -78,7 +78,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
                 <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Mail className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="email"
                     type="email"
@@ -94,7 +94,7 @@ export default function LoginPage() {
               <div className="space-y-2">
                 <Label htmlFor="password">Password</Label>
                 <div className="relative">
-                  <Lock className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+                  <Lock className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
                   <Input
                     id="password"
                     type="password"
@@ -109,7 +109,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full hover:cursor-pointer bg-blue-600 hover:bg-blue-700 transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl"
+                className="w-full hover:cursor-pointer bg-primary hover:bg-primary/90 transition-all transform hover:scale-[1.02] shadow-lg hover:shadow-xl text-primary-foreground"
                 disabled={loading}
               >
                 {loading ? (
@@ -123,11 +123,11 @@ export default function LoginPage() {
             <GoogleSignInButton />
 
             <div className="mt-6 text-center">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-muted-foreground">
                 Don't have an account?{' '}
                 <Link
                   href="/auth/signup"
-                  className="text-blue-600 hover:text-blue-700 font-medium transition-colors hover:underline"
+                  className="text-primary hover:opacity-80 font-medium transition-colors hover:underline"
                 >
                   Sign up
                 </Link>
