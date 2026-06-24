@@ -1,9 +1,13 @@
 'use client'
 
 import { useMemo } from 'react'
+import { Fragment } from 'react'
 import { cn } from '@/lib/utils'
 import { TranscriptWithWordNested } from '@/types/transcriptions/transcription.db'
-import { splitWordsIntoSentences } from '@/modules/transcription/service/client/split-words-into-sentences'
+import {
+  splitWordsIntoSentences,
+  type SentenceGroup,
+} from '@/modules/transcription/service/client/split-words-into-sentences'
 import { useAudioPlayback } from '@/components/context/audio-playback-context'
 
 type Word = TranscriptWithWordNested['transcription_words'][number]
@@ -24,22 +28,47 @@ export function TranscriptSentences({ words = [], currentMs }: Props) {
   return (
     <div className="space-y-3">
       {sentences.map((sentence, i) => (
-        <div key={i} className="flex flex-wrap">
-          {sentence.map(word => {
-            if (!word.start_time || !word.end_time) return null
+        <SentenceBlock
+          key={`${sentence.startTime}-${i}`}
+          sentence={sentence}
+          currentMs={currentMs}
+          audioRef={audioRef}
+        />
+      ))}
+    </div>
+  )
+}
 
-            const isActive =
-              currentMs + WINDOW_CURRENT_POSITION >=
-                word.start_time - WINDOW_BEFORE &&
-              currentMs + WINDOW_CURRENT_POSITION <=
-                word.end_time + WINDOW_AFTER
+function SentenceBlock({
+  sentence,
+  currentMs,
+  audioRef,
+}: {
+  sentence: SentenceGroup
+  currentMs: number
+  audioRef: React.RefObject<HTMLAudioElement | null>
+}) {
+  return (
+    <div className="space-y-2 rounded-md border border-border/60 bg-muted/10 p-2">
+      <div className="text-xs font-medium text-muted-foreground">
+        {sentence.label}
+      </div>
 
-            return (
+      <div className="flex flex-wrap">
+        {sentence.words.map(word => {
+          if (!word.start_time || !word.end_time) return null
+
+          const isActive =
+            currentMs + WINDOW_CURRENT_POSITION >=
+              word.start_time - WINDOW_BEFORE &&
+            currentMs + WINDOW_CURRENT_POSITION <= word.end_time + WINDOW_AFTER
+
+          return (
+            <Fragment key={word.id}>
               <span
-                key={word.id}
                 onClick={() => {
-                  if (!audioRef.current) return
-                  audioRef.current.currentTime = word.start_time! / 1000
+                  if (!audioRef.current || word.start_time == null) return
+                  audioRef.current.currentTime = word.start_time / 1000
                 }}
                 className={cn(
                   'cursor-pointer rounded-xs px-1 py-0.5 transition',
@@ -48,12 +77,13 @@ export function TranscriptSentences({ words = [], currentMs }: Props) {
                     : 'hover:bg-muted'
                 )}
               >
-                {word.text}{' '}
-              </span>
-            )
-          })}
-        </div>
-      ))}
+                {word.text}
+              </span>{' '}
+              {word.paragraphBreakAfter && <div className="basis-full h-3" />}
+            </Fragment>
+          )
+        })}
+      </div>
     </div>
   )
 }
