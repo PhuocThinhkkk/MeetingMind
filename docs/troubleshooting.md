@@ -24,3 +24,13 @@ This guide covers common issues and their solutions when working with MeetingMin
 **Problem:** Database password isn't set in the environment when running the command (even if it's in .env).
 **Verify:** Run `echo $env:SUPABASE_DB_PASSWORD` in PowerShell; it prints nothing.
 **Solution:** Get the password from Supabase and set it: `$env:SUPABASE_DB_PASSWORD="<YOUR_PASSWORD>"`.
+
+## File prettier can not write
+
+maybe the file is utf-16, change into utf-8 format will help
+
+```
+Get-Content <filepath> | Set-Content temp.ts -Encoding utf8
+Move-Item -Force temp.ts <filepath>
+
+```
