@@ -50,7 +50,7 @@ export function StatusBadge({ status }: StatusBadgeProps) {
   return (
     <Badge
       variant={config.variant}
-      className={`flex items-center gap-1 ${config.className}`}
+      className={`flex items-center gap-1 pointer-events-none ${config.className}`}
     >
       <Icon className="w-3 h-3" />
       {config.label}

@@ -1,6 +1,5 @@
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Slider } from '@/components/ui/slider'
@@ -14,69 +13,27 @@ import {
   FileAudio,
 } from 'lucide-react'
 
-import { validateAudioTime } from '@/modules/transcription/validations/audio-validations'
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
 import { TranscriptSentences } from './transcript-sentences'
-import { fetchUrlDownload } from '@/modules/transcription/client/workflow/utils'
 import { log } from '@/utils/logger'
+import { useAudioPlayback } from '@/components/context/audio-playback-context'
 
 export function TranscriptTab() {
   const { audio: audioFile, transcript } = useTranscriptionView()
-  const audioRef = useRef<HTMLAudioElement>(null)
-  const [audioUrl, setAudioUrl] = useState<null | string>(null)
-  const [isPlaying, setIsPlaying] = useState(false)
-  const [muted, setMuted] = useState(false)
-  const [currentTime, setCurrentTime] = useState(0)
-  const [duration, setDuration] = useState(0)
-  log.info('data: ', {
-    audioFile,
-    audioUrl,
-  })
-
-  useEffect(() => {
-    fetchAudioUrl()
-  }, [audioFile.id])
-
-  /**
-   * Obtains a presigned download URL for the current audio file and stores it in component state.
-   *
-   * If no audio file is available, the function returns without side effects.
-   * Errors encountered while fetching the URL are caught and logged.
-   */
-  async function fetchAudioUrl() {
-    try {
-      if (!audioFile) {
-        return
-      }
-      const url = await fetchUrlDownload({ path: audioFile.path })
-      setAudioUrl(url)
-    } catch (e) {
-      log.error('Error when fetching presigned url: ', e)
-    }
-  }
+  const {
+    isPlaying,
+    muted,
+    currentTime,
+    duration,
+    safeDuration,
+    currentMs,
+    togglePlay,
+    toggleMute,
+    seek,
+  } = useAudioPlayback()
 
   if (!transcript) {
     return <p className="text-muted-foreground">No transcript available.</p>
-  }
-
-  const safeDuration = validateAudioTime(audioFile.duration)
-  const currentMs = currentTime * 1000
-
-  function togglePlay() {
-    if (!audioRef.current) return
-    isPlaying ? audioRef.current.pause() : audioRef.current.play()
-    setIsPlaying(!isPlaying)
-  }
-
-  function toggleMute() {
-    if (!audioRef.current) return
-    audioRef.current.muted = !muted
-    setMuted(!muted)
-  }
-
-  function seek(val: number[]) {
-    if (!audioRef.current || duration === 0) return
-    audioRef.current.currentTime = (val[0] / 100) * duration
   }
 
   /**
@@ -140,21 +97,6 @@ export function TranscriptTab() {
           <button onClick={toggleMute}>
             {muted ? <VolumeX /> : <Volume2 />}
           </button>
-
-          {audioUrl && (
-            <audio
-              ref={audioRef}
-              src={audioUrl}
-              className="hidden"
-              onLoadedMetadata={() =>
-                audioRef.current && setDuration(audioRef.current.duration)
-              }
-              onTimeUpdate={() =>
-                audioRef.current && setCurrentTime(audioRef.current.currentTime)
-              }
-              onEnded={() => setIsPlaying(false)}
-            />
-          )}
         </div>
       </CardHeader>
 
@@ -163,7 +105,6 @@ export function TranscriptTab() {
           <TranscriptSentences
             words={transcript.transcription_words}
             currentMs={currentMs}
-            audioRef={audioRef}
           />
         </ScrollArea>
       </CardContent>

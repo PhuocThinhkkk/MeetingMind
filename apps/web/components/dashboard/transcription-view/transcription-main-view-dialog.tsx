@@ -16,6 +16,7 @@ import { SummaryTab } from './summary-tab'
 import { EventsTab } from './event/event-tab'
 import { log } from '@/utils/logger'
 import { useTranscriptionView } from '@/components/context/transcription-view-context'
+import { AudioPlaybackProvider } from '@/components/context/audio-playback-context'
 
 type Props = {
   open: boolean
@@ -46,41 +47,46 @@ export function TranscriptionDialog({ open, onClose }: Props) {
         </DialogHeader>
 
         <div className=" flex-1 gap-6">
-          <Tabs defaultValue="transcript" className="flex flex-col h-full">
-            <TabsList className="grid grid-cols-4 ">
-              <TabsTrigger className="hover:cursor-pointer" value="transcript">
-                Transcript
-              </TabsTrigger>
-              <TabsTrigger className="hover:cursor-pointer" value="summary">
-                Summary
-              </TabsTrigger>
-              <TabsTrigger className="hover:cursor-pointer" value="qa">
-                Q&A
-              </TabsTrigger>
-              <TabsTrigger className="hover:cursor-pointer" value="events">
-                Events
-              </TabsTrigger>
-            </TabsList>
+          <AudioPlaybackProvider audioFile={audio}>
+            <Tabs defaultValue="transcript" className="flex flex-col h-full">
+              <TabsList className="grid grid-cols-4 ">
+                <TabsTrigger
+                  className="hover:cursor-pointer"
+                  value="transcript"
+                >
+                  Transcript
+                </TabsTrigger>
+                <TabsTrigger className="hover:cursor-pointer" value="summary">
+                  Summary
+                </TabsTrigger>
+                <TabsTrigger className="hover:cursor-pointer" value="qa">
+                  Q&A
+                </TabsTrigger>
+                <TabsTrigger className="hover:cursor-pointer" value="events">
+                  Events
+                </TabsTrigger>
+              </TabsList>
 
-            <TabsContent value="transcript">
-              <TranscriptTab />
-            </TabsContent>
+              <TabsContent value="transcript">
+                <TranscriptTab />
+              </TabsContent>
 
-            <TabsContent value="summary">
-              <SummaryTab />
-            </TabsContent>
+              <TabsContent value="summary">
+                <SummaryTab />
+              </TabsContent>
 
-            <TabsContent
-              value="qa"
-              className="flex flex-col flex-1 min-h-0 overflow-hidden"
-            >
-              <QATab />
-            </TabsContent>
+              <TabsContent
+                value="qa"
+                className="flex flex-col flex-1 min-h-0 overflow-hidden"
+              >
+                <QATab />
+              </TabsContent>
 
-            <TabsContent value="events">
-              <EventsTab />
-            </TabsContent>
-          </Tabs>
+              <TabsContent value="events">
+                <EventsTab />
+              </TabsContent>
+            </Tabs>
+          </AudioPlaybackProvider>
         </div>
       </DialogContent>
     </Dialog>

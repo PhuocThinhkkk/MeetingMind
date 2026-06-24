@@ -4,24 +4,21 @@ import { useMemo } from 'react'
 import { cn } from '@/lib/utils'
 import { TranscriptWithWordNested } from '@/types/transcriptions/transcription.db'
 import { splitWordsIntoSentences } from '@/modules/transcription/service/client/split-words-into-sentences'
+import { useAudioPlayback } from '@/components/context/audio-playback-context'
 
 type Word = TranscriptWithWordNested['transcription_words'][number]
 
 type Props = {
   words?: Word[]
   currentMs: number
-  audioRef: React.RefObject<HTMLAudioElement>
 }
 
 const WINDOW_BEFORE = 200
 const WINDOW_AFTER = 200
 const WINDOW_CURRENT_POSITION = 400
 
-export function TranscriptSentences({
-  words = [],
-  currentMs,
-  audioRef,
-}: Props) {
+export function TranscriptSentences({ words = [], currentMs }: Props) {
+  const { audioRef } = useAudioPlayback()
   const sentences = useMemo(() => splitWordsIntoSentences(words), [words])
 
   return (
@@ -33,9 +30,9 @@ export function TranscriptSentences({
 
             const isActive =
               currentMs + WINDOW_CURRENT_POSITION >=
-              word.start_time - WINDOW_BEFORE &&
+                word.start_time - WINDOW_BEFORE &&
               currentMs + WINDOW_CURRENT_POSITION <=
-              word.end_time + WINDOW_AFTER
+                word.end_time + WINDOW_AFTER
 
             return (
               <span

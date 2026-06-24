@@ -35,7 +35,7 @@ export function AudioHistoryList({ audioHistory }: AudioHistoryListProps) {
         })
         .map(([day, audios]) => (
           <div key={day}>
-            <h2 className="text-sm font-medium text-muted-foreground mb-3 px-1">
+            <h2 className="text-xl font-medium text-muted-foreground mt-12 mb-4 px-1">
               {day} with total {audios.length} audios
             </h2>
             <div className="space-y-2">
