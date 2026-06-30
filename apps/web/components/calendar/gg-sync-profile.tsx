@@ -86,15 +86,12 @@ export default function GoogleSyncProfile({ token }: Props) {
             <Avatar className="w-12 h-12 border">
               <AvatarImage src={profile.picture} alt={profile.name} />
               <AvatarFallback>
-                {profile.name
-                  ?.split(" ")[0][0]
-                  .toUpperCase()}
+                {profile.name?.split(' ')[0][0].toUpperCase()}
               </AvatarFallback>
             </Avatar>
 
-
             <div className="flex-1">
-              <p className="font-semibold text-gray-900">{profile.name}</p>
+              <p className="font-semibold text-primary">{profile.name}</p>
             </div>
           </div>
         </div>

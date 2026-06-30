@@ -36,8 +36,8 @@ export default function RealTimeTranscriptionPage({
   transcriptionWords: words = [],
   translationWords = [],
   isVisible = true,
-  onExit = async () => { },
-  onStopRecording = async () => { },
+  onExit = async () => {},
+  onStopRecording = async () => {},
 }: RealTimeTranscriptionPageProps) {
   const [isAnimating, setIsAnimating] = useState(false)
   const [highlightedWords, setHighlightedWords] = useState<Set<number>>(
@@ -122,15 +122,16 @@ export default function RealTimeTranscriptionPage({
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-white flex flex-col transform transition-all duration-300 ease-out ${isAnimating ? 'translate-y-0' : 'translate-y-full'
-        }`}
+      className={`fixed inset-0 z-50 bg-white flex flex-col transform transition-all duration-300 ease-out ${
+        isAnimating ? 'translate-y-0' : 'translate-y-full'
+      }`}
     >
       {/* Header */}
       <div className="border-b bg-white shadow-sm">
         <div className="flex items-center justify-between p-6">
           <div className="flex items-center space-x-3">
             <div className="w-4 h-4 bg-red-500 rounded-full animate-pulse" />
-            <h1 className="text-2xl font-bold text-gray-900">
+            <h1 className="text-2xl font-bold text-primary">
               Live Transcription
             </h1>
             <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
@@ -235,7 +236,7 @@ export default function RealTimeTranscriptionPage({
               className={`${bothPanelsOpen ? 'w-1/2' : 'w-full'} border-r border-gray-200 flex flex-col`}
             >
               <div className="flex items-center justify-between p-4 border-b bg-gray-50">
-                <h2 className="font-semibold text-gray-900">Transcript</h2>
+                <h2 className="font-semibold text-primary">Transcript</h2>
                 {bothPanelsOpen && (
                   <Button
                     variant="ghost"
@@ -295,7 +296,7 @@ export default function RealTimeTranscriptionPage({
             >
               <div className="flex items-center justify-between p-4 border-b bg-gray-50">
                 <div className="flex items-center space-x-2">
-                  <h2 className="font-semibold text-gray-900">Translation</h2>
+                  <h2 className="font-semibold text-primary">Translation</h2>
                   <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
                     Spanish
                   </span>

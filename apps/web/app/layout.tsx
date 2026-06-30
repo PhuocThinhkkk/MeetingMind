@@ -1,11 +1,19 @@
 import './globals.css'
 import 'react-day-picker/dist/style.css'
 import type { Metadata } from 'next'
-import { Inter } from 'next/font/google'
+import { Manrope, Playfair_Display } from 'next/font/google'
 import { AuthProvider } from '@/hooks/use-auth'
 import { Toaster } from '@/components/ui/toaster'
 
-const inter = Inter({ subsets: ['latin'] })
+const manrope = Manrope({
+  subsets: ['latin'],
+  variable: '--font-manrope',
+})
+
+const playfair = Playfair_Display({
+  subsets: ['latin'],
+  variable: '--font-playfair',
+})
 
 export const metadata: Metadata = {
   title: 'MeetingMind - AI-Powered Meeting Transcription',
@@ -13,20 +21,14 @@ export const metadata: Metadata = {
     'Transform your meetings with AI-powered transcription, summaries, and insights',
 }
 
-/**
- * Root application layout that wraps page content with the authentication provider and applies the global Inter font.
- *
- * @param children - The page or component tree to render; it will be wrapped by `AuthProvider`.
- * @returns The root HTML structure (html lang="en") with a body that applies the Inter font and contains the authenticated children.
- */
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
   return (
-    <html lang="en">
-      <body className={inter.className}>
+    <html lang="en" className={`${manrope.variable} ${playfair.variable}`}>
+      <body className="font-sans antialiased">
         <AuthProvider>{children}</AuthProvider>
         <Toaster />
       </body>
