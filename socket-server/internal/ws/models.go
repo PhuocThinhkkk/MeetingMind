@@ -1,5 +1,7 @@
 package ws
 
+import "time"
+
 var MaxErr = 10
 
 type RESPONSE_TYPE string
@@ -26,3 +28,27 @@ type AssemblyRessponseTurn struct {
 	Type                string                 `json:"type"`
 }
 
+// TranscriptEvent represents a single transcript update event.
+type TranscriptEvent struct {
+	TurnId           string                 `json:"turn_id,omitempty"`
+	Text             string                 `json:"text,omitempty"`
+	IsFinal          bool                   `json:"is_final,omitempty"`
+	Confidence       float64                `json:"confidence,omitempty"`
+	Words            []AssemblyResponseWord `json:"words,omitempty"`
+	AssemblyMetadata map[string]interface{} `json:"assembly_metadata,omitempty"` // For any other useful AssemblyAI metadata
+	Timestamp        time.Time              `json:"timestamp,omitempty"`
+}
+
+// TranscriptWriter is used to send transcript events over websocket.
+type TranscriptWriter struct {
+	Type  RESPONSE_TYPE   `json:"type"`
+	Event TranscriptEvent `json:"event"`
+}
+
+// TranslateWriter is used to send translated events over websocket.
+type TranslateWriter struct {
+	Type           RESPONSE_TYPE   `json:"type"`
+	Event          TranscriptEvent `json:"event"`
+	Language       string          `json:"language"`
+	TranslatedText string          `json:"translated_text"`
+}
