@@ -1,9 +1,43 @@
 package ws
 
 import (
+	"fmt"
 	"log"
 	"strings"
 )
+
+var SupportedLanguages = map[string]bool{
+    "en": true,
+    "vi": true,
+    "ja": true,
+    "ko": true,
+    "zh": true,
+}
+
+func IsLanguageSupported(lang string) bool {
+    return SupportedLanguages[lang]
+}
+
+type CurrentTranslationConfig struct {
+	FromLang     string
+	ToLang       string
+}
+
+type TranslateState struct {
+	CurrentConfig  CurrentTranslationConfig
+	Sentences      string
+} 
+
+func NewTranslationState(toLang string) (*TranslateState, error) {
+
+	if !IsLanguageSupported(toLang) {
+		return nil, fmt.Errorf("unsupported language: %s", toLang)
+	}
+	return &TranslateState{
+		Sentences: "",
+		CurrentConfig: CurrentTranslationConfig{FromLang: "en", ToLang: toLang},
+	}, nil
+}
 
 // Translate is a placeholder function for translation.
 // It should be replaced with actual translation logic.

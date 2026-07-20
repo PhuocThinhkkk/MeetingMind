@@ -52,19 +52,51 @@ func RunServer(w http.ResponseWriter, r *http.Request) {
 	if err != nil {
 
 		log.Println("Assembly Error : ", res)
-		conn.WriteJSON(map[string]string{
-			"type":    "error",
-			"message": "Server can't transcript right now",
-		})
-		conn.Close()
-		if assemblyConn != nil {
-			assemblyConn.Close()
-		}
-
+		writeClientError(err, conn, "Server can not transcribe audio right now", false)
+		handleCloseConns(conn, assemblyConn)
 		return
 	}
 
-	client := NewClient(userId, conn, assemblyConn)
+	client, err := NewClient(userId, conn, assemblyConn)
+	if err != nil {
+		log.Println("New Client Error : ", err)
+		writeClientError(err, conn, "", true)
+		handleCloseConns(conn, assemblyConn)
+		return
+	}
 
 	RegisterClient(client)
+}
+
+func writeClientError(err error, conn *websocket.Conn, clientMessage string, send bool) {
+	if conn == nil {
+		log.Println("No connection found to write error!")
+		return
+	}
+
+	if send {
+		eJson := conn.WriteJSON(map[string]string{
+			"type":    "error",
+			"message": err.Error(),
+		})
+
+		if eJson != nil {
+    		log.Println("Failed to write error:", eJson)
+		}
+		return
+	}
+
+	_ = conn.WriteJSON(map[string]string{
+		"type":    "error",
+		"message": clientMessage,
+	})
+}
+
+func handleCloseConns(conn *websocket.Conn, assemblyConn *websocket.Conn){
+	if conn != nil {
+		conn.Close()
+	}
+	if assemblyConn != nil {
+		assemblyConn.Close()
+	}
 }

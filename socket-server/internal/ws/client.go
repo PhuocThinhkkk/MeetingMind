@@ -14,6 +14,7 @@ type Client struct {
 	AssemblyConn *websocket.Conn
 	Done         chan struct{}
 	Transcript   *TranscriptState
+	Translate    *TranslateState
 	Hub          *TranscriptHub
 	Mu           sync.Mutex
 	writeMu           sync.Mutex
@@ -21,18 +22,24 @@ type Client struct {
 	ExpiresAt    time.Time
 }
 
-func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn) *Client {
+func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn) (*Client, error) {
+	translate, err := NewTranslationState("vi")
+	if err != nil {
+		return nil, err
+	}
+
 	return &Client{
 		UserId:       UserId,
 		Conn:         Conn,
 		AssemblyConn: AssemblyConn,
 		Done:         make(chan struct{}),
 		Transcript:   NewTranscriptState(),
+		Translate: 	  translate,
 		Hub:          NewTranscriptHub(),
 		Mu:           sync.Mutex{},
 		StartTime:    time.Now(),
 		ExpiresAt:    time.Now().Add(30 * time.Minute),
-	}
+	}, nil
 }
 
 
