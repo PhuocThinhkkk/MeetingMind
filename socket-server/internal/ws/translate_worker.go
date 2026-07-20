@@ -40,6 +40,10 @@ func (tw *TranslateWorker) Start() {
 
 // processAndTranslate processes a TranscriptEvent, translates it, and sends the result.
 func (tw *TranslateWorker) processAndTranslate(event TranscriptEvent) {
+
+	if event.IsFinal == false {
+		return
+	}
 	translatedText, err := Translate("en", event.Words)
 	if err != nil {
 		log.Printf("Translation failed for client %s: %v\n", tw.client.UserId, err)
@@ -53,10 +57,7 @@ func (tw *TranslateWorker) processAndTranslate(event TranscriptEvent) {
 		TranslatedText: translatedText,
 	}
 
-	tw.client.Mu.Lock()
-	defer tw.client.Mu.Unlock()
-
-	err = tw.client.Conn.WriteJSON(writer)
+	err = tw.client.safeWriteJson(writer)
 	if err != nil {
 		log.Printf("Error sending translated text to client %s: %v\n", tw.client.UserId, err)
 	}

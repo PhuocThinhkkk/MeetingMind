@@ -19,7 +19,7 @@ type AssemblyResponseWord struct {
 	WordIsFinal bool    `json:"word_is_final"`
 }
 
-type AssemblyRessponseTurn struct {
+type AssemblyResponseTurn struct {
 	TurnOrder           int                    `json:"turn_order"`
 	Transcript          string                 `json:"transcript"`
 	EndOfTurn           bool                   `json:"end_of_turn"`

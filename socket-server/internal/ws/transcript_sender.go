@@ -45,10 +45,7 @@ func (ts *TranscriptSender) sendTranscript(event TranscriptEvent) {
 		Event: event,
 	}
 
-	ts.client.Mu.Lock()
-	defer ts.client.Mu.Unlock()
-
-	err := ts.client.Conn.WriteJSON(writer)
+	err := ts.client.safeWriteJson(writer)
 	if err != nil {
 		log.Printf("Error sending transcript to client %s: %v\n", ts.client.UserId, err)
 	}

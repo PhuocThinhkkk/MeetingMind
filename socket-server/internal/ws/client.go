@@ -16,6 +16,7 @@ type Client struct {
 	Transcript   *TranscriptState
 	Hub          *TranscriptHub
 	Mu           sync.Mutex
+	writeMu           sync.Mutex
 	StartTime    time.Time
 	ExpiresAt    time.Time
 }
@@ -32,6 +33,14 @@ func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn
 		StartTime:    time.Now(),
 		ExpiresAt:    time.Now().Add(30 * time.Minute),
 	}
+}
+
+
+func (client *Client) safeWriteJson(writer any) error{
+	client.writeMu.Lock()
+	defer client.writeMu.Unlock()
+
+	return client.Conn.WriteJSON(writer)
 }
 
 func RegisterClient(client *Client) {
