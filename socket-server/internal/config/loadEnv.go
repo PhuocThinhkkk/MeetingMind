@@ -3,6 +3,7 @@ package config
 import (
 	"log"
 	"os"
+	"strings"
 
 	"github.com/joho/godotenv"
 )
@@ -13,6 +14,7 @@ type AppEnvVars struct {
 	AssemblyApiKey    string
 	SupabaseJwtKey    string
 	DatabaseConnection string
+	IS_PROD        bool
 }
 
 var EnvVars *AppEnvVars
@@ -30,6 +32,7 @@ func CheckingAllEnvVars() {
 	assemblyApiKey := os.Getenv("ASSEMBLYAI_API_KEY")
 	supabaseJwtKey := os.Getenv("SUPABASE_JWT_KEY")
 	databaseConnection := os.Getenv("DATABASE_URL")
+	is_prod := getIsProdBool(os.Getenv("IS_PROD"))
 
 	if port == "" {
 		log.Fatal("fail to load PORT in env")
@@ -46,6 +49,7 @@ func CheckingAllEnvVars() {
 	if databaseConnection == "" {
 		log.Fatal("fail to load DATABASE_URL in env")
 	}
+	
 
 	EnvVars = &AppEnvVars{
 		Port:              port,
@@ -53,9 +57,19 @@ func CheckingAllEnvVars() {
 		AssemblyApiKey:    assemblyApiKey,
 		SupabaseJwtKey:    supabaseJwtKey,
 		DatabaseConnection: databaseConnection,
+		IS_PROD: is_prod,
 	}
 
 }
 
 
-
+func getIsProdBool(is_prod_string string) bool {
+	is_prod_lower := strings.ToLower(is_prod_string)
+	if is_prod_lower == "" {
+		log.Println("no IS_PROD var found in env, use IS_PROD=false by defaule.")
+		return false
+	} else if is_prod_lower == "true" {
+		return true
+	}
+	return false
+}
