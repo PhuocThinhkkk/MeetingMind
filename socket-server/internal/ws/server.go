@@ -9,12 +9,12 @@ import (
 	"github.com/gorilla/websocket"
 )
 
-var testing = os.Getenv("IS_USING_CLIENT_TEST")
+var is_test_by_audio_file = os.Getenv("IS_USING_CLIENT_TEST")
 
 var upgrader = websocket.Upgrader{
 
 	CheckOrigin: func(r *http.Request) bool {
-		if testing == "true" {
+		if is_test_by_audio_file == "true" {
 			return true
 		}
 		frontendUrl := os.Getenv("FRONTEND_URL")

@@ -44,7 +44,9 @@ func (tw *TranslateWorker) processAndTranslate(event TranscriptEvent) {
 	if event.IsFinal == false {
 		return
 	}
-	translatedText, err := Translate("en", event.Words)
+	sLang := tw.client.Translate.CurrentConfig.FromLang
+	tLang := tw.client.Translate.CurrentConfig.ToLang
+	translatedText, err := Translate(sLang, tLang, event.Words)
 	if err != nil {
 		log.Printf("Translation failed for client %s: %v\n", tw.client.UserId, err)
 		return
@@ -53,7 +55,7 @@ func (tw *TranslateWorker) processAndTranslate(event TranscriptEvent) {
 	writer := TranslateWriter{
 		Type:           TRANSLATE_RESPONSE,
 		Event:          event,
-		Language:       "en",
+		Language:       tLang,
 		TranslatedText: translatedText,
 	}
 

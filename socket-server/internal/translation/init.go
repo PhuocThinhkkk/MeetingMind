@@ -6,7 +6,7 @@ import (
 	translate "cloud.google.com/go/translate/apiv3"
 )
 
-var TranslateClient *translate.TranslationClient
+var translateClient *translate.TranslationClient
 
 func Init() error {
     client, err := translate.NewTranslationClient(context.Background())
@@ -14,6 +14,6 @@ func Init() error {
         return err
     }
 
-    TranslateClient = client
+    translateClient = client
     return nil
 }
