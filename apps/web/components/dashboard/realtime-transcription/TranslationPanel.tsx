@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { EmptyTranslation } from './EmptyTranslation'
+import { useAnimatedTranslationWords } from './hooks/useAnimatedTranslationWords'
 
 export function TranslationPanel({
   translationWords,
@@ -13,6 +14,8 @@ export function TranslationPanel({
   bothPanelsOpen: boolean
   onClose: () => void
 }) {
+  const displayTranslationWords = useAnimatedTranslationWords(translationWords)
+
   return (
     <div className={`${bothPanelsOpen ? 'w-1/2' : 'w-full'} flex flex-col`}>
       <div className="flex items-center justify-between p-4 border-b bg-gray-50">
@@ -38,8 +41,8 @@ export function TranslationPanel({
           <EmptyTranslation />
         ) : (
           <div className="text-lg leading-relaxed text-gray-800">
-            {translationWords.length > 0
-              ? translationWords.join(' ')
+            {displayTranslationWords.length > 0
+              ? displayTranslationWords.join(' ')
               : ' Translating...'}
           </div>
         )}
