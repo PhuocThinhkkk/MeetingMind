@@ -303,17 +303,20 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
           // TODO: handle end of turn later
           setTranscriptWords(prev => {
             const stableCount = prev.filter(w => w.word_is_final).length
-            const updatedWords = [...prev.slice(0, stableCount), ...newWords]
+            const updatedWords = [
+              ...prev.slice(0, stableCount),
+              ...newWords.slice(stableCount),
+            ]
             return updatedWords
           })
         } else if (res.type === TRANSLATE_RESPONSE) {
           log.info('Received translation response:', res)
           const data: RealtimeTranslateResponse = res
-          if (data.words === '') {
+          if (data.translated_text === '') {
             log.warn('No words in translation response')
             return
           }
-          const newWord = data.words
+          const newWord = data.translated_text
           setTranslateWords(prev => [...prev, newWord])
         } else {
           log.error('Unknown response :', res)

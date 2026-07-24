@@ -45,5 +45,5 @@ export interface RealtimeAudioChunk {
 
 export interface RealtimeTranslateResponse {
   type: 'translate'
-  words: string
+  translated_text: string
 }
