@@ -2,6 +2,7 @@ package ws
 
 import (
 	"log"
+	"meetingmind-socket/internal/config"
 	"meetingmind-socket/internal/validation"
 	"net/http"
 	"os"
@@ -33,7 +34,7 @@ func RunServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	userId, err := validation.ValidateSupabaseJWT(token, os.Getenv("SUPABASE_JWT_KEY"))
+	userId, err := validation.ValidateSupabaseJWT(token, config.EnvVars.SupabaseJwtKey)
 	if err != nil {
 		http.Error(w, "invalid token", 401)
 		log.Println("Invalid token:", err)

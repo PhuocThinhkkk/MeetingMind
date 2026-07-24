@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 
 export function useAnimatedTranslationWords(
   translationWords: string[],
-  delayMs = 35
+  delayMs = 60
 ) {
   const [displayTranslationWords, setDisplayTranslationWords] = useState<
     string[]

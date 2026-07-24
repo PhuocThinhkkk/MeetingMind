@@ -41,8 +41,9 @@ func (ts *TranscriptSender) Start() {
 // sendTranscript formats and sends the TranscriptEvent to the websocket.
 func (ts *TranscriptSender) sendTranscript(event TranscriptEvent) {
 	writer := TranscriptWriter{
-		Type:  TRANSCRIPT_RESPONSE,
-		Event: event,
+		Type:        TRANSCRIPT_RESPONSE,
+		IsEndOfTurn: event.IsFinal,
+		Words:       event.Words,
 	}
 
 	err := ts.client.safeWriteJson(writer)

@@ -38,8 +38,8 @@ func (c *Client) processClientAudio() {
 
 			msgType, audio, err := c.Conn.ReadMessage()
 			if err != nil {
-				log.Println("err read message :", err)
-				continue
+				log.Printf("err read message : %d, stop this client", err)
+				return
 			}
 
 			if msgType != websocket.BinaryMessage {

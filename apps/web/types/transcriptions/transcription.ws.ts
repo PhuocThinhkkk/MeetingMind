@@ -28,12 +28,6 @@ export type RealtimeTranscriptionWord = {
   word_is_final: boolean
 }
 
-export interface RealtimeTranscriptResponse {
-  type: 'transcript'
-  isEndOfTurn: boolean
-  words: RealtimeTranscriptionWord[]
-}
-
 export interface RealtimeBeginMsg {
   type: 'ready'
 }
@@ -46,4 +40,11 @@ export interface RealtimeAudioChunk {
 export interface RealtimeTranslateResponse {
   type: 'translate'
   translated_text: string
+  language: string
+}
+
+export interface RealtimeTranscriptResponse {
+  type: 'transcript'
+  is_end_of_turn: boolean
+  words: RealtimeTranscriptionWord[]
 }

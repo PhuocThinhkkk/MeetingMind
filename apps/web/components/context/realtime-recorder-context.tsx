@@ -90,58 +90,68 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     },
     [sessionStartTime]
   )
-
-  const connectWebSocket = useCallback(() => {
+  function getWsUrl(): string {
     let wsDomain = process.env.NEXT_PUBLIC_WS_SERVER_URL || 'localhost:9090'
 
     wsDomain = wsDomain.replace(/^wss?:\/\//, '')
+    if (!session?.access_token) {
+      throw new Error(`No access token found in session. ${session}`)
+    }
 
     const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
     const wsUrl = `${protocol}://${wsDomain}/ws?token=${session?.access_token}`
+    return wsUrl
+  }
 
-    try {
-      wsRef.current = new WebSocket(wsUrl)
+  const connectWebSocket = useCallback(
+    (wsUrl: string) => {
+      try {
+        wsRef.current = new WebSocket(wsUrl)
 
-      if (!wsRef?.current) {
-        log.info('no ws current yet.')
-        return
-      }
+        if (!wsRef?.current) {
+          log.info('no ws current yet.')
+          return
+        }
 
-      handleWorkletReceivingMessages()
+        handleWorkletReceivingMessages()
 
-      wsRef.current.onopen = () => {
-        log.info('WebSocket connected')
-        updateStatus('recording')
-      }
+        wsRef.current.onopen = () => {
+          log.info('WebSocket connected')
+          updateStatus('recording')
+        }
 
-      wsRef.current.onerror = error => {
-        log.error('WebSocket error:', error)
+        wsRef.current.onerror = error => {
+          log.error('WebSocket error:', error)
+          updateStatus('error')
+        }
+
+        wsRef.current.onclose = e => {
+          log.info(`WebSocket disconnected ${e.reason}`, e.code)
+          if (status === 'recording') {
+            updateStatus('idle')
+          }
+        }
+      } catch (error) {
+        log.error('Failed to connect WebSocket:', error)
         updateStatus('error')
       }
-
-      wsRef.current.onclose = e => {
-        log.info(`WebSocket disconnected ${e.reason}`, e.code)
-        if (status === 'recording') {
-          updateStatus('idle')
-        }
-      }
-    } catch (error) {
-      log.error('Failed to connect WebSocket:', error)
-      updateStatus('error')
-    }
-  }, [status, updateStatus])
+    },
+    [status, updateStatus]
+  )
 
   const startRecording = useCallback(async () => {
     clearTranscript()
     updateStatus('connecting')
+    let url
     try {
       await serverCheck()
+      url = getWsUrl()
     } catch (e: any) {
       updateStatus('error')
       log.error(e)
       throw e
     }
-    connectWebSocket()
+    connectWebSocket(url)
 
     const audioContext = initAudioContext()
     audioContextRef.current = audioContext
@@ -214,6 +224,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const clearTranscript = useCallback(() => {
     setTranscriptWords([])
+    setTranslateWords([])
   }, [])
 
   /**
@@ -285,20 +296,23 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
           log.info('Assembly is ready!')
           isAssemblyReady.current = true
         } else if (res.type === TRANSCRIPT_RESPONSE) {
+          log.info('Received transcription response:', res)
           const data: RealtimeTranscriptResponse = res
-          if (data.words.length === 0) {
+          const words = data.words ?? []
+          const isEndOfTurn = data.is_end_of_turn ?? false
+
+          if (words.length === 0) {
             log.warn('No words in transcription response')
             return
           }
-          const newWords: RealtimeTranscriptionWord[] = data.words.map(
-            (word, index) => ({
-              text: word.text,
-              word_is_final: word.word_is_final,
-              start: word.start,
-              end: word.end,
-              confidence: word.confidence,
-            })
-          )
+
+          const newWords: RealtimeTranscriptionWord[] = words.map(word => ({
+            text: word.text,
+            word_is_final: word.word_is_final,
+            start: word.start,
+            end: word.end,
+            confidence: word.confidence,
+          }))
 
           // TODO: handle end of turn later
           setTranscriptWords(prev => {
@@ -309,6 +323,9 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
             ]
             return updatedWords
           })
+          if (isEndOfTurn) {
+            log.info('Received final transcript turn')
+          }
         } else if (res.type === TRANSLATE_RESPONSE) {
           log.info('Received translation response:', res)
           const data: RealtimeTranslateResponse = res

@@ -22,7 +22,7 @@ export function TranslationPanel({
         <div className="flex items-center space-x-2">
           <h2 className="font-semibold text-primary">Translation</h2>
           <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">
-            Spanish
+            Vietnamese
           </span>
         </div>
         {bothPanelsOpen && (
