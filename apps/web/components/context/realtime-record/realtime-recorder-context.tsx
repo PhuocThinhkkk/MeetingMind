@@ -19,6 +19,10 @@ import { useAudioBuffer } from './audio-buffer'
 import { useAudioSession } from './audio-session'
 import { useRecorderWebSocket } from './websocket'
 import { mergeRealtimeTranscriptWords } from './transcript-utils'
+import {
+  handleTranscriptResponse,
+  handleTranslateResponse,
+} from './response-handler'
 
 type RecorderContextType = {
   isRecording: boolean
@@ -78,37 +82,11 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
         updateStatus('idle')
       }
     },
-    onTranscript: response => {
-      const words = response.words ?? []
-      const isEndOfTurn = response.is_end_of_turn ?? false
+    onTranscript: response =>
+      handleTranscriptResponse(response, setTranscriptWords),
 
-      if (words.length === 0) {
-        log.warn('No words in transcription response')
-        return
-      }
-
-      const newWords: RealtimeTranscriptionWord[] = words.map(word => ({
-        text: word.text,
-        word_is_final: word.word_is_final,
-        start: word.start,
-        end: word.end,
-        confidence: word.confidence,
-      }))
-
-      // TODO: handle end of turn later
-      setTranscriptWords(prev => mergeRealtimeTranscriptWords(prev, newWords))
-      if (isEndOfTurn) {
-        log.info('Received final transcript turn')
-      }
-    },
-    onTranslate: response => {
-      if (response.translated_text === '') {
-        log.warn('No words in translation response')
-        return
-      }
-
-      setTranslateWords(prev => [...prev, response.translated_text])
-    },
+    onTranslate: response =>
+      handleTranslateResponse(response, setTranslateWords),
   })
 
   const clearTranscript = useCallback(() => {

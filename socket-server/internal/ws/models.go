@@ -42,6 +42,7 @@ type TranscriptEvent struct {
 // TranscriptWriter is used to send transcript events over websocket.
 type TranscriptWriter struct {
 	Type        RESPONSE_TYPE          `json:"type"`
+	TurnId           string                 `json:"turn_id,omitempty"`
 	IsEndOfTurn bool                   `json:"is_end_of_turn,omitempty"`
 	Words       []AssemblyResponseWord `json:"words,omitempty"`
 }
@@ -49,6 +50,7 @@ type TranscriptWriter struct {
 // TranslateWriter is used to send translated events over websocket.
 type TranslateWriter struct {
 	Type           RESPONSE_TYPE          `json:"type"`
+	TurnId           string                 `json:"turn_id,omitempty"`
 	TranslatedText string                 `json:"translated_text"`
 	Language       string                 `json:"language,omitempty"`
 }

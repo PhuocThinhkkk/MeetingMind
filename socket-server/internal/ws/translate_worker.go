@@ -54,6 +54,7 @@ func (tw *TranslateWorker) processAndTranslate(event TranscriptEvent) {
 
 	writer := TranslateWriter{
 		Type:           TRANSLATE_RESPONSE,
+		TurnId: event.TurnId,
 		Language:       tLang,
 		TranslatedText: translatedText,
 	}

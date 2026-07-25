@@ -42,6 +42,7 @@ func (ts *TranscriptSender) Start() {
 func (ts *TranscriptSender) sendTranscript(event TranscriptEvent) {
 	writer := TranscriptWriter{
 		Type:        TRANSCRIPT_RESPONSE,
+		TurnId: event.TurnId,
 		IsEndOfTurn: event.IsFinal,
 		Words:       event.Words,
 	}
