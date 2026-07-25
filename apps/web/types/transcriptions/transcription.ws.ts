@@ -39,6 +39,7 @@ export interface RealtimeAudioChunk {
 
 export interface RealtimeTranslateResponse {
   type: 'translate'
+  turn_id: string
   translated_text: string
   language: string
 }
@@ -46,5 +47,6 @@ export interface RealtimeTranslateResponse {
 export interface RealtimeTranscriptResponse {
   type: 'transcript'
   is_end_of_turn: boolean
+  turn_id: string
   words: RealtimeTranscriptionWord[]
 }

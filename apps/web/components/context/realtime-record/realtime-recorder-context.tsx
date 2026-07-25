@@ -3,6 +3,7 @@ import {
   useRef,
   useCallback,
   useEffect,
+  useMemo,
   createContext,
   useContext,
 } from 'react'
@@ -12,13 +13,16 @@ import {
   float32ToInt16,
   resampleTo16kHz,
 } from '@/lib/transcript/transcript-realtime-utils'
-import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
+import {
+  RealtimeTranscriptResponse,
+  RealtimeTranscriptionWord,
+  RealtimeTranslateResponse,
+} from '@/types/transcriptions/transcription.ws'
 import { log } from '@/utils/logger'
 
 import { useAudioBuffer } from './audio-buffer'
 import { useAudioSession } from './audio-session'
 import { useRecorderWebSocket } from './websocket'
-import { mergeRealtimeTranscriptWords } from './transcript-utils'
 import {
   handleTranscriptResponse,
   handleTranslateResponse,
@@ -30,7 +34,9 @@ type RecorderContextType = {
   stopRecording: () => Blob | undefined
   clearTranscript: () => void
   status: string
+  transcriptTurns: RealtimeTranscriptResponse[]
   transcriptWords: RealtimeTranscriptionWord[]
+  translateTurns: RealtimeTranslateResponse[]
   translateWords: string[]
   sessionStartTime: Date | null
   setSessionStartTime: React.Dispatch<React.SetStateAction<Date | null>>
@@ -48,10 +54,21 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   const [status, setStatus] = useState<
     'idle' | 'connecting' | 'recording' | 'processing' | 'error'
   >('idle')
-  const [transcriptWords, setTranscriptWords] = useState<
-    RealtimeTranscriptionWord[]
+  const [transcriptTurns, setTranscriptTurns] = useState<
+    RealtimeTranscriptResponse[]
   >([])
-  const [translateWords, setTranslateWords] = useState<string[]>([])
+  const [translateTurns, setTranslateTurns] = useState<
+    RealtimeTranslateResponse[]
+  >([])
+
+  const transcriptWords = useMemo(
+    () => transcriptTurns.flatMap(turn => turn.words),
+    [transcriptTurns]
+  )
+  const translateWords = useMemo(
+    () => translateTurns.map(turn => turn.translated_text),
+    [translateTurns]
+  )
 
   const statusRef = useRef(status)
   const audioBuffer = useAudioBuffer()
@@ -83,15 +100,15 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
       }
     },
     onTranscript: response =>
-      handleTranscriptResponse(response, setTranscriptWords),
+      handleTranscriptResponse(response, setTranscriptTurns),
 
     onTranslate: response =>
-      handleTranslateResponse(response, setTranslateWords),
+      handleTranslateResponse(response, setTranslateTurns),
   })
 
   const clearTranscript = useCallback(() => {
-    setTranscriptWords([])
-    setTranslateWords([])
+    setTranscriptTurns([])
+    setTranslateTurns([])
   }, [])
 
   const handleWorkletSendingMessages = useCallback(
@@ -164,8 +181,13 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     websocket.disconnect()
 
     setTimeout(() => {
-      setTranscriptWords(prev =>
-        prev.map(word => ({ ...word, word_is_final: true }))
+      setTranscriptTurns(prev =>
+        prev.map(turn => ({
+          ...turn,
+          is_end_of_turn: true,
+          isEndOfTurn: true,
+          words: turn.words.map(word => ({ ...word, word_is_final: true })),
+        }))
       )
       updateStatus('idle')
     }, 1000)
@@ -191,8 +213,10 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
         stopRecording,
         status,
         clearTranscript,
+        transcriptTurns,
         transcriptWords,
         translateWords,
+        translateTurns,
         sessionStartTime,
         setSessionStartTime,
       }}
