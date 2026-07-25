@@ -12,7 +12,7 @@ import {
   WifiOff,
 } from 'lucide-react'
 import RealTimeTranscriptionPage from './realtime-view-transcription'
-import { useRecorder } from '@/components/context/realtime-recorder-context'
+import { useRecorder } from '@/components/context/realtime-record/realtime-recorder-context'
 import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
 import { formatDuration } from '@/utils/ui-format/time-format'
 import { toast } from '@/hooks/use-toast'
