@@ -195,10 +195,15 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     return blob
   }, [audioBuffer, audioSession, updateStatus, websocket])
 
+  const isRecordingRef = useRef(isRecording)
+  useEffect(() => {
+    isRecordingRef.current = isRecording
+  }, [isRecording])
+
   useEffect(() => {
     return () => {
       log.info('Cleaning up recorder on unmount')
-      if (isRecording) {
+      if (isRecordingRef.current) {
         log.info('stopping recording due to unmount')
         stopRecording()
       }
