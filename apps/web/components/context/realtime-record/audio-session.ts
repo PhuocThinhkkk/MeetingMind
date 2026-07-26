@@ -9,6 +9,11 @@ import {
 } from '@/lib/transcript/audio-worklet-utils'
 import { log } from '@/utils/logger'
 
+/**
+ * Provides controls for starting and stopping an audio recording session.
+ *
+ * @returns Functions that initialize the audio session and release its resources
+ */
 export function useAudioSession() {
   const streamRef = useRef<MediaStream | null>(null)
   const audioContextRef = useRef<AudioContext | null>(null)

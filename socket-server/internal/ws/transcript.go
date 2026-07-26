@@ -12,6 +12,7 @@ type TranscriptState struct {
 	transcripts []TranscriptEvent
 }
 
+// NewTranscriptState creates an empty transcript state with capacity for 120 transcript events.
 func NewTranscriptState() *TranscriptState {
 	return &TranscriptState{
 		transcripts: make([]TranscriptEvent,0, 120),
@@ -50,6 +51,7 @@ func (c *Client) updateStateTranscript(jsonData []byte) error {
 }
 
 
+// It returns an error when the JSON cannot be parsed.
 func checkTypeAssemblyResponseTurn(jsonData []byte) (AssemblyResponseTurn, error) {
     var turn AssemblyResponseTurn
 

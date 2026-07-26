@@ -8,6 +8,8 @@ import (
 
 var translateClient *translate.TranslationClient
 
+// Init initializes the package's Google Cloud Translation client.
+// It returns an error if the client cannot be created.
 func Init() error {
     client, err := translate.NewTranslationClient(context.Background())
     if err != nil {

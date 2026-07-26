@@ -14,6 +14,11 @@ type AddChunkResult = {
   payload?: ArrayBuffer
 }
 
+/**
+ * Manages buffered PCM audio chunks and provides operations to add, clear, and encode them.
+ *
+ * @returns Functions for adding audio chunks, clearing buffered audio, and creating a WAV blob from accumulated audio.
+ */
 export function useAudioBuffer() {
   const currentAudioBufferRef = useRef<Uint8Array[]>([])
   const audioBufferRef = useRef<Uint8Array[]>([])

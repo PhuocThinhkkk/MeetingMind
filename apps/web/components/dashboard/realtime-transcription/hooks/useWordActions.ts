@@ -1,5 +1,10 @@
 import { useState } from 'react'
 
+/**
+ * Manages word highlighting, questioning, and selection state.
+ *
+ * @returns The current word interaction state and actions for updating it
+ */
 export function useWordActions() {
   const [highlightedWords, setHighlightedWords] = useState<Set<number>>(
     new Set()

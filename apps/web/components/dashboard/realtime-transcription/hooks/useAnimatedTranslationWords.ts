@@ -1,6 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
 import { RealtimeTranslateResponse } from '@/types/transcriptions/transcription.ws'
 
+/**
+ * Progressively reveals translated text for each translation turn.
+ *
+ * @param translationTurns - Translation turns to display.
+ * @param delayMs - Delay between revealing successive words, in milliseconds.
+ * @returns Translation turns with text revealed incrementally.
+ */
 export function useAnimatedTranslationWords(
   translationTurns: RealtimeTranslateResponse[],
   delayMs = 60
