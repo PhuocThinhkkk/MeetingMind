@@ -11,17 +11,16 @@ import (
 func (c *Client) processClientAudio() {
 	errCount := 0
 	defer func() {
+		log.Println("close client connection: ", c.UserId)
+		c.Conn.Close()
 		UnregisterClient(c)
 	}()
 
 	for {
 		select {
 		case <-c.Done:
-			log.Println("close client connection: ", c.UserId)
-			c.Conn.Close()
 			return
 		default:
-
 			if errCount >= MaxErr {
 				log.Println("max err hit in read audio")
 				return
@@ -61,17 +60,17 @@ func (c *Client) processClientAudio() {
 func (c *Client) processMsgTranscript() {
 	errCount := 0
 	defer func() {
+		errConn := c.AssemblyConn.Close()
+		if errConn != nil {
+			log.Printf("Error when close ws for client: %s, error: %v", c.UserId, errConn)
+		}else{
+			log.Println("close assembly conn of client: ", c.UserId)
+		}
 		UnregisterClient(c)
 	}()
 	for {
 		select {
 		case <-c.Done:
-			errConn := c.AssemblyConn.Close()
-			if errConn != nil {
-				log.Printf("Error when close ws for client: %s, error: %v", c.UserId, errConn)
-			}else{
-				log.Println("close assembly conn of client: ", c.UserId)
-			}
 			return
 		default:
 
