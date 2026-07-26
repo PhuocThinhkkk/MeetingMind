@@ -1,41 +1,53 @@
 package main
 
 import (
-	"fmt"
+	"database/sql"
 	"log"
 	"meetingmind-socket/internal/config"
 	"meetingmind-socket/internal/database"
 	"meetingmind-socket/internal/handler"
+	"meetingmind-socket/internal/translation"
 	"meetingmind-socket/internal/ws"
 	"net/http"
-	"os"
 )
 
+// main initializes application services and starts the HTTP server with health-check and WebSocket routes.
 func main() {
+
+	postgres := setupAppService()
+	defer postgres.Close()
+
+	mux := http.NewServeMux()
+	mux.Handle("/", handler.HealthCheck())
+	mux.Handle("/ws", http.HandlerFunc(ws.RunServer))
+
+	BIND_ADDR := getBindAddr()
+	log.Println("WebSocket server started on :", config.EnvVars.Port)
+	log.Fatal(http.ListenAndServe(BIND_ADDR+config.EnvVars.Port, mux))
+}
+
+// setupAppService validates the application environment and initializes the database and translation services.
+// It returns the application's SQL database handle and panics if database access or translation initialization fails.
+func setupAppService() *sql.DB {
 	config.CheckingAllEnvVars()
 	database.Init()
 	postgres, err := database.DB.DB()
 	if err != nil {
 		panic(err)
 	}
-	defer postgres.Close()
 
-	mux := http.NewServeMux()
-
-	mux.Handle("/", handler.HealthCheck())
-	mux.Handle("/ws", http.HandlerFunc(ws.RunServer))
-
-
-	port := os.Getenv("PORT")
-	fmt.Println("WebSocket server started on :", port)
-	Is_Prod := os.Getenv("IS_PROD")
-	var BIND_ADDR string
-	if Is_Prod == "" {
-		BIND_ADDR = "0.0.0.0:"
-	} else if Is_Prod == "true" {
-		BIND_ADDR = ":"
-	} else {
-		BIND_ADDR = "0.0.0.0:"
+	err = translation.Init()
+	if err != nil {
+		panic(err)
 	}
-	log.Fatal(http.ListenAndServe(BIND_ADDR+port, mux))
+	return postgres
+}
+
+// getBindAddr returns the bind address prefix based on the production environment setting.
+func getBindAddr() string {
+	Is_Prod := config.EnvVars.IS_PROD
+	if !Is_Prod {
+		return "0.0.0.0:"
+	} 
+	return ":"
 }

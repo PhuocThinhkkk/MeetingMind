@@ -1,15 +1,18 @@
 package database
 
 import (
+	"meetingmind-socket/internal/config"
+
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
-	"os"
 )
 
 var DB *gorm.DB
 
+// Init establishes the PostgreSQL database connection and stores it in DB.
+// It panics if the connection cannot be opened.
 func Init() {
-	dsn :=  os.Getenv("DATABASE_URL")
+	dsn := config.EnvVars.DatabaseConnection
 	conn, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
 	if err != nil {
 		panic(err)

@@ -5,9 +5,11 @@ import dynamic from 'next/dynamic'
 
 const RealtimeRecorderProvider = dynamic(
   () =>
-    import('@/components/context/realtime-recorder-context').then(mod => ({
-      default: mod.RecorderProvider,
-    })),
+    import('@/components/context/realtime-record/realtime-recorder-context').then(
+      mod => ({
+        default: mod.RecorderProvider,
+      })
+    ),
   {
     ssr: false,
     loading: () => <DashboardSkeleton />,
