@@ -3,25 +3,21 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { FileText, Languages } from 'lucide-react'
-import { RealtimeTranscriptionWord } from '@/types/transcriptions/transcription.ws'
-import { useWordActions } from './realtime-transcription/hooks/useWordActions'
-import { TranscriptionHeader } from './realtime-transcription/TranscriptionHeader'
-import { TranscriptPanel } from './realtime-transcription/TranscriptPanel'
-import { TranslationPanel } from './realtime-transcription/TranslationPanel'
-import { WordActionBar } from './realtime-transcription/WordActionBar'
-import { BottomControls } from './realtime-transcription/BottomControls'
+import { useWordActions } from './hooks/useWordActions'
+import { TranscriptionHeader } from './TranscriptionHeader'
+import { TranscriptPanel } from './TranscriptPanel'
+import { TranslationPanel } from './TranslationPanel'
+import { WordActionBar } from './WordActionBar'
+import { BottomControls } from './BottomControls'
+import { useRecorder } from '@/components/context/realtime-record/realtime-recorder-context'
 
 interface RealTimeTranscriptionPageProps {
-  transcriptionWords?: RealtimeTranscriptionWord[]
-  translationWords?: string[]
   isVisible?: boolean
   onExit?: () => void | Promise<void>
   onStopRecording?: () => void | Promise<void>
 }
 
 export default function RealTimeTranscriptionPage({
-  transcriptionWords: words = [],
-  translationWords = [],
   isVisible = true,
   onExit = async () => {},
   onStopRecording = async () => {},
@@ -29,14 +25,17 @@ export default function RealTimeTranscriptionPage({
   const [isAnimating, setIsAnimating] = useState(false)
   const [showTranscript, setShowTranscript] = useState(true)
   const [showTranslate, setShowTranslate] = useState(false)
+  const { transcriptWords } = useRecorder()
 
   const {
     highlightedWords,
     questionedWords,
     selectedWordIndex,
+    selectedTurnId,
     toggleHighlight,
     toggleQuestion,
     toggleSelectedWord,
+    selectSelectedTurn,
   } = useWordActions()
 
   useEffect(() => {
@@ -44,8 +43,8 @@ export default function RealTimeTranscriptionPage({
   }, [isVisible])
 
   const finalWordCount = useMemo(
-    () => words.filter(w => w.word_is_final).length,
-    [words]
+    () => transcriptWords.filter(w => w.word_is_final).length,
+    [transcriptWords]
   )
 
   const bothPanelsOpen = useMemo(
@@ -61,11 +60,14 @@ export default function RealTimeTranscriptionPage({
 
   return (
     <div
-      className={`fixed inset-0 z-50 bg-white flex flex-col transform transition-all duration-300 ease-out ${isAnimating ? 'translate-y-0' : 'translate-y-full'}`}
+      className={`fixed inset-0 z-50 flex flex-col bg-background transform transition-all duration-300 ease-out ${isAnimating ? 'translate-y-0' : 'translate-y-full'}`}
     >
-      <TranscriptionHeader onExit={handleExit} wordsCount={words.length} />
+      <TranscriptionHeader
+        onExit={handleExit}
+        wordsCount={transcriptWords.length}
+      />
 
-      <div className="px-6 pb-4 border-t pt-4">
+      <div className="border-t border-border px-6 pb-4 pt-4">
         <div className="flex items-center space-x-4">
           <div className="flex items-center space-x-2">
             <Button
@@ -94,21 +96,22 @@ export default function RealTimeTranscriptionPage({
         <div className="h-full flex">
           {showTranscript && (
             <TranscriptPanel
-              words={words}
               bothPanelsOpen={bothPanelsOpen}
               highlightedWords={highlightedWords}
               questionedWords={questionedWords}
               selectedWordIndex={selectedWordIndex}
+              selectedTurnId={selectedTurnId}
               onToggleSelectedWord={toggleSelectedWord}
+              onSelectTurn={selectSelectedTurn}
               onClose={() => setShowTranscript(false)}
             />
           )}
 
           {showTranslate && (
             <TranslationPanel
-              translationWords={translationWords}
-              hasTranscriptWords={words.length > 0}
               bothPanelsOpen={bothPanelsOpen}
+              selectedTurnId={selectedTurnId}
+              onSelectTurn={selectSelectedTurn}
               onClose={() => setShowTranslate(false)}
             />
           )}
@@ -117,7 +120,9 @@ export default function RealTimeTranscriptionPage({
 
       <WordActionBar
         selectedWord={
-          selectedWordIndex !== null ? words[selectedWordIndex] : undefined
+          selectedWordIndex !== null
+            ? transcriptWords[selectedWordIndex]
+            : undefined
         }
         isVisible={selectedWordIndex !== null && showTranscript}
         isHighlighted={

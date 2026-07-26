@@ -17,6 +17,7 @@ func (c *Client) processClientAudio() {
 	for {
 		select {
 		case <-c.Done:
+			log.Println("close client connection: ", c.UserId)
 			c.Conn.Close()
 			return
 		default:
@@ -67,7 +68,12 @@ func (c *Client) processMsgTranscript() {
 	for {
 		select {
 		case <-c.Done:
-			c.AssemblyConn.Close()
+			errConn := c.AssemblyConn.Close()
+			if errConn != nil {
+				log.Printf("Error when close ws for client: %s, error: %v", c.UserId, errConn)
+			}else{
+				log.Println("close assembly conn of client: ", c.UserId)
+			}
 			return
 		default:
 

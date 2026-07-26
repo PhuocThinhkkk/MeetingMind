@@ -11,7 +11,7 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react'
-import RealTimeTranscriptionPage from './realtime-view-transcription'
+import RealTimeTranscriptionPage from './realtime-transcription/realtime-view-transcription'
 import { useRecorder } from '@/components/context/realtime-record/realtime-recorder-context'
 import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
 import { formatDuration } from '@/utils/ui-format/time-format'
@@ -253,8 +253,6 @@ export function RealtimeRecorder({
           </div>
         </CardContent>
         <RealTimeTranscriptionPage
-          translationWords={translateWords}
-          transcriptionWords={transcriptWords}
           isVisible={showTranscription}
           onExit={handleStopRecording}
           onStopRecording={handleStopRecording}

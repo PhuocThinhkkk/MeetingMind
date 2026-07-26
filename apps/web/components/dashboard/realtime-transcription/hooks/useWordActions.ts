@@ -8,9 +8,14 @@ export function useWordActions() {
   const [selectedWordIndex, setSelectedWordIndex] = useState<number | null>(
     null
   )
+  const [selectedTurnId, setSelectedTurnId] = useState<string | null>(null)
 
   const toggleSelectedWord = (index: number) => {
     setSelectedWordIndex(prev => (prev === index ? null : index))
+  }
+
+  const selectSelectedTurn = (turnId: string) => {
+    setSelectedTurnId(turnId)
   }
 
   const toggleHighlight = (index: number) => {
@@ -35,7 +40,9 @@ export function useWordActions() {
     highlightedWords,
     questionedWords,
     selectedWordIndex,
+    selectedTurnId,
     toggleSelectedWord,
+    selectSelectedTurn,
     toggleHighlight,
     toggleQuestion,
   }

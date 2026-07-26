@@ -13,22 +13,22 @@ export function BottomControls({
   onStopRecording: () => void | Promise<void>
 }) {
   return (
-    <div className="p-8 border-t bg-white">
+    <div className="border-t border-border bg-card p-8">
       <div className="flex items-center justify-between">
-        <div className="flex items-center space-x-6 text-sm text-gray-600">
+        <div className="flex items-center space-x-6 text-sm text-muted-foreground">
           <div className="flex items-center space-x-2">
-            <div className="w-3 h-3 bg-green-500 rounded-full" />
+            <div className="h-3 w-3 rounded-full bg-primary" />
             <span>{finalWordCount} final words</span>
           </div>
           {highlightedCount > 0 && (
             <div className="flex items-center space-x-2">
-              <Highlighter className="w-3 h-3 text-yellow-600" />
+              <Highlighter className="h-3 w-3 text-primary" />
               <span>{highlightedCount} highlighted</span>
             </div>
           )}
           {questionedCount > 0 && (
             <div className="flex items-center space-x-2">
-              <HelpCircle className="w-3 h-3 text-red-600" />
+              <HelpCircle className="h-3 w-3 text-destructive" />
               <span>{questionedCount} questioned</span>
             </div>
           )}
@@ -36,7 +36,7 @@ export function BottomControls({
         <Button
           onClick={onStopRecording}
           size="lg"
-          className="bg-red-600 hover:bg-red-700 text-white px-8 py-3 text-lg"
+          className="bg-destructive px-8 py-3 text-lg text-destructive-foreground hover:bg-destructive/90"
         >
           <Square className="w-5 h-5 mr-3 fill-current" />
           Stop Recording

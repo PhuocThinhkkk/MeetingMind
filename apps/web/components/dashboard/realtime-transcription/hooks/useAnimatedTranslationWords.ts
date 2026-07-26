@@ -1,23 +1,37 @@
 import { useEffect, useRef, useState } from 'react'
+import { RealtimeTranslateResponse } from '@/types/transcriptions/transcription.ws'
 
 export function useAnimatedTranslationWords(
-  translationWords: string[],
+  translationTurns: RealtimeTranslateResponse[],
   delayMs = 60
 ) {
-  const [displayTranslationWords, setDisplayTranslationWords] = useState<
-    string[]
+  const [displayTranslationTurns, setDisplayTranslationTurns] = useState<
+    RealtimeTranslateResponse[]
   >([])
-  const queueRef = useRef<string[]>([])
+  const queueRef = useRef<RealtimeTranslateResponse[]>([])
   const indexRef = useRef(0)
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
-    const nextChunks = translationWords.slice(indexRef.current)
-    if (nextChunks.length > 0) {
-      queueRef.current.push(...nextChunks)
-      indexRef.current = translationWords.length
+    if (translationTurns.length === 0) {
+      queueRef.current = []
+      indexRef.current = 0
+      setDisplayTranslationTurns([])
+      return
     }
-  }, [translationWords])
+
+    if (translationTurns.length < indexRef.current) {
+      queueRef.current = []
+      indexRef.current = 0
+      setDisplayTranslationTurns([])
+    }
+
+    const nextTurns = translationTurns.slice(indexRef.current)
+    if (nextTurns.length > 0) {
+      queueRef.current.push(...nextTurns)
+      indexRef.current = translationTurns.length
+    }
+  }, [translationTurns])
 
   useEffect(() => {
     const clearTimer = () => {
@@ -32,18 +46,37 @@ export function useAnimatedTranslationWords(
 
       if (queueRef.current.length === 0) return
 
-      const [currentChunk, ...rest] = queueRef.current
-      const words = currentChunk.split(/\s+/).filter(Boolean)
+      const [currentTurn, ...rest] = queueRef.current
+      const words = currentTurn.translated_text.split(/\s+/).filter(Boolean)
 
       if (words.length === 0) {
+        setDisplayTranslationTurns(prev => {
+          const withoutCurrent = prev.filter(
+            turn => turn.turn_id !== currentTurn.turn_id
+          )
+          return [...withoutCurrent, currentTurn]
+        })
         queueRef.current = rest
         step()
         return
       }
 
       let wordIndex = 0
+      let currentText = ''
+
       const reveal = () => {
-        setDisplayTranslationWords(prev => [...prev, words[wordIndex]])
+        currentText = currentText
+          ? `${currentText} ${words[wordIndex]}`
+          : words[wordIndex]
+        setDisplayTranslationTurns(prev => {
+          const withoutCurrent = prev.filter(
+            turn => turn.turn_id !== currentTurn.turn_id
+          )
+          return [
+            ...withoutCurrent,
+            { ...currentTurn, translated_text: currentText },
+          ]
+        })
         wordIndex += 1
 
         if (wordIndex < words.length) {
@@ -61,7 +94,7 @@ export function useAnimatedTranslationWords(
     step()
 
     return clearTimer
-  }, [delayMs, translationWords])
+  }, [delayMs, translationTurns])
 
-  return displayTranslationWords
+  return displayTranslationTurns
 }
