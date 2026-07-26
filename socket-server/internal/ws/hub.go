@@ -40,7 +40,7 @@ func (h *TranscriptHub) Publish(event TranscriptEvent) {
 		select {
 		case ch <- event:
 		default:
-			// Subscriber channel is full, drop the event
+			log.Printf("TranscriptHub: subscriber channel full, dropping event (turn_id=%s, is_final=%v)", event.TurnId, event.IsFinal)
 		}
 	}
 }
