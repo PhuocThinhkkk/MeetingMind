@@ -56,6 +56,8 @@ func (h *TranscriptHub) Unsubscribe(subID string) {
 	}
 }
 
+// generateUniqueId generates a hexadecimal identifier from random bytes.
+// It returns "fallback_id" when random byte generation fails.
 func generateUniqueId() string {
 	bytes := make([]byte, 16)
 	if _, err := rand.Read(bytes); err != nil {

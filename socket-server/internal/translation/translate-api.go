@@ -9,6 +9,9 @@ import (
 
 const projectID = "turing-zone-468913-g8"
 
+// TranslateText translates text from the source language to the target language.
+// It returns the first translated result or an error if the translation request
+// fails or produces no translations.
 func TranslateText(text, sourceLang, targetLang string) (string, error) {
     req := &translatepb.TranslateTextRequest{
         Parent:             "projects/" + projectID + "/locations/global",

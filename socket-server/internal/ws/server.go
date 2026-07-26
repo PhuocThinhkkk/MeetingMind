@@ -24,6 +24,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+// RunServer authenticates an HTTP request and establishes a client connection for audio transcription.
+// It responds with HTTP 401 when the token is missing or invalid and closes connections when setup fails.
 func RunServer(w http.ResponseWriter, r *http.Request) {
 	log.Println("Incoming request:", r.Method, r.URL.Path)
 
@@ -69,6 +71,8 @@ func RunServer(w http.ResponseWriter, r *http.Request) {
 	RegisterClient(client)
 }
 
+// writeClientError sends an error message over the WebSocket connection when one is available.
+// It uses err's message when send is true and clientMessage otherwise.
 func writeClientError(err error, conn *websocket.Conn, clientMessage string, send bool) {
 	if conn == nil {
 		log.Println("No connection found to write error!")
@@ -93,6 +97,7 @@ func writeClientError(err error, conn *websocket.Conn, clientMessage string, sen
 	})
 }
 
+// handleCloseConns closes the client and AssemblyAI WebSocket connections when they are present.
 func handleCloseConns(conn *websocket.Conn, assemblyConn *websocket.Conn){
 	if conn != nil {
 		conn.Close()
