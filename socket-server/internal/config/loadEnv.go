@@ -19,6 +19,10 @@ type AppEnvVars struct {
 
 var EnvVars *AppEnvVars
 
+// CheckingAllEnvVars loads and validates the required environment variables, then
+// populates EnvVars with the resulting configuration. It loads a .env file when
+// PORT is initially unavailable and terminates the program if loading fails or a
+// required variable is missing.
 func CheckingAllEnvVars() {
 	port := os.Getenv("PORT")
 	if port == "" {
@@ -63,6 +67,9 @@ func CheckingAllEnvVars() {
 }
 
 
+// getIsProdBool converts an IS_PROD environment value to a boolean.
+// It returns true when the value is "true", ignoring letter case, and false for
+// empty or any other value.
 func getIsProdBool(is_prod_string string) bool {
 	is_prod_lower := strings.ToLower(is_prod_string)
 	if is_prod_lower == "" {

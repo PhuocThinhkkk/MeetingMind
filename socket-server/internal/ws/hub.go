@@ -40,7 +40,7 @@ func (h *TranscriptHub) Publish(event TranscriptEvent) {
 		select {
 		case ch <- event:
 		default:
-			// Subscriber channel is full, drop the event
+			log.Printf("TranscriptHub: subscriber channel full, dropping event (turn_id=%s, is_final=%v)", event.TurnId, event.IsFinal)
 		}
 	}
 }
@@ -56,6 +56,8 @@ func (h *TranscriptHub) Unsubscribe(subID string) {
 	}
 }
 
+// generateUniqueId generates a hexadecimal identifier from random bytes.
+// It returns "fallback_id" when random byte generation fails.
 func generateUniqueId() string {
 	bytes := make([]byte, 16)
 	if _, err := rand.Read(bytes); err != nil {

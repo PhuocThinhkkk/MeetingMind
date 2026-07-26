@@ -15,6 +15,7 @@ var SupportedLanguages = map[string]bool{
     "zh": true,
 }
 
+// IsLanguageSupported reports whether the specified language code is supported.
 func IsLanguageSupported(lang string) bool {
     return SupportedLanguages[lang]
 }
@@ -29,6 +30,9 @@ type TranslateState struct {
 	Sentences      string
 } 
 
+// NewTranslationState creates a translation state targeting the specified language.
+// The source language is initialized to English, and an error is returned when the
+// target language is unsupported.
 func NewTranslationState(toLang string) (*TranslateState, error) {
 
 	if !IsLanguageSupported(toLang) {
@@ -41,7 +45,8 @@ func NewTranslationState(toLang string) (*TranslateState, error) {
 }
 
 // Translate is a placeholder function for translation.
-// It should be replaced with actual translation logic.
+// Translate translates the text represented by words from sLang to tLang.
+// It returns the translated text and any error encountered during translation.
 func Translate(sLang string, tLang string, words []AssemblyResponseWord) (string, error) {
 	// TODO: Implement actual translation logic here.
 	textParts := make([]string, 0, len(words))

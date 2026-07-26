@@ -21,6 +21,8 @@ type Client struct {
 	ExpiresAt    time.Time
 }
 
+// NewClient creates a client with initialized transcript, translation, hub, lifecycle, and expiration state.
+// It returns an error if translation state initialization fails.
 func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn) (*Client, error) {
 	translate, err := NewTranslationState("vi")
 	if err != nil {
@@ -49,6 +51,7 @@ func (client *Client) safeWriteJson(writer any) error{
 	return client.Conn.WriteJSON(writer)
 }
 
+// RegisterClient starts the client’s audio, transcript, and available hub-based processing workers.
 func RegisterClient(client *Client) {
 	log.Println("Registering new client: ", client.UserId)
 
@@ -66,6 +69,7 @@ func RegisterClient(client *Client) {
 	}
 }
 
+// UnregisterClient signals that the client is no longer registered and logs its user ID.
 func UnregisterClient(c *Client) {
 	select {
 	case <-c.Done:

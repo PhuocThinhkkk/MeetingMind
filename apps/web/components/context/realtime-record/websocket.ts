@@ -16,6 +16,12 @@ type RecorderWebSocketHandlers = {
   onClose?: (event: CloseEvent) => void
 }
 
+/**
+ * Manages a WebSocket connection for real-time transcription and translation.
+ *
+ * @param handlers - Optional callbacks for connection lifecycle and received messages.
+ * @returns WebSocket state and controls for building the connection URL, connecting, disconnecting, and sending data.
+ */
 export function useRecorderWebSocket(handlers: RecorderWebSocketHandlers = {}) {
   const { session } = useAuth()
   const wsRef = useRef<WebSocket | null>(null)
