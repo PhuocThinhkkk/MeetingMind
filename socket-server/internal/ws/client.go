@@ -16,7 +16,6 @@ type Client struct {
 	Transcript   *TranscriptState
 	Translate    *TranslateState
 	Hub          *TranscriptHub
-	Mu           sync.Mutex
 	writeMu           sync.Mutex
 	StartTime    time.Time
 	ExpiresAt    time.Time
@@ -36,7 +35,7 @@ func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn
 		Transcript:   NewTranscriptState(),
 		Translate: 	  translate,
 		Hub:          NewTranscriptHub(),
-		Mu:           sync.Mutex{},
+		writeMu:           sync.Mutex{},
 		StartTime:    time.Now(),
 		ExpiresAt:    time.Now().Add(30 * time.Minute),
 	}, nil

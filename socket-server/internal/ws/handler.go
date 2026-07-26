@@ -28,12 +28,10 @@ func (c *Client) processClientAudio() {
 			}
 
 			if c.Expired() {
-				c.Mu.Lock()
-				c.Conn.WriteJSON(map[string]any{
+				c.safeWriteJson(map[string]any{
 					"type":    "error",
 					"message": "Your 30-minute session has expired",
 				})
-				c.Mu.Unlock()
 				return
 			}
 
@@ -103,10 +101,10 @@ func (c *Client) processMsgTranscript() {
 			}
 
 			if parsed["type"] == "SessionBegins" || parsed["type"] == "Begin" {
-				c.Mu.Lock()
-				c.Conn.WriteMessage(websocket.TextMessage, []byte(`{"type" : "ready"}`))
+				c.safeWriteJson(map[string]string{
+					"type": "ready",
+				})
 				log.Println("Got Begin:", string(msg))
-				c.Mu.Unlock()
 			}
 			if parsed["type"] == "Termination" {
 				log.Println("session end.")

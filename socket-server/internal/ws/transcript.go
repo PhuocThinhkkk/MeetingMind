@@ -21,8 +21,6 @@ func NewTranscriptState() *TranscriptState {
 // updateStateTranscript processes raw transcript data, updates the client's state,
 // builds a TranscriptEvent, and publishes it to the TranscriptHub.
 func (c *Client) updateStateTranscript(jsonData []byte) error {
-	c.Mu.Lock()
-	defer c.Mu.Unlock()
 
 	turn, err := checkTypeAssemblyResponseTurn(jsonData)
 	if err != nil {
