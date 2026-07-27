@@ -50,25 +50,20 @@ export function TranslationPanel({
         {!translateTurns.length ? (
           <EmptyTranslation />
         ) : (
-          <div className="space-y-3 text-base leading-7 text-foreground">
-            {displayTranslationTurns.length > 0 ? (
-              displayTranslationTurns.map(turn => (
-                <button
-                  key={`${turn.turn_id}---${Math.floor(Math.random() * 100)}`}
-                  type="button"
-                  className={`w-full rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
-                    selectedTurnId === turn.turn_id
-                      ? 'border-primary bg-accent/70'
-                      : 'border-transparent hover:border-border hover:bg-muted/40'
-                  }`}
-                  onClick={() => onSelectTurn(turn.turn_id)}
-                >
-                  <span className="block">{turn.translated_text}</span>
-                </button>
-              ))
-            ) : (
-              <div className="text-muted-foreground">Translating...</div>
-            )}
+          <div className="text-base leading-8 text-foreground">
+            {displayTranslationTurns.map(turn => (
+              <span
+                key={turn.turn_id}
+                className={`inline cursor-pointer rounded-lg px-1 py-0.5 transition-colors ${
+                  selectedTurnId === turn.turn_id
+                    ? 'bg-accent'
+                    : 'hover:bg-muted'
+                }`}
+                onClick={() => onSelectTurn(turn.turn_id)}
+              >
+                {turn.translated_text}{' '}
+              </span>
+            ))}
           </div>
         )}
       </div>

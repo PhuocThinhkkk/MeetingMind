@@ -3,61 +3,7 @@ import {
   RealtimeTranscriptResponse,
   RealtimeTranslateResponse,
 } from '@/types/transcriptions/transcription.ws'
-
-const MEETING = [
-  {
-    transcript: ['Hello', 'everyone,', 'welcome', 'to', 'MeetingMind.'],
-    translation: [
-      'Xin',
-      'chào',
-      'mọi',
-      'người,',
-      'chào',
-      'mừng',
-      'đến',
-      'MeetingMind.',
-    ],
-  },
-  {
-    transcript: ['Today', 'we', 'are', 'testing', 'the', 'new', 'UI.'],
-    translation: [
-      'Hôm',
-      'nay',
-      'chúng',
-      'ta',
-      'đang',
-      'kiểm',
-      'thử',
-      'giao',
-      'diện',
-      'mới.',
-    ],
-  },
-  {
-    transcript: [
-      'The',
-      'translation',
-      'should',
-      'stay',
-      'aligned',
-      'with',
-      'each',
-      'turn.',
-    ],
-    translation: [
-      'Bản',
-      'dịch',
-      'cần',
-      'được',
-      'đồng',
-      'bộ',
-      'với',
-      'từng',
-      'lượt',
-      'nói.',
-    ],
-  },
-]
+import { FIGHTCLUBMEETING } from './meeting'
 
 export function useTranscriptDebug() {
   const [transcriptTurns, setTranscriptTurns] = useState<
@@ -99,7 +45,7 @@ export function useTranscriptDebug() {
     }
 
     function appendWord() {
-      const turn = MEETING[turnIndex]
+      const turn = FIGHTCLUBMEETING[turnIndex]
       const word = turn.transcript[wordIndex]
 
       setTranscriptTurns(prev =>
@@ -160,15 +106,15 @@ export function useTranscriptDebug() {
     }
 
     function tick() {
-      if (turnIndex >= MEETING.length) {
+      if (turnIndex >= FIGHTCLUBMEETING.length) {
         nextMeeting()
         return
       }
 
-      if (wordIndex >= MEETING[turnIndex].transcript.length) {
+      if (wordIndex >= FIGHTCLUBMEETING[turnIndex].transcript.length) {
         finishTurn()
 
-        if (turnIndex < MEETING.length) {
+        if (turnIndex < FIGHTCLUBMEETING.length) {
           createTurn()
         }
 
