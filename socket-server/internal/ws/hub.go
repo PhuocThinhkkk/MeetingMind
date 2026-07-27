@@ -3,6 +3,7 @@ package ws
 import (
 	"crypto/rand"
 	"encoding/hex"
+	"log"
 	"sync"
 )
 

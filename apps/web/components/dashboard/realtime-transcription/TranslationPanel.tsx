@@ -4,22 +4,26 @@ import { Button } from '@/components/ui/button'
 import { X } from 'lucide-react'
 import { EmptyTranslation } from './EmptyTranslation'
 import { useAnimatedTranslationWords } from './hooks/useAnimatedTranslationWords'
-import { useRecorder } from '@/components/context/realtime-record/realtime-recorder-context'
+import { RealtimeTranslateResponse } from '@/types/transcriptions/transcription.ws'
+import { log } from '@/utils/logger'
 
 export function TranslationPanel({
+  translateTurns,
   bothPanelsOpen,
   selectedTurnId,
   onSelectTurn,
   onClose,
 }: {
+  translateTurns: RealtimeTranslateResponse[]
   bothPanelsOpen: boolean
   selectedTurnId: string | null
   onSelectTurn: (turnId: string) => void
   onClose: () => void
 }) {
-  const { translateTurns, transcriptTurns } = useRecorder()
   const displayTranslationTurns = useAnimatedTranslationWords(translateTurns)
 
+  log.info('Translation turns in panel: ', translateTurns)
+  log.info('Translation display in panel: ', displayTranslationTurns)
   return (
     <div
       className={`${bothPanelsOpen ? 'w-1/2' : 'w-full'} flex flex-col bg-card`}
@@ -43,14 +47,14 @@ export function TranslationPanel({
         )}
       </div>
       <div className="flex-1 overflow-y-auto p-6">
-        {!transcriptTurns.length ? (
+        {!translateTurns.length ? (
           <EmptyTranslation />
         ) : (
           <div className="space-y-3 text-base leading-7 text-foreground">
             {displayTranslationTurns.length > 0 ? (
               displayTranslationTurns.map(turn => (
                 <button
-                  key={turn.turn_id}
+                  key={`${turn.turn_id}---${Math.floor(Math.random() * 100)}`}
                   type="button"
                   className={`w-full rounded-2xl border px-4 py-3 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
                     selectedTurnId === turn.turn_id

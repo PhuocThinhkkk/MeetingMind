@@ -41,7 +41,8 @@ export function RealtimeRecorder({
   const uploadCtrl = useUploadController(onTranscriptionComplete)
   const {
     transcriptWords,
-    translateWords,
+    transcriptTurns,
+    translateTurns,
     startRecording,
     stopRecording,
     sessionStartTime,
@@ -253,6 +254,7 @@ export function RealtimeRecorder({
           </div>
         </CardContent>
         <RealTimeTranscriptionPage
+          transcriptState={{ transcriptTurns, translateTurns }}
           isVisible={showTranscription}
           onExit={handleStopRecording}
           onStopRecording={handleStopRecording}

@@ -1,107 +1,91 @@
 import { useEffect, useRef, useState } from 'react'
 import { RealtimeTranslateResponse } from '@/types/transcriptions/transcription.ws'
 
-/**
- * Progressively reveals translated text for each translation turn.
- *
- * @param translationTurns - Translation turns to display.
- * @param delayMs - Delay between revealing successive words, in milliseconds.
- * @returns Translation turns with text revealed incrementally.
- */
 export function useAnimatedTranslationWords(
   translationTurns: RealtimeTranslateResponse[],
   delayMs = 60
 ) {
-  const [displayTranslationTurns, setDisplayTranslationTurns] = useState<
-    RealtimeTranslateResponse[]
-  >([])
-  const queueRef = useRef<RealtimeTranslateResponse[]>([])
-  const indexRef = useRef(0)
+  const [displayTurns, setDisplayTurns] = useState<RealtimeTranslateResponse[]>(
+    []
+  )
+
   const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   useEffect(() => {
     if (translationTurns.length === 0) {
-      queueRef.current = []
-      indexRef.current = 0
-      setDisplayTranslationTurns([])
+      setDisplayTurns([])
       return
     }
 
-    if (translationTurns.length < indexRef.current) {
-      queueRef.current = []
-      indexRef.current = 0
-      setDisplayTranslationTurns([])
+    if (timerRef.current) {
+      clearTimeout(timerRef.current)
     }
 
-    const nextTurns = translationTurns.slice(indexRef.current)
-    if (nextTurns.length > 0) {
-      queueRef.current.push(...nextTurns)
-      indexRef.current = translationTurns.length
-    }
-  }, [translationTurns])
+    function animate() {
+      let changed = false
 
-  useEffect(() => {
-    const clearTimer = () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
-        timerRef.current = null
-      }
-    }
+      setDisplayTurns(prev => {
+        const next = [...prev]
 
-    const step = () => {
-      clearTimer()
+        for (const incoming of translationTurns) {
+          const incomingWords = incoming.translated_text
+            .split(/\s+/)
+            .filter(Boolean)
 
-      if (queueRef.current.length === 0) return
+          const index = next.findIndex(t => t.turn_id === incoming.turn_id)
 
-      const [currentTurn, ...rest] = queueRef.current
-      const words = currentTurn.translated_text.split(/\s+/).filter(Boolean)
+          // New turn
+          if (index === -1) {
+            next.push({
+              ...incoming,
+              translated_text: incomingWords.length > 0 ? incomingWords[0] : '',
+            })
 
-      if (words.length === 0) {
-        setDisplayTranslationTurns(prev => {
-          const withoutCurrent = prev.filter(
-            turn => turn.turn_id !== currentTurn.turn_id
-          )
-          return [...withoutCurrent, currentTurn]
-        })
-        queueRef.current = rest
-        step()
-        return
-      }
+            if (incomingWords.length > 1) {
+              changed = true
+            }
 
-      let wordIndex = 0
-      let currentText = ''
+            continue
+          }
 
-      const reveal = () => {
-        currentText = currentText
-          ? `${currentText} ${words[wordIndex]}`
-          : words[wordIndex]
-        setDisplayTranslationTurns(prev => {
-          const withoutCurrent = prev.filter(
-            turn => turn.turn_id !== currentTurn.turn_id
-          )
-          return [
-            ...withoutCurrent,
-            { ...currentTurn, translated_text: currentText },
-          ]
-        })
-        wordIndex += 1
+          const displayedWords = next[index].translated_text
+            .split(/\s+/)
+            .filter(Boolean)
 
-        if (wordIndex < words.length) {
-          timerRef.current = setTimeout(reveal, delayMs)
-          return
+          if (displayedWords.length < incomingWords.length) {
+            next[index] = {
+              ...incoming,
+              translated_text: incomingWords
+                .slice(0, displayedWords.length + 1)
+                .join(' '),
+            }
+
+            changed = true
+          } else {
+            // Keep metadata in sync.
+            next[index] = {
+              ...incoming,
+              translated_text: next[index].translated_text,
+            }
+          }
         }
 
-        queueRef.current = rest
-        step()
-      }
+        return next
+      })
 
-      reveal()
+      if (changed) {
+        timerRef.current = setTimeout(animate, delayMs)
+      }
     }
 
-    step()
+    animate()
 
-    return clearTimer
-  }, [delayMs, translationTurns])
+    return () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+      }
+    }
+  }, [translationTurns, delayMs])
 
-  return displayTranslationTurns
+  return displayTurns
 }

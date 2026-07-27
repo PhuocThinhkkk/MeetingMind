@@ -3,9 +3,10 @@
 import { Button } from '@/components/ui/button'
 import { Highlighter, HelpCircle, X } from 'lucide-react'
 import { EmptyTranscript } from './EmptyTranscript'
-import { useRecorder } from '@/components/context/realtime-record/realtime-recorder-context'
+import { RealtimeTranscriptResponse } from '@/types/transcriptions/transcription.ws'
 
 export function TranscriptPanel({
+  transcriptTurns,
   bothPanelsOpen,
   highlightedWords,
   questionedWords,
@@ -15,6 +16,7 @@ export function TranscriptPanel({
   onSelectTurn,
   onClose,
 }: {
+  transcriptTurns: RealtimeTranscriptResponse[]
   bothPanelsOpen: boolean
   highlightedWords: Set<number>
   questionedWords: Set<number>
@@ -24,7 +26,6 @@ export function TranscriptPanel({
   onSelectTurn: (turnId: string) => void
   onClose: () => void
 }) {
-  const { transcriptTurns } = useRecorder()
   let globalWordIndex = -1
 
   return (
@@ -67,7 +68,7 @@ export function TranscriptPanel({
 
                     return (
                       <button
-                        key={`${turn.turn_id}-${word.start}-${word.end}`}
+                        key={`${turn.turn_id}-${word.start}-${word.end}----${Math.random().toString(36).substring(2, 7)}`}
                         type="button"
                         className={`inline-flex items-center gap-1 rounded-lg px-1.5 py-0.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-card ${
                           isSelectedWord

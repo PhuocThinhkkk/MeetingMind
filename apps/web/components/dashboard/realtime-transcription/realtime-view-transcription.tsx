@@ -9,15 +9,25 @@ import { TranscriptPanel } from './TranscriptPanel'
 import { TranslationPanel } from './TranslationPanel'
 import { WordActionBar } from './WordActionBar'
 import { BottomControls } from './BottomControls'
-import { useRecorder } from '@/components/context/realtime-record/realtime-recorder-context'
+import {
+  RealtimeTranscriptionWord,
+  RealtimeTranscriptResponse,
+  RealtimeTranslateResponse,
+} from '@/types/transcriptions/transcription.ws'
 
+interface TranscriptState {
+  transcriptTurns: RealtimeTranscriptResponse[]
+  translateTurns: RealtimeTranslateResponse[]
+}
 interface RealTimeTranscriptionPageProps {
+  transcriptState: TranscriptState
   isVisible?: boolean
   onExit?: () => void | Promise<void>
   onStopRecording?: () => void | Promise<void>
 }
 
 export default function RealTimeTranscriptionPage({
+  transcriptState,
   isVisible = true,
   onExit = async () => {},
   onStopRecording = async () => {},
@@ -25,7 +35,11 @@ export default function RealTimeTranscriptionPage({
   const [isAnimating, setIsAnimating] = useState(false)
   const [showTranscript, setShowTranscript] = useState(true)
   const [showTranslate, setShowTranslate] = useState(false)
-  const { transcriptWords } = useRecorder()
+
+  const transcriptWords = useMemo(
+    () => transcriptState.transcriptTurns.flatMap(turn => turn.words),
+    [transcriptState.transcriptTurns]
+  )
 
   const {
     highlightedWords,
@@ -96,6 +110,7 @@ export default function RealTimeTranscriptionPage({
         <div className="h-full flex">
           {showTranscript && (
             <TranscriptPanel
+              transcriptTurns={transcriptState.transcriptTurns}
               bothPanelsOpen={bothPanelsOpen}
               highlightedWords={highlightedWords}
               questionedWords={questionedWords}
@@ -109,6 +124,7 @@ export default function RealTimeTranscriptionPage({
 
           {showTranslate && (
             <TranslationPanel
+              translateTurns={transcriptState.translateTurns}
               bothPanelsOpen={bothPanelsOpen}
               selectedTurnId={selectedTurnId}
               onSelectTurn={selectSelectedTurn}
