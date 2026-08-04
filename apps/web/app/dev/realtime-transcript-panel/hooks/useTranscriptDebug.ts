@@ -19,27 +19,20 @@ export function useTranscriptDebug() {
     let wordIndex = 0
     let globalTime = 0
     let currentTurnId = ''
+    let nextTurnId = 1
 
     function createTurn() {
-      currentTurnId = crypto.randomUUID()
+      currentTurnId = String(nextTurnId++)
+
+      const turnId = currentTurnId
 
       setTranscriptTurns(prev => [
         ...prev,
         {
           type: 'transcript',
-          turn_id: currentTurnId,
+          turn_id: turnId,
           is_end_of_turn: false,
           words: [],
-        },
-      ])
-
-      setTranslateTurns(prev => [
-        ...prev,
-        {
-          type: 'translate',
-          turn_id: currentTurnId,
-          language: 'vi',
-          translated_text: '',
         },
       ])
     }
@@ -47,10 +40,11 @@ export function useTranscriptDebug() {
     function appendWord() {
       const turn = FIGHTCLUBMEETING[turnIndex]
       const word = turn.transcript[wordIndex]
+      const turnId = currentTurnId
 
       setTranscriptTurns(prev =>
         prev.map(t =>
-          t.turn_id !== currentTurnId
+          t.turn_id !== turnId
             ? t
             : {
                 ...t,
@@ -68,63 +62,57 @@ export function useTranscriptDebug() {
         )
       )
 
-      setTranslateTurns(prev =>
-        prev.map(t =>
-          t.turn_id !== currentTurnId
-            ? t
-            : {
-                ...t,
-                translated_text: turn.translation
-                  .slice(0, wordIndex + 1)
-                  .join(' '),
-              }
-        )
-      )
-
       globalTime += 500
       wordIndex++
     }
 
     function finishTurn() {
+      const turn = FIGHTCLUBMEETING[turnIndex]
+      const turnId = currentTurnId
+
       setTranscriptTurns(prev =>
         prev.map(t =>
-          t.turn_id === currentTurnId ? { ...t, is_end_of_turn: true } : t
+          t.turn_id === turnId
+            ? {
+                ...t,
+                is_end_of_turn: true,
+              }
+            : t
         )
       )
 
+      setTranslateTurns(prev => [
+        ...prev,
+        {
+          type: 'translate',
+          turn_id: turnId,
+          language: 'vi',
+          translated_text: turn.translation,
+        },
+      ])
+
       turnIndex++
       wordIndex = 0
-    }
-
-    function nextMeeting() {
-      turnIndex = 0
-      wordIndex = 0
-
-      // Keep transcriptTurns, translateTurns and globalTime.
-      // Just start another meeting.
-      createTurn()
+      currentTurnId = ''
     }
 
     function tick() {
       if (turnIndex >= FIGHTCLUBMEETING.length) {
-        nextMeeting()
-        return
+        turnIndex = 0
+        wordIndex = 0
+      }
+
+      if (!currentTurnId) {
+        createTurn()
       }
 
       if (wordIndex >= FIGHTCLUBMEETING[turnIndex].transcript.length) {
         finishTurn()
-
-        if (turnIndex < FIGHTCLUBMEETING.length) {
-          createTurn()
-        }
-
         return
       }
 
       appendWord()
     }
-
-    createTurn()
 
     const timer = setInterval(tick, 300)
 

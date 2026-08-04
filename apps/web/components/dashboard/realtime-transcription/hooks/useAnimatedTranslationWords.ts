@@ -9,83 +9,92 @@ export function useAnimatedTranslationWords(
     []
   )
 
-  const timerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const initializedRef = useRef(false)
+  const queueRef = useRef<RealtimeTranslateResponse[]>([])
 
+  // Initialize.
+  // Old translations appear immediately.
+  // Only the newest one is animated.
   useEffect(() => {
-    if (translationTurns.length === 0) {
-      setDisplayTurns([])
+    if (initializedRef.current) return
+    if (translationTurns.length === 0) return
+
+    initializedRef.current = true
+
+    if (translationTurns.length === 1) {
+      queueRef.current.push(translationTurns[0])
       return
     }
 
-    if (timerRef.current) {
-      clearTimeout(timerRef.current)
-    }
+    setDisplayTurns(translationTurns.slice(0, -1))
 
-    function animate() {
-      let changed = false
+    queueRef.current.push(translationTurns.at(-1)!)
+  }, [translationTurns])
+
+  // Queue newly arrived translations.
+  useEffect(() => {
+    if (!initializedRef.current) return
+
+    const displayedIds = new Set(displayTurns.map(t => t.turn_id))
+    const queuedIds = new Set(queueRef.current.map(t => t.turn_id))
+
+    for (const turn of translationTurns) {
+      if (!displayedIds.has(turn.turn_id) && !queuedIds.has(turn.turn_id)) {
+        queueRef.current.push(turn)
+      }
+    }
+  }, [translationTurns, displayTurns])
+
+  // Animation loop.
+  useEffect(() => {
+    const timer = setInterval(() => {
+      if (queueRef.current.length === 0) return
 
       setDisplayTurns(prev => {
         const next = [...prev]
+        const current = queueRef.current[0]
 
-        for (const incoming of translationTurns) {
-          const incomingWords = incoming.translated_text
-            .split(/\s+/)
-            .filter(Boolean)
+        const fullWords = current.translated_text.split(/\s+/).filter(Boolean)
 
-          const index = next.findIndex(t => t.turn_id === incoming.turn_id)
+        const index = next.findIndex(t => t.turn_id === current.turn_id)
 
-          // New turn
-          if (index === -1) {
-            next.push({
-              ...incoming,
-              translated_text: incomingWords.length > 0 ? incomingWords[0] : '',
-            })
+        // First word.
+        if (index === -1) {
+          next.push({
+            ...current,
+            translated_text: fullWords[0] ?? '',
+          })
 
-            if (incomingWords.length > 1) {
-              changed = true
-            }
+          return next
+        }
 
-            continue
-          }
+        const shownWords = next[index].translated_text
+          .split(/\s+/)
+          .filter(Boolean)
 
-          const displayedWords = next[index].translated_text
-            .split(/\s+/)
-            .filter(Boolean)
+        // Already finished.
+        if (shownWords.length >= fullWords.length) {
+          queueRef.current.shift()
+          return next
+        }
 
-          if (displayedWords.length < incomingWords.length) {
-            next[index] = {
-              ...incoming,
-              translated_text: incomingWords
-                .slice(0, displayedWords.length + 1)
-                .join(' '),
-            }
+        // Reveal one more word.
+        next[index] = {
+          ...current,
+          translated_text: fullWords.slice(0, shownWords.length + 1).join(' '),
+        }
 
-            changed = true
-          } else {
-            // Keep metadata in sync.
-            next[index] = {
-              ...incoming,
-              translated_text: next[index].translated_text,
-            }
-          }
+        // Finished after this tick.
+        if (shownWords.length + 1 >= fullWords.length) {
+          queueRef.current.shift()
         }
 
         return next
       })
+    }, delayMs)
 
-      if (changed) {
-        timerRef.current = setTimeout(animate, delayMs)
-      }
-    }
-
-    animate()
-
-    return () => {
-      if (timerRef.current) {
-        clearTimeout(timerRef.current)
-      }
-    }
-  }, [translationTurns, delayMs])
+    return () => clearInterval(timer)
+  }, [delayMs])
 
   return displayTurns
 }
