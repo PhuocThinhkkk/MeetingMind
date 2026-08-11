@@ -2,7 +2,6 @@ package ws
 
 import (
 	"encoding/json"
-	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
@@ -58,68 +57,89 @@ func (c *Client) processClientAudio() {
 }
 
 func (c *Client) processMsgTranscript() {
-	errCount := 0
-	defer func() {
-		errConn := c.AssemblyConn.Close()
-		if errConn != nil {
-			log.Printf("Error when close ws for client: %s, error: %v", c.UserId, errConn)
-		}else{
-			log.Println("close assembly conn of client: ", c.UserId)
-		}
-		UnregisterClient(c)
-	}()
-	for {
-		select {
-		case <-c.Done:
-			return
-		default:
+    defer func() {
+        UnregisterClient(c)
+    }()
 
-			if errCount >= MaxErr {
-				log.Println("max err hit in write message")
-				return
-			}
+    terminated := false
 
-			msgType, msg, err := c.AssemblyConn.ReadMessage()
-			if err != nil {
-				log.Println("AssemblyAI return an error:", err)
-				errCount++
-				continue
-			}
-			if msgType != websocket.TextMessage {
-				fmt.Println("from assembly, this is not a text message")
-				errCount++
-				continue
-			}
+    for {
+        if !terminated {
+            select {
+            case <-c.Done:
+                c.TerminateAssemblySession()
+                terminated = true
 
-			var parsed map[string]interface{}
-			err = json.Unmarshal(msg, &parsed)
-			if err != nil {
-				log.Println("cant parse json: ", err)
-				errCount++
-				continue
-			}
+            default:
+            }
+        }
 
-			if parsed["type"] == "SessionBegins" || parsed["type"] == "Begin" {
-				c.safeWriteJson(map[string]string{
-					"type": "ready",
-				})
-				log.Println("Got Begin:", string(msg))
-			}
-			if parsed["type"] == "Termination" {
-				log.Println("session end.")
-				return
-			}
-			if parsed["type"] == "SessionInformation" {
-				log.Println("Got SessionInformation")
-				continue
-			}
-			if parsed["type"] == "FinalTranscript" || parsed["type"] == "PartialTranscript" || parsed["type"] == "Turn" {
-				err = c.updateStateTranscript(msg)
-				if err != nil {
-					log.Println("err when update transcript: ", err)
-					return
-				}
-			}
-		}
+        msgType, msg, err := c.AssemblyConn.ReadMessage()
+        if err != nil {
+            log.Println("AssemblyAI read error:", err)
+            return
+        }
+
+        if msgType != websocket.TextMessage {
+            log.Println("from assembly, this is not a text message")
+            continue
+        }
+
+        var parsed map[string]interface{}
+        if err := json.Unmarshal(msg, &parsed); err != nil {
+            log.Println("can't parse JSON:", err)
+            continue
+        }
+
+        switch parsed["type"] {
+
+        case "Termination":
+            log.Println("AssemblyAI session terminated:", string(msg))
+
+            err := c.AssemblyConn.Close()
+            if err != nil {
+                log.Printf(
+                    "Error closing AssemblyAI ws for %s: %v",
+                    c.UserId,
+                    err,
+                )
+            }
+
+            return
+
+        case "SessionBegins", "Begin":
+            c.safeWriteJson(map[string]string{
+                "type": "ready",
+            })
+
+        case "SessionInformation":
+            continue
+
+        case "FinalTranscript", "PartialTranscript", "Turn":
+            if err := c.updateStateTranscript(msg); err != nil {
+                log.Println("error updating transcript:", err)
+                return
+            }
+        }
+    }
+}
+
+func (c *Client) TerminateAssemblySession() {
+	// Tell AssemblyAI to terminate the streaming session.
+	err := c.AssemblyConn.WriteJSON(map[string]string{
+		"type": "Terminate",
+	})
+	if err != nil {
+		log.Printf(
+			"Error terminating AssemblyAI session for client %s: %v",
+			c.UserId,
+			err,
+		)
+		return
 	}
+
+	log.Println("Terminate sent to AssemblyAI:", c.UserId)
+
+	// read goroutine should receive the "Termination"
+	// message from AssemblyAI and then close the connection.
 }
