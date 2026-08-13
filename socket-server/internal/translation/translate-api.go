@@ -21,7 +21,9 @@ func TranslateText(text, sourceLang, targetLang string) (string, error) {
         TargetLanguageCode: targetLang,
     }
 
-    resp, err := translateClient.TranslateText(context.Background(), req)
+    ctx, cancel := context.WithTimeout(context.Background(), 15*time.Second)
+    defer cancel()
+    resp, err := translateClient.TranslateText(ctx, req)
     if err != nil {
         return "", err
     }
