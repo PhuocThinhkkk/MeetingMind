@@ -3,6 +3,7 @@ package translation
 import (
 	"context"
 	"fmt"
+	"time"
 
 	translatepb "cloud.google.com/go/translate/apiv3/translatepb"
 )
