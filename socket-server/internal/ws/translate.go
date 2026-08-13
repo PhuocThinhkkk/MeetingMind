@@ -7,18 +7,6 @@ import (
 	"strings"
 )
 
-var SupportedLanguages = map[string]bool{
-    "en": true,
-    "vi": true,
-    "ja": true,
-    "ko": true,
-    "zh": true,
-}
-
-// IsLanguageSupported reports whether the specified language code is supported.
-func IsLanguageSupported(lang string) bool {
-    return SupportedLanguages[lang]
-}
 
 type CurrentTranslationConfig struct {
 	FromLang     string
@@ -35,7 +23,7 @@ type TranslateState struct {
 // target language is unsupported.
 func NewTranslationState(toLang string) (*TranslateState, error) {
 
-	if !IsLanguageSupported(toLang) {
+	if !translation.IsLanguageSupported(toLang) {
 		return nil, fmt.Errorf("unsupported language: %s", toLang)
 	}
 	return &TranslateState{

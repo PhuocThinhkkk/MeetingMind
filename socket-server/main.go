@@ -19,6 +19,7 @@ func main() {
 
 	mux := http.NewServeMux()
 	mux.Handle("/", handler.HealthCheck())
+	mux.HandleFunc("/translate/get-all-languages", handler.GetSupportedLanguagesHandler)
 	mux.Handle("/ws", http.HandlerFunc(ws.RunServer))
 
 	BIND_ADDR := getBindAddr()

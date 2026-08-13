@@ -1,29 +1,10 @@
 package ws
 
-import "testing"
+import (
+	"testing"
+)
 
-func TestIsLanguageSupported(t *testing.T) {
-    tests := []struct {
-        lang string
-        want bool
-    }{
-        {"en", true},
-        {"vi", true},
-        {"ja", true},
-        {"ko", true},
-        {"zh", true},
-        {"fr", false},
-        {"", false},
-    }
 
-    for _, tt := range tests {
-        got := IsLanguageSupported(tt.lang)
-        if got != tt.want {
-            t.Errorf("IsLanguageSupported(%q) = %v, want %v",
-                tt.lang, got, tt.want)
-        }
-    }
-}
 
 func TestNewTranslationState(t *testing.T) {
     state, err := NewTranslationState("vi")
