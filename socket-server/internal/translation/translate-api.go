@@ -48,9 +48,10 @@ func IsLanguageSupported(code string) bool {
 }
 
 func GetAllSupportLanguages()[]Language{
-    return supportedLanguages
+    languages := make([]Language, len(supportedLanguages))
+    copy(languages, supportedLanguages)
+    return languages
 }
-
 
 
 // TranslateText translates text from the source language to the target language.

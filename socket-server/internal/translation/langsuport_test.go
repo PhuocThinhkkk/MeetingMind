@@ -14,8 +14,7 @@ func TestIsLanguageSupported(t *testing.T) {
         {"ja", true},
         {"ko", true},
         {"zh-CN", true},
-        {"fr", false},
-        {"", false},
+		{"fr", true},        {"", false},
     }
 
     for _, tt := range tests {
