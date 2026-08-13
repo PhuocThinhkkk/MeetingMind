@@ -2,6 +2,7 @@ package translation
 
 import (
 	"context"
+	"log"
 
 	translate "cloud.google.com/go/translate/apiv3"
 )
@@ -17,5 +18,6 @@ func Init() error {
     }
 
     translateClient = client
+    log.Println("All languages supports for translate: ", supportedLanguages)
     return nil
 }

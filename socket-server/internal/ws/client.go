@@ -23,8 +23,8 @@ type Client struct {
 
 // NewClient creates a client with initialized transcript, translation, hub, lifecycle, and expiration state.
 // It returns an error if translation state initialization fails.
-func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn) (*Client, error) {
-	translate, err := NewTranslationState("vi")
+func NewClient(UserId string, Conn *websocket.Conn, AssemblyConn *websocket.Conn, targetLanguage string) (*Client, error) {
+	translate, err := NewTranslationState(targetLanguage)
 	if err != nil {
 		return nil, err
 	}

@@ -67,3 +67,18 @@ func getStreamingToken(apiKey string, expiredTime int) (string, error) {
     return result.Token, nil
 }
 
+func handleCloseAssembly(assemblyConn *websocket.Conn, msg string, userId string){
+    if assemblyConn != nil {
+        log.Println("AssemblyAI session terminated:", msg)
+
+        err := assemblyConn.Close()
+        if err != nil {
+            log.Printf(
+                "Error closing AssemblyAI ws for %s: %v",
+                userId,
+                err,
+            )
+        }
+
+    }
+}

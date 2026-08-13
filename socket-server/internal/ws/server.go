@@ -3,9 +3,11 @@ package ws
 import (
 	"log"
 	"meetingmind-socket/internal/config"
+	"meetingmind-socket/internal/translation"
 	"meetingmind-socket/internal/validation"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -43,28 +45,33 @@ func RunServer(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	targetLanguage := r.URL.Query().Get("target_language")
+	if !translation.IsLanguageSupported(targetLanguage)  {
+		http.Error(w, "Language is not supported yet.", 401)
+		log.Printf("UserId %s violate supported language", userId)
+		return
+	}
+
 	conn, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
 		log.Println("Upgrade error:", err)
 		// no need to write an error response here, as the upgrade has already failed
 		return
 	}
-
-	assemblyAIKey := os.Getenv("ASSEMBLYAI_API_KEY")
-	assemblyConn, res, err := ConnectToAssemblyAI(assemblyAIKey)
+	
+	assemblyConn, res, err := ConnectToAssemblyAI(config.EnvVars.AssemblyApiKey)
 	if err != nil {
-
 		log.Println("Assembly Error : ", res)
 		writeClientError(err, conn, "Server can not transcribe audio right now", false)
-		handleCloseConns(conn, assemblyConn)
+		handleCloseConns(userId, conn, assemblyConn)
 		return
 	}
 
-	client, err := NewClient(userId, conn, assemblyConn)
+	client, err := NewClient(userId, conn, assemblyConn, targetLanguage)
 	if err != nil {
 		log.Println("New Client Error : ", err)
 		writeClientError(err, conn, "", true)
-		handleCloseConns(conn, assemblyConn)
+		handleCloseConns(userId, conn, assemblyConn)
 		return
 	}
 
@@ -98,11 +105,72 @@ func writeClientError(err error, conn *websocket.Conn, clientMessage string, sen
 }
 
 // handleCloseConns closes the client and AssemblyAI WebSocket connections when they are present.
-func handleCloseConns(conn *websocket.Conn, assemblyConn *websocket.Conn){
+func handleCloseConns(userId string, conn *websocket.Conn, assemblyConn *websocket.Conn){
 	if conn != nil {
 		conn.Close()
 	}
+	handleWaitAndCLoseAssembly(userId, assemblyConn)
+}
+
+const assemblyTerminateTimeout = 5 * time.Second
+
+func handleWaitAndCLoseAssembly(userId string, assemblyConn *websocket.Conn){
+	defer handleCloseAssembly(assemblyConn, "Close assembly fallback", userId)
+
 	if assemblyConn != nil {
-		assemblyConn.Close()
+		err := assemblyConn.WriteJSON(map[string]string{
+			"type": "Terminate",
+		})
+		if err != nil {
+			log.Printf(
+				"Error terminating AssemblyAI session for client %s: %v",
+				userId,
+				err,
+			)
+			return
+		}
+		waitForAssemblyTerminate(assemblyConn, userId)
+	}
+}
+
+func waitForAssemblyTerminate(assemblyConn *websocket.Conn, userId string) {
+
+	// Don't wait forever for AssemblyAI.
+	assemblyConn.SetReadDeadline(
+		time.Now().Add(assemblyTerminateTimeout),
+	)
+
+	for {
+		msgType, msg, err := assemblyConn.ReadMessage()
+		if err != nil {
+			log.Printf(
+				"AssemblyAI termination wait ended for client %s: %v",
+				userId,
+				err,
+			)
+			return
+		}
+
+		parsed, err := parseAssemblyMessage(msgType, msg)
+		if err != nil {
+			log.Println(err)
+			return
+		}
+
+		if parsed["type"] == "Termination" {
+			log.Printf(
+				"AssemblyAI session terminated for client %s",
+				userId,
+			)
+			return
+		}else{
+			log.Println("idk what happens when it reaches this line here okay.")
+		}	
+
+		log.Printf(
+			"Unexpected AssemblyAI message while terminating client %s: %v",
+			userId,
+			parsed["type"],
+		)
 	}
 }

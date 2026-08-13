@@ -14,6 +14,7 @@ type AppEnvVars struct {
 	AssemblyApiKey    string
 	SupabaseJwtKey    string
 	DatabaseConnection string
+	GoogleTranslateProjectId string
 	IS_PROD        bool
 }
 
@@ -36,6 +37,7 @@ func CheckingAllEnvVars() {
 	assemblyApiKey := os.Getenv("ASSEMBLYAI_API_KEY")
 	supabaseJwtKey := os.Getenv("SUPABASE_JWT_KEY")
 	databaseConnection := os.Getenv("DATABASE_URL")
+	googleTranslateProjectId := os.Getenv("GOOGLE_TRANSLATE_PROJECT_ID")
 	is_prod := getIsProdBool(os.Getenv("IS_PROD"))
 
 	if port == "" {
@@ -53,6 +55,9 @@ func CheckingAllEnvVars() {
 	if databaseConnection == "" {
 		log.Fatal("fail to load DATABASE_URL in env")
 	}
+	if googleTranslateProjectId == "" {
+		log.Fatal("fail to load PORT in env")
+	}
 	
 
 	EnvVars = &AppEnvVars{
@@ -61,6 +66,7 @@ func CheckingAllEnvVars() {
 		AssemblyApiKey:    assemblyApiKey,
 		SupabaseJwtKey:    supabaseJwtKey,
 		DatabaseConnection: databaseConnection,
+		GoogleTranslateProjectId: googleTranslateProjectId,
 		IS_PROD: is_prod,
 	}
 

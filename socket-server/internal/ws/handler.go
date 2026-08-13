@@ -2,6 +2,7 @@ package ws
 
 import (
 	"encoding/json"
+	"fmt"
 	"log"
 
 	"github.com/gorilla/websocket"
@@ -80,31 +81,16 @@ func (c *Client) processMsgTranscript() {
             return
         }
 
-        if msgType != websocket.TextMessage {
-            log.Println("from assembly, this is not a text message")
-            continue
-        }
-
-        var parsed map[string]interface{}
-        if err := json.Unmarshal(msg, &parsed); err != nil {
-            log.Println("can't parse JSON:", err)
-            continue
-        }
-
+		parsed, err := parseAssemblyMessage(msgType, msg)
+		if err != nil {
+			log.Println(err)
+			continue
+		}
+       
         switch parsed["type"] {
 
         case "Termination":
-            log.Println("AssemblyAI session terminated:", string(msg))
-
-            err := c.AssemblyConn.Close()
-            if err != nil {
-                log.Printf(
-                    "Error closing AssemblyAI ws for %s: %v",
-                    c.UserId,
-                    err,
-                )
-            }
-
+			handleCloseAssembly(c.AssemblyConn, string(msg), c.UserId)
             return
 
         case "SessionBegins", "Begin":
@@ -143,3 +129,18 @@ func (c *Client) TerminateAssemblySession() {
 	// read goroutine should receive the "Termination"
 	// message from AssemblyAI and then close the connection.
 }
+
+
+func parseAssemblyMessage(msgType int, msg []byte) (map[string]interface{}, error) {
+	if msgType != websocket.TextMessage {
+		return nil, fmt.Errorf("message from AssemblyAI is not a text message")
+	}
+
+	var parsed map[string]interface{}
+	if err := json.Unmarshal(msg, &parsed); err != nil {
+		return nil, fmt.Errorf("failed to parse AssemblyAI message: %w", err)
+	}
+
+	return parsed, nil
+}
+

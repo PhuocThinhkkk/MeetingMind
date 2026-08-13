@@ -22,8 +22,6 @@ export function TranslationPanel({
 }) {
   const displayTranslationTurns = useAnimatedTranslationWords(translateTurns)
 
-  log.info('Translation turns in panel: ', translateTurns)
-  log.info('Translation display in panel: ', displayTranslationTurns)
   return (
     <div
       className={`${bothPanelsOpen ? 'w-1/2' : 'w-full'} flex flex-col bg-card`}

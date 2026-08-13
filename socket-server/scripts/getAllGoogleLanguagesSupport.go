@@ -49,6 +49,14 @@ func main() {
 		log.Fatal(err)
 	}
 
+	supportedLanguages := make([]*translatepb.SupportedLanguage, 0, len(resp.Languages))
+	for _, lang := range resp.Languages {
+		if lang.GetSupportTarget() {
+			supportedLanguages = append(supportedLanguages, lang)
+		}
+	}
+	resp.Languages = supportedLanguages
+
 	sort.Slice(resp.Languages, func(i, j int) bool {
 		return resp.Languages[i].LanguageCode <
 			resp.Languages[j].LanguageCode
