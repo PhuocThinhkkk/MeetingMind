@@ -66,7 +66,7 @@ export function TranscriptPanel({
 
                   return (
                     <span
-                      key={`${turn.turn_id}-${word.start}-${Math.random().toString(36).substring(2, 7)}`}
+                      key={`${turn.turn_id}-${word.start}-${word.end}`}
                       className={`inline rounded px-1 py-0.5 transition-colors ${
                         isSelectedWord
                           ? 'bg-primary text-primary-foreground'
