@@ -1,12 +1,13 @@
 package ws
 
 import (
-	"net/http"
 	"encoding/json"
-	"io"
-	"github.com/gorilla/websocket"
-	"log"
 	"fmt"
+	"io"
+	"log"
+	"net/http"
+
+	"github.com/gorilla/websocket"
 )
 var TimeConsume = 60 // 1 min
 
@@ -65,5 +66,4 @@ func getStreamingToken(apiKey string, expiredTime int) (string, error) {
 
     return result.Token, nil
 }
-
 
