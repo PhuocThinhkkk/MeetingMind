@@ -19,13 +19,24 @@ import { toast } from '@/hooks/use-toast'
 import { LoadingOverlay } from '../loading-overlay'
 import { useUploadController } from '@/hooks/use-upload-controller'
 import { log } from '@/utils/logger'
-import { serverCheck } from '@/lib/server-check'
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (
     audioBlob: File,
     transcription: SaveTranscriptInput
   ) => Promise<void>
+}
+
+type TranslationLanguage = {
+  Code: string
+  Name: string
+}
+
+function getTranslationServerBaseUrl() {
+  let server = process.env.NEXT_PUBLIC_WS_SERVER_URL || 'localhost:9090'
+  server = server.replace(/^wss?:\/\//, '')
+  const protocol = location.protocol === 'https:' ? 'https' : 'http'
+  return `${protocol}://${server}`
 }
 
 /**
@@ -49,7 +60,15 @@ export function RealtimeRecorder({
     setSessionStartTime,
     isRecording,
     status,
+    errorMessage,
   } = useRecorder()
+  const [useMicrophone, setUseMicrophone] = useState(true)
+  const [useSystemAudio, setUseSystemAudio] = useState(false)
+  const [languages, setLanguages] = useState<TranslationLanguage[]>([])
+  const [languagesLoading, setLanguagesLoading] = useState(true)
+  const [languagesError, setLanguagesError] = useState<string | null>(null)
+  const [targetLanguage, setTargetLanguage] = useState('')
+  const [formError, setFormError] = useState<string | null>(null)
   const [duration, setDuration] = useState(0)
 
   useEffect(() => {
@@ -65,14 +84,85 @@ export function RealtimeRecorder({
     return () => clearInterval(id)
   }, [sessionStartTime, isRecording])
 
+  useEffect(() => {
+    let cancelled = false
+
+    async function loadLanguages() {
+      setLanguagesLoading(true)
+      setLanguagesError(null)
+
+      try {
+        const res = await fetch(
+          `${getTranslationServerBaseUrl()}/translate/get-all-languages`
+        )
+
+        if (!res.ok) {
+          throw new Error('Unable to load translation languages.')
+        }
+
+        const data = (await res.json()) as TranslationLanguage[]
+        if (cancelled) {
+          return
+        }
+
+        setLanguages(data)
+        setTargetLanguage(prev => prev || data[0]?.Code || '')
+      } catch (error: any) {
+        if (cancelled) {
+          return
+        }
+
+        setLanguages([])
+        setLanguagesError(
+          error?.message ?? 'Unable to load translation languages.'
+        )
+      } finally {
+        if (!cancelled) {
+          setLanguagesLoading(false)
+        }
+      }
+    }
+
+    loadLanguages()
+
+    return () => {
+      cancelled = true
+    }
+  }, [])
+
   async function handleStartRecording() {
+    setFormError(null)
+
+    if (!useMicrophone && !useSystemAudio) {
+      setFormError('Enable at least one audio source to start recording.')
+      return
+    }
+
+    if (!targetLanguage) {
+      setFormError('Choose a translation target language before recording.')
+      return
+    }
+
+    if (
+      languages.length > 0 &&
+      !languages.some(language => language.Code === targetLanguage)
+    ) {
+      setFormError('Choose a supported translation target language.')
+      return
+    }
+
     try {
-      await startRecording()
+      await startRecording({
+        useMicrophone,
+        useSystemAudio,
+        targetLanguage,
+      })
       setShowTranscription(true)
     } catch (e: any) {
+      setFormError(e?.message ?? 'Unable to start recording.')
       toast({
         title: 'Error start recording.',
-        description: e.message,
+        description: e?.message ?? 'Unable to start recording.',
         variant: 'destructive',
       })
     }
@@ -109,6 +199,7 @@ export function RealtimeRecorder({
   function handleCloseAll() {
     setShowTranscription(false)
     setSessionStartTime(null)
+    setFormError(null)
   }
 
   /**
@@ -153,12 +244,15 @@ export function RealtimeRecorder({
     }
   }
 
+  const displayError = formError ?? errorMessage
+  const startDisabled = status === 'connecting' || languagesLoading
+
   return (
     <>
       <Card className="group hover:shadow-lg transition-all duration-300 border-dashed border-2 border-gray-300 hover:border-red-400 animate-slide-up hover-lift">
         <CardContent className="p-8">
-          <div className="text-center space-y-6">
-            <div className="flex items-center justify-center space-x-4">
+          <div className="space-y-6">
+            <div className="flex items-center justify-center gap-4 flex-wrap">
               <Badge
                 className={`${getStatusColor()} border flex items-center space-x-1`}
               >
@@ -174,36 +268,135 @@ export function RealtimeRecorder({
               )}
             </div>
 
-            <div>
-              <div
-                className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
-                  isRecording
-                    ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                    : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
-                }`}
-              >
-                {status === 'connecting' ? (
-                  <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
-                ) : isRecording ? (
-                  <Square className="w-8 h-8 text-white" />
-                ) : (
-                  <Mic className="w-8 h-8 text-red-600" />
-                )}
-              </div>
+            {!isRecording ? (
+              <div className="space-y-6 text-left">
+                <div className="text-center">
+                  <div
+                    className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
+                      status === 'connecting'
+                        ? 'bg-red-500 animate-pulse'
+                        : 'bg-red-100 group-hover:bg-red-200'
+                    }`}
+                  >
+                    {status === 'connecting' ? (
+                      <Loader2 className="w-8 h-8 text-white animate-spin" />
+                    ) : (
+                      <Mic className="w-8 h-8 text-red-600" />
+                    )}
+                  </div>
 
-              <h3 className="text-lg font-semibold text-primary mb-2">
-                {!isRecording && 'Real-time Recording'}
-              </h3>
+                  <h3 className="text-lg font-semibold text-primary mb-2">
+                    Real-time Recording
+                  </h3>
 
-              <p className="text-gray-600 text-sm mb-6">
-                {!isRecording && 'Start recording to see live transcription'}
-              </p>
+                  <p className="text-gray-600 text-sm">
+                    Choose your audio sources and translation target before
+                    starting.
+                  </p>
+                </div>
 
-              <div className="space-y-3">
-                {!isRecording ? (
+                <form
+                  className="space-y-5"
+                  onSubmit={event => {
+                    event.preventDefault()
+                    handleStartRecording()
+                  }}
+                >
+                  <fieldset className="grid gap-4 rounded-2xl border border-gray-200 bg-gray-50 p-4 sm:grid-cols-2">
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-colors hover:border-red-300">
+                      <input
+                        type="checkbox"
+                        checked={useMicrophone}
+                        onChange={event => {
+                          setFormError(null)
+                          setUseMicrophone(event.target.checked)
+                        }}
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                      />
+                      <span className="space-y-1">
+                        <span className="block font-medium text-gray-900">
+                          Use microphone
+                        </span>
+                        <span className="block text-sm text-gray-600">
+                          Capture audio from your mic.
+                        </span>
+                      </span>
+                    </label>
+
+                    <label className="flex cursor-pointer items-start gap-3 rounded-xl border border-gray-200 bg-white p-4 shadow-sm transition-colors hover:border-red-300">
+                      <input
+                        type="checkbox"
+                        checked={useSystemAudio}
+                        onChange={event => {
+                          setFormError(null)
+                          setUseSystemAudio(event.target.checked)
+                        }}
+                        className="mt-1 h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500"
+                      />
+                      <span className="space-y-1">
+                        <span className="block font-medium text-gray-900">
+                          Use system audio
+                        </span>
+                        <span className="block text-sm text-gray-600">
+                          Capture tab or screen audio.
+                        </span>
+                      </span>
+                    </label>
+                  </fieldset>
+
+                  <div className="space-y-2">
+                    <label
+                      htmlFor="target-language"
+                      className="block text-sm font-medium text-gray-900"
+                    >
+                      Translation target language
+                    </label>
+                    <select
+                      id="target-language"
+                      value={targetLanguage}
+                      onChange={event => {
+                        setFormError(null)
+                        setTargetLanguage(event.target.value)
+                      }}
+                      disabled={languagesLoading || languages.length === 0}
+                      className="h-11 w-full rounded-xl border border-gray-300 bg-white px-3 text-sm text-gray-900 shadow-sm outline-none transition focus:border-red-400 focus:ring-2 focus:ring-red-200 disabled:cursor-not-allowed disabled:bg-gray-100"
+                    >
+                      <option value="">
+                        {languagesLoading
+                          ? 'Loading languages...'
+                          : 'Select a target language'}
+                      </option>
+                      {languages.map(language => (
+                        <option key={language.Code} value={language.Code}>
+                          {language.Name} ({language.Code})
+                        </option>
+                      ))}
+                    </select>
+                    <p className="text-xs text-gray-500">
+                      Languages come from the translation service at runtime.
+                    </p>
+                  </div>
+
+                  {languagesError && (
+                    <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700">
+                      {languagesError}
+                    </p>
+                  )}
+
+                  {displayError && (
+                    <p className="rounded-xl border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-700 flex items-start gap-2">
+                      <AlertCircle className="mt-0.5 h-4 w-4 shrink-0" />
+                      <span>{displayError}</span>
+                    </p>
+                  )}
+
                   <Button
-                    onClick={handleStartRecording}
-                    disabled={status === 'connecting'}
+                    type="submit"
+                    disabled={
+                      startDisabled ||
+                      !targetLanguage ||
+                      Boolean(languagesError)
+                    }
                     className="hover:cursor-pointer w-full bg-red-600 hover:bg-red-700 transition-all hover:scale-[1.02] shadow-lg hover:shadow-xl"
                   >
                     {status === 'connecting' ? (
@@ -218,27 +411,35 @@ export function RealtimeRecorder({
                       </>
                     )}
                   </Button>
-                ) : (
-                  <Button
-                    onClick={handleStopRecording}
-                    variant="outline"
-                    className="w-full border-red-300 text-red-700 hover:bg-red-50 transition-all hover:scale-[1.02]"
-                  >
-                    <Square className="w-4 h-4 mr-2" />
-                    Stop & View Transcription
-                  </Button>
-                )}
-
-                {status === 'error' && (
-                  <p className="text-sm text-red-600 flex items-center justify-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    Connection failed. Please check your settings.
-                  </p>
-                )}
+                </form>
               </div>
-            </div>
+            ) : (
+              <div className="space-y-3">
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-red-500 animate-pulse">
+                    <Square className="w-8 h-8 text-white" />
+                  </div>
 
-            {/* Connection Status */}
+                  <h3 className="text-lg font-semibold text-primary mb-2">
+                    Recording in progress
+                  </h3>
+
+                  <p className="text-gray-600 text-sm mb-6">
+                    Live transcription is streaming now.
+                  </p>
+                </div>
+
+                <Button
+                  onClick={handleStopRecording}
+                  variant="outline"
+                  className="w-full border-red-300 text-red-700 hover:bg-red-50 transition-all hover:scale-[1.02]"
+                >
+                  <Square className="w-4 h-4 mr-2" />
+                  Stop & View Transcription
+                </Button>
+              </div>
+            )}
+
             <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
               {status === 'recording' || status === 'connecting' ? (
                 <Wifi className="w-4 h-4 text-green-500" />

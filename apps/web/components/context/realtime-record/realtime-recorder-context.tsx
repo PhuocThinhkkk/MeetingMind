@@ -21,19 +21,24 @@ import {
 import { log } from '@/utils/logger'
 
 import { useAudioBuffer } from './audio-buffer'
-import { useAudioSession } from './audio-session'
+import { AudioSessionStartConfig, useAudioSession } from './audio-session'
 import { useRecorderWebSocket } from './websocket'
 import {
   handleTranscriptResponse,
   handleTranslateResponse,
 } from './response-handler'
 
+export type RecorderStartConfig = AudioSessionStartConfig & {
+  targetLanguage: string
+}
+
 type RecorderContextType = {
   isRecording: boolean
-  startRecording: () => Promise<void>
+  startRecording: (config: RecorderStartConfig) => Promise<void>
   stopRecording: () => Blob | undefined
   clearTranscript: () => void
   status: string
+  errorMessage: string | null
   transcriptTurns: RealtimeTranscriptResponse[]
   transcriptWords: RealtimeTranscriptionWord[]
   translateTurns: RealtimeTranslateResponse[]
@@ -51,6 +56,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
 }) => {
   const [sessionStartTime, setSessionStartTime] = useState<Date | null>(null)
   const [isRecording, setIsRecording] = useState(false)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [status, setStatus] = useState<
     'idle' | 'connecting' | 'recording' | 'processing' | 'error'
   >('idle')
@@ -88,9 +94,12 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
 
   const websocket = useRecorderWebSocket({
     onOpen: () => {
-      updateStatus('recording')
+      log.info('WebSocket connected and ready for audio streaming')
     },
     onError: () => {
+      setErrorMessage(
+        'The transcription connection encountered an error. Please try again.'
+      )
       updateStatus('error')
     },
     onClose: event => {
@@ -109,6 +118,10 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
   const clearTranscript = useCallback(() => {
     setTranscriptTurns([])
     setTranslateTurns([])
+  }, [])
+
+  const clearRuntimeError = useCallback(() => {
+    setErrorMessage(null)
   }, [])
 
   const handleWorkletSendingMessages = useCallback(
@@ -140,38 +153,82 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     [audioBuffer, websocket]
   )
 
-  const startRecording = useCallback(async () => {
-    clearTranscript()
-    updateStatus('connecting')
+  const startRecording = useCallback(
+    async (config: RecorderStartConfig) => {
+      clearRuntimeError()
 
-    let url
-    try {
-      await serverCheck()
-      url = websocket.getWsUrl()
-    } catch (error: any) {
-      updateStatus('error')
-      log.error(error)
-      throw error
-    }
+      if (!config.useMicrophone && !config.useSystemAudio) {
+        const error = new Error(
+          'Enable at least one audio source to start recording.'
+        )
+        setErrorMessage(error.message)
+        updateStatus('error')
+        throw error
+      }
 
-    websocket.connect(url)
+      if (!config.targetLanguage) {
+        const error = new Error(
+          'Choose a translation target language before recording.'
+        )
+        setErrorMessage(error.message)
+        updateStatus('error')
+        throw error
+      }
 
-    const { workletNode } = await audioSession.start()
-    handleWorkletSendingMessages(workletNode)
+      clearTranscript()
+      updateStatus('connecting')
 
-    setIsRecording(true)
-  }, [
-    audioSession,
-    clearTranscript,
-    handleWorkletSendingMessages,
-    updateStatus,
-    websocket,
-  ])
+      let url: string
+      try {
+        await serverCheck()
+        url = websocket.getWsUrl(config.targetLanguage)
+        await websocket.connect(url)
+      } catch (error: any) {
+        updateStatus('error')
+        setErrorMessage(
+          error?.message ?? 'Unable to connect to the transcription service.'
+        )
+        log.error(error)
+        websocket.disconnect()
+        throw error
+      }
+
+      try {
+        const { workletNode } = await audioSession.start({
+          useMicrophone: config.useMicrophone,
+          useSystemAudio: config.useSystemAudio,
+        })
+        handleWorkletSendingMessages(workletNode)
+
+        setIsRecording(true)
+        updateStatus('recording')
+      } catch (error: any) {
+        updateStatus('error')
+        setErrorMessage(
+          error?.message ??
+            'Unable to start audio capture. Please check your browser permissions.'
+        )
+        log.error(error)
+        audioSession.stop()
+        websocket.disconnect()
+        throw error
+      }
+    },
+    [
+      audioSession,
+      clearRuntimeError,
+      clearTranscript,
+      handleWorkletSendingMessages,
+      updateStatus,
+      websocket,
+    ]
+  )
 
   const stopRecording = useCallback(() => {
     console.trace('🔥 stopRecording() called')
     setIsRecording(false)
     updateStatus('processing')
+    clearRuntimeError()
     log.info('stop recording')
 
     const blob = audioBuffer.createBlob()
@@ -193,7 +250,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     }, 1000)
 
     return blob
-  }, [audioBuffer, audioSession, updateStatus, websocket])
+  }, [audioBuffer, audioSession, clearRuntimeError, updateStatus, websocket])
 
   const isRecordingRef = useRef(isRecording)
   useEffect(() => {
@@ -217,6 +274,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
         startRecording,
         stopRecording,
         status,
+        errorMessage,
         clearTranscript,
         transcriptTurns,
         transcriptWords,
