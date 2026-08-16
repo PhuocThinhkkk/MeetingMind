@@ -69,6 +69,11 @@ export function RecordingSetupDialog({
   const [formError, setFormError] = useState<string | null>(null)
 
   useEffect(() => {
+    setFormError(null)
+    setLanguagesError(null)
+  }, [open])
+
+  useEffect(() => {
     let cancelled = false
 
     async function loadLanguages() {
@@ -98,6 +103,11 @@ export function RecordingSetupDialog({
         }
 
         setLanguages([])
+        if (error.message == 'Failed to fetch') {
+          setLanguagesError("Can't reaches server languages information.")
+          return
+        }
+
         setLanguagesError(
           error?.message ?? 'Unable to load translation languages.'
         )

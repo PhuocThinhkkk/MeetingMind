@@ -59,6 +59,7 @@ func CheckingAllEnvVars() {
 		log.Fatal("fail to load PORT in env")
 	}
 	
+	log.Println("Frontend URL: ", frontendUrl)
 
 	EnvVars = &AppEnvVars{
 		Port:              port,

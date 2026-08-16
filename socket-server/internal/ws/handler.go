@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"net"
+	"time"
 
 	"github.com/gorilla/websocket"
 )
@@ -75,11 +77,12 @@ func (c *Client) processMsgTranscript() {
             }
         }
 
-        msgType, msg, err := c.AssemblyConn.ReadMessage()
-        if err != nil {
-            log.Println("AssemblyAI read error:", err)
-            return
-        }
+       
+		msgType, msg, err := c.AssemblyConn.ReadMessage()
+		if err != nil {
+			logAssemblyReadErr(err, c.UserId)
+			return
+		}
 
 		parsed, err := parseAssemblyMessage(msgType, msg)
 		if err != nil {
@@ -103,7 +106,7 @@ func (c *Client) processMsgTranscript() {
 
         case "FinalTranscript", "PartialTranscript", "Turn":
             if err := c.updateStateTranscript(msg); err != nil {
-                log.Println("error updating transcript:", err)
+                log.Println("Error updating transcript:", err)
                 return
             }
         }
@@ -126,6 +129,12 @@ func (c *Client) TerminateAssemblySession() {
 
 	log.Println("Terminate sent to AssemblyAI:", c.UserId)
 
+
+	// Don't wait forever for AssemblyAI.
+	_ = c.AssemblyConn.SetReadDeadline(
+		time.Now().Add(10 * time.Second),
+	)
+
 	// read goroutine should receive the "Termination"
 	// message from AssemblyAI and then close the connection.
 }
@@ -142,5 +151,16 @@ func parseAssemblyMessage(msgType int, msg []byte) (map[string]interface{}, erro
 	}
 
 	return parsed, nil
+}
+
+func logAssemblyReadErr(err error, userId string){
+	if netErr, ok := err.(net.Error); ok && netErr.Timeout() {
+		log.Printf(
+			"AssemblyAI termination timeout for client %s; closing",
+			userId,
+		)
+		return
+	}
+	log.Println("AssemblyAI read error:", err)
 }
 

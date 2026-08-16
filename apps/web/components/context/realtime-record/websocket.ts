@@ -158,12 +158,9 @@ export function useRecorderWebSocket(handlers: RecorderWebSocketHandlers = {}) {
     })
   }, [])
 
-  const send = useCallback(
-    (data: ArrayBufferLike | Blob | ArrayBufferView | SharedArrayBuffer) => {
-      wsRef.current?.send(data)
-    },
-    []
-  )
+  const send = useCallback((data: string | Blob | BufferSource) => {
+    wsRef.current?.send(data)
+  }, [])
 
   return {
     wsRef,

@@ -76,8 +76,9 @@ func UnregisterClient(c *Client) {
 		// already closed
 	default:
 		close(c.Done)
+		c.TerminateAssemblySession()
+		log.Println("Unregistered client: ", c.UserId)
 	}
-	log.Println("Unregistered client: ", c.UserId)
 }
 
 func (c *Client) Expired() bool {
