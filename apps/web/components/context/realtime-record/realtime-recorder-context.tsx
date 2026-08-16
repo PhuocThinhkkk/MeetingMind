@@ -157,7 +157,7 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
     async (config: RecorderStartConfig) => {
       clearRuntimeError()
 
-      if (!config.useMicrophone && !config.useSystemAudio) {
+      if (!config.microphoneStream && !config.systemAudioStream) {
         const error = new Error(
           'Enable at least one audio source to start recording.'
         )
@@ -195,8 +195,8 @@ export const RecorderProvider: React.FC<{ children: React.ReactNode }> = ({
 
       try {
         const { workletNode } = await audioSession.start({
-          useMicrophone: config.useMicrophone,
-          useSystemAudio: config.useSystemAudio,
+          microphoneStream: config.microphoneStream,
+          systemAudioStream: config.systemAudioStream,
         })
         handleWorkletSendingMessages(workletNode)
 

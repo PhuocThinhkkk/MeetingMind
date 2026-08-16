@@ -10,8 +10,8 @@ import {
 import { log } from '@/utils/logger'
 
 export type AudioSessionStartConfig = {
-  useMicrophone: boolean
-  useSystemAudio: boolean
+  microphoneStream?: MediaStream | null
+  systemAudioStream?: MediaStream | null
 }
 
 /**
@@ -46,57 +46,58 @@ export function useAudioSession() {
     workletNodeRef.current = null
   }, [])
 
-  const start = useCallback(async (config: AudioSessionStartConfig) => {
-    const audioContext = initAudioContext()
-    audioContextRef.current = audioContext
+  const start = useCallback(
+    async (config: AudioSessionStartConfig) => {
+      const audioContext = initAudioContext()
+      audioContextRef.current = audioContext
 
-    const acquiredStreams: MediaStream[] = []
-    let micStream: MediaStream | null = null
-    let systemStream: MediaStream | null = null
+      const acquiredStreams: MediaStream[] = []
 
-    try {
-      if (config.useMicrophone) {
-        const stream = await requestMicrophoneAudio()
-        micStream = stream
-        acquiredStreams.push(stream)
+      try {
+        const micStream = config.microphoneStream ?? null
+        const systemStream = config.systemAudioStream ?? null
+
+        if (micStream) {
+          acquiredStreams.push(micStream)
+        }
+
+        if (systemStream) {
+          acquiredStreams.push(systemStream)
+        }
+
+        if (!micStream && !systemStream) {
+          throw new Error('Enable at least one audio source to use recording.')
+        }
+
+        const mixedStream = await mixAudioStreams(
+          audioContext,
+          systemStream,
+          micStream
+        )
+
+        streamRef.current = mixedStream
+        inputStreamsRef.current = acquiredStreams
+
+        const workletNode = await setupAudioWorklet(audioContext, mixedStream)
+
+        workletNodeRef.current = workletNode
+
+        return {
+          audioContext,
+          mixedStream,
+          workletNode,
+        }
+      } catch (error) {
+        acquiredStreams.forEach(stream => {
+          stream.getTracks().forEach(track => track.stop())
+        })
+
+        stop()
+        throw error
       }
-
-      if (config.useSystemAudio) {
-        const stream = await requestSystemAudio()
-        systemStream = stream
-        acquiredStreams.push(stream)
-      }
-
-      if (!systemStream && !micStream) {
-        log.error('No audio streams available')
-        throw new Error('Enable at least one audio source to use recording.')
-      }
-
-      const mixedStream = await mixAudioStreams(
-        audioContext,
-        systemStream,
-        micStream
-      )
-
-      streamRef.current = mixedStream
-      inputStreamsRef.current = acquiredStreams
-
-      const workletNode = await setupAudioWorklet(audioContext, mixedStream)
-      workletNodeRef.current = workletNode
-
-      return {
-        audioContext,
-        mixedStream,
-        workletNode,
-      }
-    } catch (error) {
-      acquiredStreams.forEach(stream => {
-        stream.getTracks().forEach(track => track.stop())
-      })
-      stop()
-      throw error
-    }
-  }, [])
+    },
+    [stop]
+  )
 
   return {
     start,
