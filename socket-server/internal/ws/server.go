@@ -46,6 +46,9 @@ func RunServer(w http.ResponseWriter, r *http.Request) {
 	}
 
 	targetLanguage := r.URL.Query().Get("target_language")
+	if targetLanguage == "" {
+		targetLanguage = "vi"
+	}
 	if !translation.IsLanguageSupported(targetLanguage)  {
 		http.Error(w, "Language is not supported yet.", 401)
 		log.Printf("UserId %s violate supported language", userId)
