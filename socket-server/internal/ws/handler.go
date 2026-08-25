@@ -81,6 +81,7 @@ func (c *Client) processMsgTranscript() {
 		msgType, msg, err := c.AssemblyConn.ReadMessage()
 		if err != nil {
 			logAssemblyReadErr(err, c.UserId)
+            c.TerminateAssemblySession()
 			return
 		}
 

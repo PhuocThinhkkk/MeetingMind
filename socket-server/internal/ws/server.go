@@ -50,7 +50,7 @@ func RunServer(w http.ResponseWriter, r *http.Request) {
 		targetLanguage = "vi"
 	}
 	if !translation.IsLanguageSupported(targetLanguage)  {
-		http.Error(w, "Language is not supported yet.", 401)
+		http.Error(w, "Language is not supported yet.", 400)
 		log.Printf("UserId %s violate supported language", userId)
 		return
 	}
@@ -130,7 +130,6 @@ func handleWaitAndCLoseAssembly(userId string, assemblyConn *websocket.Conn){
 				userId,
 				err,
 			)
-			return
 		}
 		waitForAssemblyTerminate(assemblyConn, userId)
 	}

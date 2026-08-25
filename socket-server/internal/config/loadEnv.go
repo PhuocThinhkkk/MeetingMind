@@ -56,9 +56,8 @@ func CheckingAllEnvVars() {
 		log.Fatal("fail to load DATABASE_URL in env")
 	}
 	if googleTranslateProjectId == "" {
-		log.Fatal("fail to load PORT in env")
-	}
-	
+		log.Fatal("fail to load GOOGLE_TRANSLATE_PROJECT_ID in env")
+	}	
 	log.Println("Frontend URL: ", frontendUrl)
 
 	EnvVars = &AppEnvVars{
