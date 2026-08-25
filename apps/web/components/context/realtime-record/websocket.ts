@@ -74,11 +74,24 @@ export function useRecorderWebSocket(handlers: RecorderWebSocketHandlers = {}) {
         let opened = false
         let settled = false
 
+        const timeoutId = setTimeout(() => {
+          if (!settled) {
+            settled = true
+            wsRef.current?.close()
+            reject(
+              new Error(
+                'The transcription connection timed out. Please try again.'
+              )
+            )
+          }
+        }, 10_000)
+
         const settleResolve = () => {
           if (settled) {
             return
           }
           settled = true
+          clearTimeout(timeoutId)
           resolve()
         }
 
@@ -87,6 +100,7 @@ export function useRecorderWebSocket(handlers: RecorderWebSocketHandlers = {}) {
             return
           }
           settled = true
+          clearTimeout(timeoutId)
           reject(new Error(message))
         }
 
