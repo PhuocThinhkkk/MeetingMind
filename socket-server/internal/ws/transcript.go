@@ -4,89 +4,62 @@ import (
 	"encoding/json"
 	"errors"
 	"log"
+	"strconv"
+	"time"
 )
 
-type TranscriptWriter struct {
-	Type        RESPONSE_TYPE          `json:"type"`
-	IsEndOfTurn bool                   `json:"isEndOfTurn"`
-	Words       []AssemblyResponseWord `json:"words"`
-}
-
 type TranscriptState struct {
-	CurrentWordsTranscript chan (string)
-	CurrentSentence        []string
-	NewWords               []AssemblyResponseWord
-	CurrentTurnID          int
-	EndOfTurn              bool
+	transcripts []TranscriptEvent
 }
 
+// NewTranscriptState creates an empty transcript state with capacity for 120 transcript events.
 func NewTranscriptState() *TranscriptState {
 	return &TranscriptState{
-		CurrentWordsTranscript: make(chan string),
-		CurrentSentence: make([]string, 0, 10),
-		CurrentTurnID:   -1,
-		NewWords:        make([]AssemblyResponseWord, 0, 10),
-		EndOfTurn:       false,
+		transcripts: make([]TranscriptEvent,0, 120),
 	}
 }
 
-func NewTranscriptWriter(isFinal bool, words []AssemblyResponseWord) *TranscriptWriter {
-	return &TranscriptWriter{
-		Type:        TRANSCRIPT_RESPONSE,
-		IsEndOfTurn: isFinal,
-		Words:       words,
-	}
-}
-
-// Process the json data making the state short to send to client.
-// These words are store in the client state Transcript.
-// The client will receive only the new words or the updated words.
-// Also translate service will use this state to translate only the new words.
+// updateStateTranscript processes raw transcript data, updates the client's state,
+// builds a TranscriptEvent, and publishes it to the TranscriptHub.
 func (c *Client) updateStateTranscript(jsonData []byte) error {
-	var turn AssemblyRessponseTurn
-	err := json.Unmarshal(jsonData, &turn)
+
+	turn, err := checkTypeAssemblyResponseTurn(jsonData)
 	if err != nil {
-		err1 := errors.New("cant parse json from Assembly: ")
-		joinErr := errors.Join(err1, err)
-		return joinErr
-	}
-	log.Println("[INFOR] process client msg")
-
-	c.Transcript.NewWords = make([]AssemblyResponseWord, 0, 10)
-	for index, assemblyWord := range turn.Words {
-
-		if !assemblyWord.WordIsFinal {
-			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
-			continue
-		}
-
-		if index >= len(c.Transcript.CurrentSentence) {
-			c.Transcript.CurrentSentence = append(c.Transcript.CurrentSentence, assemblyWord.Text)
-			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
-			continue
-		}
-
-		if assemblyWord.Text != c.Transcript.CurrentSentence[index] {
-			c.Transcript.CurrentSentence[index] = assemblyWord.Text
-			c.Transcript.NewWords = append(c.Transcript.NewWords, assemblyWord)
-		}
-
+		return err
 	}
 
-	c.Transcript.EndOfTurn = turn.EndOfTurn
-	if turn.EndOfTurn {
-		c.Transcript.CurrentSentence = make([]string, 0, 10)
+	event := TranscriptEvent{
+		TurnId:     strconv.Itoa(turn.TurnOrder),
+		Text:       turn.Transcript,
+		IsFinal:    turn.EndOfTurn,
+		Confidence: turn.EndOfTurnConfidence,
+		Words:      turn.Words, 
+		Timestamp:  time.Now(),
 	}
 
-	clientTranscriptWriter := NewTranscriptWriter(c.Transcript.EndOfTurn, c.Transcript.NewWords)
-	c.TranscriptWord <- clientTranscriptWriter
+	c.Transcript.transcripts = append(c.Transcript.transcripts, event)
 
-	str := ""
-	for _, w := range c.Transcript.NewWords {
-		str += w.Text + " "
+	if c.Hub != nil {
+		c.Hub.Publish(event)
+	} else {
+		log.Printf("Client %s has no Hub assigned, cannot publish event.", c.UserId)
 	}
-	c.Transcript.CurrentWordsTranscript <- str
 
 	return nil
+}
 
+
+// It returns an error when the JSON cannot be parsed.
+func checkTypeAssemblyResponseTurn(jsonData []byte) (AssemblyResponseTurn, error) {
+    var turn AssemblyResponseTurn
+
+    err := json.Unmarshal(jsonData, &turn)
+    if err != nil {
+        return AssemblyResponseTurn{}, errors.Join(
+            errors.New("can't parse json from Assembly"),
+            err,
+        )
+    }
+
+    return turn, nil
 }

@@ -1,5 +1,7 @@
 package ws
 
+import "time"
+
 var MaxErr = 10
 
 type RESPONSE_TYPE string
@@ -17,7 +19,7 @@ type AssemblyResponseWord struct {
 	WordIsFinal bool    `json:"word_is_final"`
 }
 
-type AssemblyRessponseTurn struct {
+type AssemblyResponseTurn struct {
 	TurnOrder           int                    `json:"turn_order"`
 	Transcript          string                 `json:"transcript"`
 	EndOfTurn           bool                   `json:"end_of_turn"`
@@ -26,3 +28,29 @@ type AssemblyRessponseTurn struct {
 	Type                string                 `json:"type"`
 }
 
+// TranscriptEvent represents a single transcript update event.
+type TranscriptEvent struct {
+	TurnId           string                 `json:"turn_id,omitempty"`
+	Text             string                 `json:"text,omitempty"`
+	IsFinal          bool                   `json:"is_final,omitempty"`
+	Confidence       float64                `json:"confidence,omitempty"`
+	Words            []AssemblyResponseWord `json:"words,omitempty"`
+	AssemblyMetadata map[string]interface{} `json:"assembly_metadata,omitempty"` // For any other useful AssemblyAI metadata
+	Timestamp        time.Time              `json:"timestamp,omitempty"`
+}
+
+// TranscriptWriter is used to send transcript events over websocket.
+type TranscriptWriter struct {
+	Type        RESPONSE_TYPE          `json:"type"`
+	TurnId           string                 `json:"turn_id,omitempty"`
+	IsEndOfTurn bool                   `json:"is_end_of_turn,omitempty"`
+	Words       []AssemblyResponseWord `json:"words,omitempty"`
+}
+
+// TranslateWriter is used to send translated events over websocket.
+type TranslateWriter struct {
+	Type           RESPONSE_TYPE          `json:"type"`
+	TurnId           string                 `json:"turn_id,omitempty"`
+	TranslatedText string                 `json:"translated_text"`
+	Language       string                 `json:"language,omitempty"`
+}

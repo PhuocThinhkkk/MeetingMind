@@ -11,15 +11,15 @@ import {
   Wifi,
   WifiOff,
 } from 'lucide-react'
-import RealTimeTranscriptionPage from './realtime-view-transcription'
-import { useRecorder } from '@/components/context/realtime-recorder-context'
+import RealTimeTranscriptionPage from '../realtime-transcription/realtime-view-transcription'
+import { RecordingSetupDialog } from './recording-setup-dialog'
+import { useRecorder } from '@/components/context/realtime-record/realtime-recorder-context'
 import { SaveTranscriptInput } from '@/types/transcriptions/transcription.db'
 import { formatDuration } from '@/utils/ui-format/time-format'
 import { toast } from '@/hooks/use-toast'
-import { LoadingOverlay } from '../loading-overlay'
+import { LoadingOverlay } from '../../loading-overlay'
 import { useUploadController } from '@/hooks/use-upload-controller'
 import { log } from '@/utils/logger'
-import { serverCheck } from '@/lib/server-check'
 
 interface RealtimeRecorderProps {
   onTranscriptionComplete: (
@@ -38,11 +38,12 @@ export function RealtimeRecorder({
   onTranscriptionComplete,
 }: RealtimeRecorderProps) {
   const [showTranscription, setShowTranscription] = useState(false)
+  const [isSetupOpen, setIsSetupOpen] = useState(false)
   const uploadCtrl = useUploadController(onTranscriptionComplete)
   const {
     transcriptWords,
-    translateWords,
-    startRecording,
+    transcriptTurns,
+    translateTurns,
     stopRecording,
     sessionStartTime,
     setSessionStartTime,
@@ -64,18 +65,11 @@ export function RealtimeRecorder({
     return () => clearInterval(id)
   }, [sessionStartTime, isRecording])
 
-  async function handleStartRecording() {
-    try {
-      await startRecording()
-      setShowTranscription(true)
-    } catch (e: any) {
-      toast({
-        title: 'Error start recording.',
-        description: e.message,
-        variant: 'destructive',
-      })
+  useEffect(() => {
+    if (isRecording) {
+      setIsSetupOpen(false)
     }
-  }
+  }, [isRecording])
 
   /**
    * Stop the active recording, upload the captured audio with its transcription, and finalize the recorder UI.
@@ -156,8 +150,8 @@ export function RealtimeRecorder({
     <>
       <Card className="group hover:shadow-lg transition-all duration-300 border-dashed border-2 border-gray-300 hover:border-red-400 animate-slide-up hover-lift">
         <CardContent className="p-8">
-          <div className="text-center space-y-6">
-            <div className="flex items-center justify-center space-x-4">
+          <div className="space-y-6">
+            <div className="flex items-center justify-center gap-4 flex-wrap">
               <Badge
                 className={`${getStatusColor()} border flex items-center space-x-1`}
               >
@@ -173,35 +167,35 @@ export function RealtimeRecorder({
               )}
             </div>
 
-            <div>
-              <div
-                className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
-                  isRecording
-                    ? 'bg-red-500 hover:bg-red-600 animate-pulse'
-                    : 'bg-red-100 hover:bg-red-200 group-hover:bg-red-200'
-                }`}
-              >
-                {status === 'connecting' ? (
-                  <Loader2 className="w-8 h-8 text-red-600 animate-spin" />
-                ) : isRecording ? (
-                  <Square className="w-8 h-8 text-white" />
-                ) : (
-                  <Mic className="w-8 h-8 text-red-600" />
-                )}
-              </div>
+            {!isRecording ? (
+              <>
+                <div className="space-y-6 text-center">
+                  <div>
+                    <div
+                      className={`w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center transition-all duration-300 ${
+                        status === 'connecting'
+                          ? 'bg-red-500 animate-pulse'
+                          : 'bg-red-100 group-hover:bg-red-200'
+                      }`}
+                    >
+                      {status === 'connecting' ? (
+                        <Loader2 className="w-8 h-8 text-white animate-spin" />
+                      ) : (
+                        <Mic className="w-8 h-8 text-red-600" />
+                      )}
+                    </div>
 
-              <h3 className="text-lg font-semibold text-primary mb-2">
-                {!isRecording && 'Real-time Recording'}
-              </h3>
+                    <h3 className="text-lg font-semibold text-primary mb-2">
+                      Real-time Recording
+                    </h3>
 
-              <p className="text-gray-600 text-sm mb-6">
-                {!isRecording && 'Start recording to see live transcription'}
-              </p>
-
-              <div className="space-y-3">
-                {!isRecording ? (
+                    <p className="text-gray-600 text-sm mb-6">
+                      Click start to configure audio sources and translation
+                      language.
+                    </p>
+                  </div>
                   <Button
-                    onClick={handleStartRecording}
+                    onClick={() => setIsSetupOpen(true)}
                     disabled={status === 'connecting'}
                     className="hover:cursor-pointer w-full bg-red-600 hover:bg-red-700 transition-all hover:scale-[1.02] shadow-lg hover:shadow-xl"
                   >
@@ -217,27 +211,40 @@ export function RealtimeRecorder({
                       </>
                     )}
                   </Button>
-                ) : (
-                  <Button
-                    onClick={handleStopRecording}
-                    variant="outline"
-                    className="w-full border-red-300 text-red-700 hover:bg-red-50 transition-all hover:scale-[1.02]"
-                  >
-                    <Square className="w-4 h-4 mr-2" />
-                    Stop & View Transcription
-                  </Button>
-                )}
+                </div>
+                <RecordingSetupDialog
+                  open={isSetupOpen}
+                  onOpenChange={setIsSetupOpen}
+                  onStarted={() => setShowTranscription(true)}
+                />
+              </>
+            ) : (
+              <div className="space-y-3">
+                <div className="text-center">
+                  <div className="w-16 h-16 rounded-full mx-auto mb-4 flex items-center justify-center bg-red-500 animate-pulse">
+                    <Square className="w-8 h-8 text-white" />
+                  </div>
 
-                {status === 'error' && (
-                  <p className="text-sm text-red-600 flex items-center justify-center">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    Connection failed. Please check your settings.
+                  <h3 className="text-lg font-semibold text-primary mb-2">
+                    Recording in progress
+                  </h3>
+
+                  <p className="text-gray-600 text-sm mb-6">
+                    Live transcription is streaming now.
                   </p>
-                )}
-              </div>
-            </div>
+                </div>
 
-            {/* Connection Status */}
+                <Button
+                  onClick={handleStopRecording}
+                  variant="outline"
+                  className="w-full border-red-300 text-red-700 hover:bg-red-50 transition-all hover:scale-[1.02]"
+                >
+                  <Square className="w-4 h-4 mr-2" />
+                  Stop & View Transcription
+                </Button>
+              </div>
+            )}
+
             <div className="flex items-center justify-center space-x-2 text-xs text-gray-500">
               {status === 'recording' || status === 'connecting' ? (
                 <Wifi className="w-4 h-4 text-green-500" />
@@ -253,8 +260,7 @@ export function RealtimeRecorder({
           </div>
         </CardContent>
         <RealTimeTranscriptionPage
-          translationWords={translateWords}
-          transcriptionWords={transcriptWords}
+          transcriptState={{ transcriptTurns, translateTurns }}
           isVisible={showTranscription}
           onExit={handleStopRecording}
           onStopRecording={handleStopRecording}

@@ -24,7 +24,9 @@ export async function requestSystemAudio() {
     })
   } catch (err) {
     log.error('System audio permission denied:', err)
-    return null
+    throw new Error(
+      'Unable to access system audio. Please allow screen audio capture.'
+    )
   }
 }
 
@@ -38,7 +40,9 @@ export async function requestMicrophoneAudio() {
     return await navigator.mediaDevices.getUserMedia({ audio: true })
   } catch (err) {
     log.error('Microphone permission denied:', err)
-    return null
+    throw new Error(
+      'Unable to access your microphone. Please allow microphone access.'
+    )
   }
 }
 

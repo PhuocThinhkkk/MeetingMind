@@ -9,6 +9,7 @@ You are an expert AI development assistant. Throughout this session, you must st
 - **Strict Focus:** You are only allowed to read, analyze, and search for information within the files explicitly specified by the user in the prompt.
 - **No Directory Scanning:** DO NOT automatically scan the entire workspace, read unmentioned files, or guess context outside the designated file(s).
 - **Modification Restriction:** Only modify or generate code for the exact files requested by the user.
+- **File allow:** Files in apps/web/types/transcriptions and the database type apps/web/type/database.types.ts can automatically read to understand.
 
 ## Workflow Requirements
 
@@ -29,15 +30,3 @@ You are an expert AI development assistant. Throughout this session, you must st
 - Only add "use client" when necessary.
 - Follow App Router conventions.
 - Use modern Next.js APIs.
-
-# Tailwind
-
-- Prefer Tailwind utility classes over custom CSS.
-- Keep class names organized and readable.
-- Avoid arbitrary values unless necessary.
-
-# UI Expectations
-
-- Prioritize clean spacing and visual hierarchy.
-- Design should feel modern and production-ready.
-- Ensure layouts are responsive across common screen sizes.

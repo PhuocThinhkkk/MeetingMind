@@ -14,7 +14,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { FileAudio, Clock, MoreHorizontal } from 'lucide-react'
-import { RealtimeRecorder } from '@/components/dashboard/realtime-recorder'
+import { RealtimeRecorder } from '@/components/dashboard/rt-record/realtime-recorder'
 import { AudioUpload } from '@/components/dashboard/audio-upload'
 import { useAuth } from '@/hooks/use-auth'
 import {
