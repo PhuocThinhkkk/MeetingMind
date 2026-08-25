@@ -3,12 +3,13 @@ package translation
 import (
 	"context"
 	"fmt"
+	"meetingmind-socket/internal/config"
 	"time"
 
 	translatepb "cloud.google.com/go/translate/apiv3/translatepb"
 )
 
-const projectID = "turing-zone-468913-g8"
+var projectID *string = &config.EnvVars.GoogleTranslateProjectId
 
 type Language struct {
 	Code string
@@ -63,7 +64,7 @@ func TranslateText(text, sourceLang, targetLang string) (string, error) {
 		return "", fmt.Errorf("unsupported language: %s", targetLang)
 	}
     req := &translatepb.TranslateTextRequest{
-        Parent:             "projects/" + projectID + "/locations/global",
+        Parent:             "projects/" + *projectID + "/locations/global",
         Contents:           []string{text},
         MimeType:           "text/plain",
         SourceLanguageCode: sourceLang,
