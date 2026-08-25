@@ -9,7 +9,6 @@ import (
 	translatepb "cloud.google.com/go/translate/apiv3/translatepb"
 )
 
-var projectID *string = &config.EnvVars.GoogleTranslateProjectId
 
 type Language struct {
 	Code string
@@ -59,6 +58,7 @@ func GetAllSupportLanguages()[]Language{
 // It returns the first translated result or an error if the translation request
 // fails or produces no translations.
 func TranslateText(text, sourceLang, targetLang string) (string, error) {
+	var projectID *string = &config.EnvVars.GoogleTranslateProjectId
 
     if !IsLanguageSupported(targetLang) {
 		return "", fmt.Errorf("unsupported language: %s", targetLang)
